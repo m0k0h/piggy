@@ -14,10 +14,6 @@ import {
   type Team,
 } from '../types'
 
-const STORAGE_KEY = 'piggy.state.v2'
-/** Formato anterior, cuando el estado del partido vivía dentro del propio partido. */
-const LEGACY_KEY = 'piggy.state.v1'
-
 const now = () => new Date().toISOString()
 export const newId = () => crypto.randomUUID()
 
@@ -80,45 +76,10 @@ export function migrate(raw: string): AppState {
   }
 }
 
-/** Queda a true si este arranque vino del formato antiguo. */
-let migratedOnLoad = false
-
-function load(): AppState {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<AppState>
-      return {
-        ...empty(),
-        ...parsed,
-        team: { ...defaultTeam(), ...(parsed.team ?? {}) },
-      }
-    }
-    const legacy = localStorage.getItem(LEGACY_KEY)
-    if (legacy) {
-      migratedOnLoad = true
-      return migrate(legacy)
-    }
-  } catch {
-    // Un estado corrupto no debe dejar la app en blanco a mitad de partido.
-  }
-  return empty()
-}
-
-let state: AppState = load()
+// Nada de esto se guarda en el móvil: el estado vive solo en memoria y llega
+// entero desde la base de datos del equipo al conectar (ver `lib/sync.ts`).
+let state: AppState = empty()
 const listeners = new Set<() => void>()
-
-function persist() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-  } catch {
-    // Cuota llena o modo privado: seguimos en memoria antes que romper el registro.
-  }
-}
-
-// Guardamos el formato nuevo en cuanto migramos. Si esperásemos al primer
-// cambio, un móvil que solo consulta repetiría la conversión en cada arranque.
-if (migratedOnLoad) persist()
 
 /** La capa de sync se engancha aquí para subir lo que cambia en local. */
 let onLocalChange: ((collection: Collection, rows: Syncable[]) => void) | null = null
@@ -128,7 +89,6 @@ export function setSyncPublisher(fn: typeof onLocalChange) {
 
 function commit(next: AppState) {
   state = next
-  persist()
   listeners.forEach((l) => l())
 }
 

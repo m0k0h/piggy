@@ -10,7 +10,6 @@ import {
   relativeDay,
   toInputValue,
 } from '../lib/format'
-import { teamConfig } from '../lib/config'
 import { ImageTooBig, toLogo } from '../lib/image'
 import { navigate } from '../lib/router'
 import {
@@ -90,14 +89,6 @@ function AdminHome() {
     <>
       <ScreenHeader title="Administración" onBack={() => navigate('hucha')} />
       <main>
-        {!teamConfig ? (
-          <div className="banner bad">
-            Esta copia no tiene base de datos compartida: sin{' '}
-            <code>VITE_SUPABASE_URL</code> y <code>VITE_SUPABASE_ANON_KEY</code> en los
-            secretos del repositorio, cada móvil ve solo lo suyo. Revisa Settings → Secrets and
-            variables → Actions en GitHub.
-          </div>
-        ) : null}
         <div className="card spread">
           <div className="inline">
             <Crest team={state.team} />
@@ -173,7 +164,8 @@ function LoginGate() {
           }}
         >
           <p className="small muted">
-            Solo para la administradora. El móvil recuerda la sesión, así que esto se hace una vez.
+            Solo para la administradora. La app no guarda nada en el móvil, así que toca entrar
+            cada vez que se abre.
           </p>
           <Field label="Email">
             <input

@@ -186,8 +186,9 @@ export async function connect() {
     // Carga diferida: sin equipo compartido, la app arranca sin bajar el SDK.
     const { createClient } = await import('@supabase/supabase-js')
     client = createClient(teamConfig.url, teamConfig.anonKey, {
-      // La sesión persiste para que la admin no tenga que entrar cada vez.
-      auth: { persistSession: true, autoRefreshToken: true, storageKey: 'piggy.auth' },
+      // Nada se guarda en el móvil: la sesión de administradora no persiste
+      // entre arranques y hay que volver a iniciarla cada vez.
+      auth: { persistSession: false, autoRefreshToken: true },
     })
 
     const { data } = await client.auth.getSession()

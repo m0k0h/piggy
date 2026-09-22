@@ -241,3 +241,13 @@ export function HomeIcon({ size = 24, ...props }: IconProps) {
     </svg>
   )
 }
+
+/** Nube tachada: sin conexión con la base de datos del equipo. */
+export function CloudOffIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M7.5 17h9.3a3.7 3.7 0 0 0 .6-7.35A5.5 5.5 0 0 0 7 8.3 4 4 0 0 0 6.4 16" />
+      <path d="M4 4l16 16" />
+    </svg>
+  )
+}
