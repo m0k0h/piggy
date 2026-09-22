@@ -248,12 +248,12 @@ main {
 .pot .hero-content { position: relative; }
 
 /* Botón de compartir: un círculo oscurecido (como el badge de pendiente)
-   flotando en la esquina de arriba a la derecha del hero, separado del
-   borde. */
+   flotando en la esquina de abajo a la izquierda del hero, separado del
+   borde y lejos de la marca de agua. */
 .pot .hero-share {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  bottom: 12px;
+  left: 12px;
   z-index: 1;
   display: grid;
   place-items: center;
