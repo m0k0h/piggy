@@ -206,7 +206,7 @@ function PaymentRow({ payment, state }: { payment: Payment; state: AppState }) {
         </span>
       </span>
       <span className="trail">
-        <span className="big">{euros(payment.amount)}</span>
+        <span className="big good">{euros(payment.amount)}</span>
       </span>
     </div>
   )
