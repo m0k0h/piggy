@@ -19,6 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Comprobar (sin revelarlas) si las claves de Supabase están puestas
+        run: |
+          echo "VITE_SUPABASE_URL configurada: ${{ secrets.VITE_SUPABASE_URL != '' }}"
+          echo "VITE_SUPABASE_ANON_KEY configurada: ${{ secrets.VITE_SUPABASE_ANON_KEY != '' }}"
+          echo "VITE_TEAM_CODE configurada: ${{ secrets.VITE_TEAM_CODE != '' }}"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
