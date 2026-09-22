@@ -96,7 +96,7 @@ export function Pot() {
     <>
       <div className="card pot">
         <PigLineIcon size={168} className="hero-mark" />
-        {/* La esquina de arriba a la derecha es el botón de compartir. */}
+        {/* Botón de compartir, flotando arriba a la derecha. */}
         <button className="hero-share" onClick={onShare} aria-label="Compartir estado de la hucha">
           <ShareIcon size={17} />
         </button>

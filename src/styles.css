@@ -247,22 +247,21 @@ main {
 
 .pot .hero-content { position: relative; }
 
-/* La esquina de arriba a la derecha del hero hace de botón de compartir: una
-   pestaña oscurecida (como el badge de pendiente) pegada al borde, lejos de
-   la marca de agua, con un radio pequeño en su esquina de abajo a la
-   izquierda. */
+/* Botón de compartir: un círculo oscurecido (como el badge de pendiente)
+   flotando en la esquina de arriba a la derecha del hero, separado del
+   borde. */
 .pot .hero-share {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 12px;
+  right: 12px;
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border: 0;
-  border-bottom-left-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   background: rgb(0 0 0 / 18%);
   color: rgb(255 255 255 / 92%);
   cursor: pointer;
@@ -270,7 +269,7 @@ main {
 }
 
 .pot .hero-share:active { background: rgb(0 0 0 / 30%); }
-.pot .hero-share:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+.pot .hero-share:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 .pot .label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.85; }
 .pot .amount {
