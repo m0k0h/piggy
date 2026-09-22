@@ -252,17 +252,28 @@ main {
   margin-top: 8px;
 }
 
-/* Lo pendiente, pegado al total pero apagado a propósito: se ve que algo no
-   cuadra sin competir con la cifra grande. Saldado del todo, no aparece. */
-.pot .amount .pending-note {
-  display: inline-block;
-  margin-left: 8px;
-  vertical-align: middle;
-  font-family: var(--body);
-  font-size: 14px;
+/* Lo pendiente, debajo del total: fondo grisáceo (oscurece el rosa del hero
+   en vez de aclararlo) para que se note que algo no cuadra sin competir con
+   la cifra grande. Saldado del todo, no aparece. */
+.pot .pending-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  background: rgb(0 0 0 / 20%);
+  color: rgb(255 255 255 / 75%);
+  font-size: 12.5px;
   font-weight: 600;
-  color: rgb(255 255 255 / 55%);
-  white-space: nowrap;
+}
+
+.pot .pending-badge strong {
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 800;
+  color: rgb(255 255 255 / 92%);
+  font-variant-numeric: tabular-nums;
 }
 
 /* La píldora del % de acierto. */
