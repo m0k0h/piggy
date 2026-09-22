@@ -7,7 +7,7 @@ import { allPayments, allServes, balances, matchStatus, pot, tally, upcomingMatc
 import type { Balance } from '../lib/stats'
 import type { AppState, Payment } from '../types'
 import { Avatar, Empty, SectionTitle } from '../ui/bits'
-import { CalendarIcon, CoinsIcon, HomeIcon, PartyIcon, PigIcon, PigLineIcon } from '../ui/icons'
+import { CalendarIcon, CoinsIcon, HomeIcon, PartyIcon, PigIcon, PigLineIcon, ShareIcon } from '../ui/icons'
 
 export function Pot() {
   const state = useAppState()
@@ -96,6 +96,10 @@ export function Pot() {
     <>
       <div className="card pot">
         <PigLineIcon size={168} className="hero-mark" />
+        {/* La esquina de abajo a la derecha es el botón de compartir. */}
+        <button className="hero-share" onClick={onShare} aria-label="Compartir estado de la hucha">
+          <ShareIcon size={20} />
+        </button>
         <div className="hero-content">
           <div className="label">Total de la hucha</div>
           {/* Si queda algo sin cobrar, un badge apagado en la línea de antes
@@ -165,9 +169,6 @@ export function Pot() {
         </>
       )}
 
-      <button className="btn ghost block" onClick={onShare}>
-        Compartir estado de la hucha
-      </button>
       {toast ? <div className="banner good">{toast}</div> : null}
     </>
   )

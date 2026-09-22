@@ -262,3 +262,14 @@ export function HomeIcon({ size = 24, ...props }: IconProps) {
     </svg>
   )
 }
+
+/** Compartir: la flecha que sale de la bandeja, para mandar la hucha por WhatsApp. */
+export function ShareIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M12 14.5V3.5" />
+      <path d="M7.5 8 12 3.5 16.5 8" />
+      <path d="M8 11H6.5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H16" />
+    </svg>
+  )
+}

@@ -247,6 +247,31 @@ main {
 
 .pot .hero-content { position: relative; }
 
+/* La esquina de abajo a la derecha del hero hace de botón de compartir: una
+   pestaña oscurecida (como el badge de pendiente) pegada al borde, encima de
+   la marca de agua, con el radio de la tarjeta en su esquina de arriba a la
+   izquierda. */
+.pot .hero-share {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  border-top-left-radius: var(--radius);
+  background: rgb(0 0 0 / 18%);
+  color: rgb(255 255 255 / 92%);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.pot .hero-share:active { background: rgb(0 0 0 / 30%); }
+.pot .hero-share:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+
 .pot .label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.85; }
 .pot .amount {
   font-family: var(--display);
