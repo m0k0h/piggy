@@ -17,7 +17,16 @@ import {
 } from '../lib/stats'
 import type { AppState, Match, Player, ServeResult } from '../types'
 import { Sheet } from '../ui/Sheet'
-import { Avatar, Empty, RatioBar, ScreenHeader, SectionTitle, Stat } from '../ui/bits'
+import {
+  Avatar,
+  Empty,
+  LeagueLink,
+  OpponentCrest,
+  RatioBar,
+  ScreenHeader,
+  SectionTitle,
+  Stat,
+} from '../ui/bits'
 
 export function MatchScreen({ matchId }: { matchId: string }) {
   const state = useAppState()
@@ -75,14 +84,18 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
       />
       <main>
         <div className="card stack">
-          <div>
-            <div className="small muted">{match.home ? 'En casa' : 'Fuera'}</div>
-            <h2>{match.opponent || 'Rival por definir'}</h2>
+          <div className="inline">
+            <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} big />
+            <div className="grow">
+              <div className="small muted">{match.home ? 'En casa' : 'Fuera'}</div>
+              <h2>{match.opponent || 'Rival por definir'}</h2>
+            </div>
           </div>
           <div className="small muted">
             {matchDateLong(match.date)}
             {match.venue ? ` · ${match.venue}` : ''}
           </div>
+          <LeagueLink url={match.leagueUrl} />
           <button className="btn block" onClick={() => setCallUp(true)}>
             Iniciar partido
           </button>
@@ -456,6 +469,12 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
             </div>
           </>
         )}
+
+        {match.leagueUrl ? (
+          <div className="card tight">
+            <LeagueLink url={match.leagueUrl} />
+          </div>
+        ) : null}
 
         <button className="btn block" onClick={onShare}>
           Compartir resumen

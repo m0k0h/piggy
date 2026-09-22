@@ -192,6 +192,8 @@ export interface MatchInput {
   venue?: string
   home?: boolean
   externalId?: string | null
+  leagueUrl?: string
+  opponentLogo?: string
 }
 
 export function addMatch(input: MatchInput): Match {
@@ -201,6 +203,8 @@ export function addMatch(input: MatchInput): Match {
     venue: (input.venue ?? '').trim(),
     home: input.home ?? true,
     externalId: input.externalId ?? null,
+    leagueUrl: (input.leagueUrl ?? '').trim(),
+    opponentLogo: (input.opponentLogo ?? '').trim(),
   })
   write('matches', [match])
   return match
@@ -208,7 +212,7 @@ export function addMatch(input: MatchInput): Match {
 
 export function updateMatch(
   id: string,
-  patch: Partial<Pick<Match, 'date' | 'opponent' | 'venue' | 'home'>>,
+  patch: Partial<Pick<Match, 'date' | 'opponent' | 'venue' | 'home' | 'leagueUrl' | 'opponentLogo'>>,
 ) {
   const current = state.matches[id]
   if (!current) return

@@ -67,3 +67,25 @@ export function defaultMatchDate(): string {
 /** "1 fallo" / "3 fallos": el singular se nota mucho en pantalla. */
 export const plural = (count: number, one: string, many: string): string =>
   `${count} ${count === 1 ? one : many}`
+
+/** Deja una dirección utilizable aunque se pegue sin `https://` delante. */
+export function normalizeUrl(value: string): string {
+  const trimmed = value.trim()
+  if (!trimmed || /^https?:\/\//i.test(trimmed)) return trimmed
+  return `https://${trimmed}`
+}
+
+/** Igual, pero admitiendo además una imagen pegada como data URL. */
+export function normalizeImageUrl(value: string): string {
+  const trimmed = value.trim()
+  return /^data:image\//i.test(trimmed) ? trimmed : normalizeUrl(trimmed)
+}
+
+/** El dominio, para enseñar un enlace largo sin que rompa la fila. */
+export function hostOf(url: string): string {
+  try {
+    return new URL(url).host.replace(/^www\./, '')
+  } catch {
+    return url
+  }
+}

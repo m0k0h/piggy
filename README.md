@@ -73,6 +73,29 @@ cabecera para ir y volver.
 Desde ahí se gestiona el **equipo** (nombre, escudo, euros por fallo), las
 **jugadoras**, los **partidos**, los **cobros** y la **copia de seguridad**.
 
+### El rival
+
+Al crear un partido puedes añadir, si quieres, la **ficha del rival en la web
+de la liga** y su **escudo**. El enlace aparece en la ficha del partido, para
+consultar la clasificación o el acta desde la propia app, y el escudo sale en
+el calendario y en el partido.
+
+Las dos cosas se guardan con el partido y se reaprovechan solas: la próxima vez
+que escribas ese mismo rival, el formulario recupera lo que pusiste (le dan
+igual los acentos y las mayúsculas).
+
+Para el escudo hay dos caminos. El directo es pegar la **dirección de la
+imagen**: en la web de la liga, pulsación larga sobre el escudo → *Copiar
+dirección de la imagen*. También puedes subir una imagen desde el móvil, que se
+reduce igual que el escudo de tu equipo.
+
+> Lo que **no** puede hacer la app es abrir la página de la liga y sacar el
+> escudo sola. Un navegador no deja que una web lea el contenido de otra
+> (CORS), y por eso quitamos también el importador de Sportagia. Pegar la
+> dirección de la imagen es un paso más, pero funciona siempre. Si algún día
+> falla —la liga cambia de web, mueve la imagen— el escudo vuelve a las
+> iniciales del rival sin dejar un hueco roto.
+
 ## Quién puede hacer qué
 
 | | Administradora | Resto del equipo |
@@ -124,6 +147,7 @@ hosting estático.
 | Dónde | Qué hay |
 | --- | --- |
 | `src/types.ts` | El dominio: jugadoras, partidos, convocatorias, saques, pagos. |
+| `src/lib/image.ts` | Reducción de escudos antes de guardarlos. |
 | `src/lib/store.ts` | Estado, persistencia en el móvil y migración de formatos. |
 | `src/lib/sync.ts` | Conexión con Supabase: sesión, rol, réplica y cola de reintentos. |
 | `src/lib/stats.ts` | Ratios, deudas y totales de la hucha. |

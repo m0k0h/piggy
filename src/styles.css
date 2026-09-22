@@ -570,3 +570,18 @@ main {
   font-size: 18px;
   flex-shrink: 0;
 }
+
+/* ---------------------------------------------------------------- enlaces */
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--pink);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.link:hover { text-decoration: underline; }
+.link:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; border-radius: 4px; }

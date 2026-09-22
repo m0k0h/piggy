@@ -3,6 +3,8 @@ import {
   defaultMatchDate,
   euros,
   matchDate,
+  normalizeImageUrl,
+  normalizeUrl,
   percent,
   plural,
   relativeDay,
@@ -28,6 +30,7 @@ import {
 import {
   allPayments,
   balances,
+  knownOpponent,
   matchStatus,
   upcomingMatches,
   finishedMatches,
@@ -36,7 +39,7 @@ import {
 import { signIn, signOut, useRole, useSync } from '../lib/sync'
 import type { Match, Player } from '../types'
 import { Sheet } from '../ui/Sheet'
-import { Avatar, Crest, Empty, Field, ScreenHeader, SectionTitle } from '../ui/bits'
+import { Avatar, Crest, Empty, Field, OpponentCrest, ScreenHeader, SectionTitle } from '../ui/bits'
 
 const SECTIONS = [
   { key: 'equipo', label: 'Equipo', glyph: '🛡️', hint: 'Nombre, escudo y euros por fallo' },
@@ -411,6 +414,7 @@ function MatchesSection() {
 
   const row = (match: Match) => (
     <button key={match.id} className="row" onClick={() => setEditing(match)}>
+      <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} />
       <span className="grow">
         <span className="title">
           {match.home ? '' : '@ '}
@@ -471,26 +475,73 @@ function MatchesSection() {
 }
 
 function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => void }) {
+  const state = useAppState()
   const [date, setDate] = useState(match ? toInputValue(match.date) : defaultMatchDate())
   const [opponent, setOpponent] = useState(match?.opponent ?? '')
   const [venue, setVenue] = useState(match?.venue ?? '')
   const [home, setHome] = useState(match?.home ?? true)
+  const [leagueUrl, setLeagueUrl] = useState(match?.leagueUrl ?? '')
+  const [logo, setLogo] = useState(match?.opponentLogo ?? '')
+  const [logoError, setLogoError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const logoFileRef = useRef<HTMLInputElement>(null)
+
+  /**
+   * Al terminar de escribir el rival, recuperamos su enlace y su escudo de la
+   * última vez que lo jugamos. Solo rellena lo que esté vacío.
+   */
+  const recallOpponent = () => {
+    if (leagueUrl && logo) return
+    const known = knownOpponent(state, opponent, match?.id ?? '')
+    if (!known) return
+    if (!leagueUrl) setLeagueUrl(known.leagueUrl)
+    if (!logo) setLogo(known.logo)
+  }
+
+  const uploadLogo = async (file: File) => {
+    setLogoError('')
+    try {
+      setLogo(await toLogo(file))
+    } catch (err) {
+      setLogoError(
+        err instanceof ImageTooBig
+          ? 'Esa imagen pesa demasiado. Prueba con una más sencilla.'
+          : 'No he podido leer esa imagen.',
+      )
+    }
+  }
 
   const save = () => {
     if (!opponent.trim() || !date) return
-    if (match) updateMatch(match.id, { date, opponent: opponent.trim(), venue: venue.trim(), home })
-    else addMatch({ date, opponent, venue, home })
+    const fields = {
+      date,
+      opponent: opponent.trim(),
+      venue: venue.trim(),
+      home,
+      leagueUrl: normalizeUrl(leagueUrl),
+      opponentLogo: normalizeImageUrl(logo),
+    }
+    if (match) updateMatch(match.id, fields)
+    else addMatch(fields)
     onClose()
   }
 
   return (
     <Sheet title={match ? 'Editar partido' : 'Nuevo partido'} onClose={onClose}>
       <div className="form">
+        <div className="inline">
+          <OpponentCrest opponent={opponent} logo={normalizeImageUrl(logo)} big />
+          <div className="grow small muted">
+            El escudo y el enlace se guardan con el partido, y se reaprovechan la
+            próxima vez que juguéis contra este mismo rival.
+          </div>
+        </div>
+
         <Field label="Rival">
           <input
             value={opponent}
             onChange={(event) => setOpponent(event.target.value)}
+            onBlur={recallOpponent}
             placeholder="CV Barcelona"
             autoFocus={!match}
             autoComplete="off"
@@ -515,6 +566,56 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
           <span>Jugamos en casa</span>
           <input type="checkbox" checked={home} onChange={(event) => setHome(event.target.checked)} />
         </label>
+
+        <Field
+          label="Ficha en la liga (opcional)"
+          hint="La página del rival en la web de la competición."
+        >
+          <input
+            value={leagueUrl}
+            onChange={(event) => setLeagueUrl(event.target.value)}
+            placeholder="https://..."
+            inputMode="url"
+            autoComplete="off"
+            spellCheck={false}
+          />
+        </Field>
+
+        <Field
+          label="Escudo del rival (opcional)"
+          hint="En la web de la liga, pulsa sobre el escudo y copia la dirección de la imagen."
+        >
+          <input
+            value={logo}
+            onChange={(event) => setLogo(event.target.value)}
+            placeholder="https://.../escudo.png"
+            inputMode="url"
+            autoComplete="off"
+            spellCheck={false}
+          />
+        </Field>
+        <div className="btn-row">
+          <button className="btn ghost small" onClick={() => logoFileRef.current?.click()}>
+            Subir una imagen
+          </button>
+          {logo ? (
+            <button className="btn quiet small" onClick={() => setLogo('')}>
+              Quitar escudo
+            </button>
+          ) : null}
+        </div>
+        <input
+          ref={logoFileRef}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={(event) => {
+            const file = event.target.files?.[0]
+            if (file) void uploadLogo(file)
+            event.target.value = ''
+          }}
+        />
+        {logoError ? <div className="banner bad">{logoError}</div> : null}
 
         <button className="btn block" onClick={save} disabled={!opponent.trim() || !date}>
           {match ? 'Guardar' : 'Crear partido'}

@@ -40,6 +40,13 @@ export interface Match extends Syncable {
   venue: string
   home: boolean
   externalId: string | null
+  /**
+   * Ficha del rival en la web de la liga. Opcional, y opcional de verdad:
+   * los partidos creados antes de que esto existiera no lo traen.
+   */
+  leagueUrl?: string
+  /** Escudo del rival: una dirección de imagen, o una subida desde el móvil. */
+  opponentLogo?: string
 }
 
 /**

@@ -47,6 +47,31 @@ export const finishedMatches = (s: AppState): Match[] =>
 export const playedMatches = (s: AppState): Match[] =>
   allMatches(s).filter((match) => matchStatus(s, match.id) !== 'scheduled')
 
+/** Lo que ya sabemos de un rival por haberlo jugado antes. */
+export interface OpponentInfo {
+  leagueUrl: string
+  logo: string
+}
+
+const sameOpponent = (a: string, b: string) =>
+  a.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() ===
+  b.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+
+/**
+ * Busca el enlace y el escudo que ya se pusieron a este rival en otro partido,
+ * para no tener que pegarlos cada vez que le toca jugar.
+ */
+export function knownOpponent(s: AppState, opponent: string, exceptId = ''): OpponentInfo | null {
+  if (!opponent.trim()) return null
+  for (const match of allMatches(s)) {
+    if (match.id === exceptId || !sameOpponent(match.opponent, opponent)) continue
+    if (match.leagueUrl || match.opponentLogo) {
+      return { leagueUrl: match.leagueUrl ?? '', logo: match.opponentLogo ?? '' }
+    }
+  }
+  return null
+}
+
 export const servesOfMatch = (s: AppState, matchId: string): Serve[] =>
   allServes(s)
     .filter((serve) => serve.matchId === matchId)

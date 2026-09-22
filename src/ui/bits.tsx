@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import { initials } from '../lib/format'
+import { useState, type ReactNode } from 'react'
+import { hostOf, initials } from '../lib/format'
 
 export function Avatar({ name, on = false }: { name: string; on?: boolean }) {
   return (
@@ -120,5 +120,42 @@ export function Crest({
     <span className={big ? 'crest crest-big' : 'crest'} aria-hidden="true">
       {team.logo ? <img src={team.logo} alt="" /> : initials(team.name)}
     </span>
+  )
+}
+
+/**
+ * Escudo del rival. Una imagen de otro dominio se carga sin problema; si la
+ * dirección deja de funcionar, volvemos a las iniciales sin dejar un hueco roto.
+ */
+export function OpponentCrest({
+  opponent,
+  logo,
+  big = false,
+}: {
+  opponent: string
+  logo?: string
+  big?: boolean
+}) {
+  const [failed, setFailed] = useState('')
+  const usable = logo && failed !== logo
+
+  return (
+    <span className={big ? 'crest crest-big' : 'crest'} aria-hidden="true">
+      {usable ? (
+        <img src={logo} alt="" loading="lazy" onError={() => setFailed(logo)} />
+      ) : (
+        initials(opponent || '?')
+      )}
+    </span>
+  )
+}
+
+/** Enlace a la ficha del rival en la web de la liga. */
+export function LeagueLink({ url }: { url?: string }) {
+  if (!url) return null
+  return (
+    <a className="link" href={url} target="_blank" rel="noopener noreferrer">
+      Ver en la liga · {hostOf(url)} ↗
+    </a>
   )
 }
