@@ -374,6 +374,7 @@ main {
 }
 
 .avatar.on { background: var(--pink); color: var(--on-accent); }
+.avatar.big { width: 52px; height: 52px; font-size: 16px; }
 
 /* ---------------------------------------------------------------- chips */
 .chip {
@@ -577,6 +578,28 @@ main {
 .player-tile .name { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; }
 .player-tile .num { font-size: 12px; color: var(--muted); font-weight: 600; }
 .player-tile .line { display: flex; gap: 6px; align-items: center; margin-top: auto; flex-wrap: wrap; }
+
+/* Cabecera de la hoja de resultado: avatar con el dorsal, acierto y últimos saques. */
+.sheet-player { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.sheet-player > .grow { flex: 1; min-width: 0; }
+.sheet-player .title { font-family: var(--display); font-weight: 700; font-size: 16px; }
+.sheet-player .meta { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+
+.last-serves { display: flex; gap: 4px; flex-shrink: 0; }
+
+.serve-dot {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.serve-dot.error { background: var(--red-soft); color: var(--red); }
+.serve-dot.in { background: var(--ok-bg); color: var(--ok-text); }
+.serve-dot.ace { background: var(--amber-soft); color: var(--amber); }
 
 .result-buttons { display: grid; gap: 10px; }
 

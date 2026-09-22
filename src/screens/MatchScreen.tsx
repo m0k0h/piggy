@@ -15,7 +15,7 @@ import {
   tally,
   tallyByPlayer,
 } from '../lib/stats'
-import type { AppState, Match, Player, ServeResult } from '../types'
+import type { AppState, Match, Player, Serve, ServeResult } from '../types'
 import { Sheet } from '../ui/Sheet'
 import {
   Avatar,
@@ -385,6 +385,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
       {picking ? (
         <ResultSheet
           player={picking}
+          serves={serves}
           fine={fineAmount(state)}
           onPick={(result) => {
             addServe(match.id, picking.id, result, set)
@@ -424,20 +425,49 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
 
 function ResultSheet({
   player,
+  serves,
   fine,
   onPick,
   onClose,
 }: {
   player: Player
+  serves: Serve[]
   fine: number
   onPick: (result: ServeResult) => void
   onClose: () => void
 }) {
+  const own = tallyByPlayer(serves, player.id)
+  const lastFive = serves
+    .filter((serve) => serve.playerId === player.id)
+    .slice(-5)
+    .reverse()
+
   return (
-    <Sheet
-      title={`Saque de ${player.name}${player.number ? ` · Dorsal ${player.number}` : ''}`}
-      onClose={onClose}
-    >
+    <Sheet title={`Saque de ${player.name}`} onClose={onClose}>
+      <div className="sheet-player">
+        <Avatar name={player.name} number={player.number} big />
+        <div className="grow">
+          <div className="title">{player.name}</div>
+          <div className="meta">
+            {own.attempts > 0 ? `${percent(own.ratio)} de acierto` : 'Todavía no ha sacado'}
+          </div>
+        </div>
+        {lastFive.length > 0 ? (
+          <div className="last-serves" aria-hidden="true">
+            {lastFive.map((serve) => (
+              <span key={serve.id} className={`serve-dot ${serve.result}`}>
+                {serve.result === 'error' ? (
+                  <XIcon size={11} />
+                ) : serve.result === 'ace' ? (
+                  <StarIcon size={11} />
+                ) : (
+                  <CheckIcon size={11} />
+                )}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
       <div className="result-buttons">
         <button className="err" onClick={() => onPick('error')}>
           <span className="glyph" aria-hidden="true">

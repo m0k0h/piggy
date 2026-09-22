@@ -6,13 +6,16 @@ export function Avatar({
   name,
   number,
   on = false,
+  big = false,
 }: {
   name: string
   number?: string
   on?: boolean
+  big?: boolean
 }) {
+  const className = ['avatar', on && 'on', big && 'big'].filter(Boolean).join(' ')
   return (
-    <span className={on ? 'avatar on' : 'avatar'} aria-hidden="true">
+    <span className={className} aria-hidden="true">
       {number?.trim() ? number.trim() : initials(name)}
     </span>
   )
