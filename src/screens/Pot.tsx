@@ -6,6 +6,7 @@ import { useAppState } from '../lib/store'
 import { balances, fineAmount, matchStatus, pot, upcomingMatches } from '../lib/stats'
 import type { Balance } from '../lib/stats'
 import { Avatar, Empty, SectionTitle } from '../ui/bits'
+import { CalendarIcon, PartyIcon, PigIcon, PigLineIcon } from '../ui/icons'
 
 export function Pot() {
   const state = useAppState()
@@ -26,28 +27,31 @@ export function Pot() {
   return (
     <>
       <div className="card pot">
-        <div className="label">Llevamos ahorrado</div>
-        <div className="amount">{euros(totals.paid)}</div>
-        {totals.owed > 0 ? (
-          <>
-            <div className="detail">
-              de {euros(totals.owed)} · {plural(totals.errors, 'saque fallado', 'saques fallados')} a{' '}
-              {euros(fineAmount(state))}
-            </div>
-            <div
-              className="pot-bar"
-              role="img"
-              aria-label={`${euros(totals.paid)} cobrados de ${euros(totals.owed)}`}
-            >
-              {/* Sin nada cobrado no pintamos barra: el mínimo de anchura mentiría. */}
-              {totals.paid > 0 ? (
-                <i style={{ width: `${Math.round((totals.paid / totals.owed) * 100)}%` }} />
-              ) : null}
-            </div>
-          </>
-        ) : (
-          <div className="detail">Aún no hay saques fallados. Todo llegará.</div>
-        )}
+        <PigLineIcon size={168} className="hero-mark" />
+        <div className="hero-content">
+          <div className="label">Llevamos ahorrado</div>
+          <div className="amount">{euros(totals.paid)}</div>
+          {totals.owed > 0 ? (
+            <>
+              <div className="detail">
+                de {euros(totals.owed)} · {plural(totals.errors, 'saque fallado', 'saques fallados')} a{' '}
+                {euros(fineAmount(state))}
+              </div>
+              <div
+                className="pot-bar"
+                role="img"
+                aria-label={`${euros(totals.paid)} cobrados de ${euros(totals.owed)}`}
+              >
+                {/* Sin nada cobrado no pintamos barra: el mínimo de anchura mentiría. */}
+                {totals.paid > 0 ? (
+                  <i style={{ width: `${Math.round((totals.paid / totals.owed) * 100)}%` }} />
+                ) : null}
+              </div>
+            </>
+          ) : (
+            <div className="detail">Ni un saque fallado todavía. Va a durar poco.</div>
+          )}
+        </div>
       </div>
 
       {next ? (
@@ -71,7 +75,7 @@ export function Pot() {
         </button>
       ) : (
         <div className="card">
-          <Empty glyph="📅" title="No hay ningún partido a la vista">
+          <Empty icon={<CalendarIcon />} title="No hay ningún partido a la vista">
             Cuando se prepare el próximo, aparecerá aquí.
           </Empty>
         </div>
@@ -87,13 +91,13 @@ export function Pot() {
 
       {rows.length === 0 ? (
         <div className="card">
-          <Empty glyph="🐷" title="La hucha está vacía">
+          <Empty icon={<PigIcon size={74} />} title="La hucha está vacía" highlight>
             En cuanto se anoten saques, aparecerá aquí lo que debe cada una.
           </Empty>
         </div>
       ) : withDebt.length === 0 ? (
         <div className="card">
-          <Empty glyph="🎉" title="Todas al día">
+          <Empty icon={<PartyIcon />} title="Todas al día">
             {totals.owed > 0
               ? `No queda nada por cobrar: los ${euros(totals.paid)} ya están en la hucha.`
               : 'Aún no hay fallos anotados.'}

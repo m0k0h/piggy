@@ -4,6 +4,7 @@ import { useAppState } from '../lib/store'
 import { fineAmount, finishedMatches, matchStatus, servesOfMatch, tally, upcomingMatches } from '../lib/stats'
 import type { AppState, Match } from '../types'
 import { Empty, OpponentCrest, SectionTitle } from '../ui/bits'
+import { CalendarIcon, ChevronIcon } from '../ui/icons'
 
 /** El calendario tal como lo ve el equipo: se consulta y se entra a anotar. */
 export function Matches() {
@@ -16,7 +17,7 @@ export function Matches() {
       <SectionTitle>Próximos partidos</SectionTitle>
       {upcoming.length === 0 ? (
         <div className="card">
-          <Empty glyph="📅" title="Sin partidos pendientes">
+          <Empty icon={<CalendarIcon />} title="Sin partidos pendientes">
             Cuando se prepare el próximo, aparecerá aquí.
           </Empty>
         </div>
@@ -74,7 +75,9 @@ function MatchRow({ match, state }: { match: Match; state: AppState }) {
             <span className="meta">{euros(fines)}</span>
           </>
         ) : (
-          <span className="chip">›</span>
+          <span className="chip">
+            <ChevronIcon size={12} aria-hidden="true" />
+          </span>
         )}
       </span>
     </button>

@@ -1,8 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Hucha de saques">
-  <rect width="512" height="512" rx="112" fill="#e0457b"/>
-  <circle cx="256" cy="268" r="132" fill="none" stroke="#fff" stroke-width="26"/>
-  <path d="M256 136c-46 52-46 160 0 264M256 136c46 52 46 160 0 264" fill="none" stroke="#fff" stroke-width="26"/>
-  <path d="M124 268h264" fill="none" stroke="#fff" stroke-width="26"/>
-  <circle cx="352" cy="150" r="52" fill="#fff"/>
-  <text x="352" y="170" font-family="system-ui, sans-serif" font-size="62" font-weight="700" fill="#e0457b" text-anchor="middle">€</text>
+  <defs>
+    <linearGradient id="hero" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d42a7d"/>
+      <stop offset="100%" stop-color="#a51f79"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="143" fill="url(#hero)"/>
+  <g transform="translate(106 106) scale(12.5)" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5.6 8.4 4.7 4.6c-.1-.5.3-.8.8-.6l3.6 1.6"/>
+    <path d="m18.4 8.4.9-3.8c.1-.5-.3-.8-.8-.6l-3.6 1.6"/>
+    <path d="M12 6.4c5 0 9 3.2 9 7.2s-4 7.2-9 7.2-9-3.2-9-7.2 4-7.2 9-7.2Z"/>
+    <ellipse cx="12" cy="15.3" rx="3.5" ry="2.7"/>
+    <path d="M10.8 15.3h.01"/>
+    <path d="M13.2 15.3h.01"/>
+    <path d="M8.2 11.7h.01"/>
+  </g>
 </svg>

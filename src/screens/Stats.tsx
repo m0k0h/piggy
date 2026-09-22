@@ -12,6 +12,7 @@ import {
   tallyByPlayer,
 } from '../lib/stats'
 import { Avatar, Empty, RatioBar, SectionTitle, Stat } from '../ui/bits'
+import { ChartIcon } from '../ui/icons'
 
 type Order = 'ratio' | 'errors' | 'attempts'
 
@@ -45,7 +46,7 @@ export function Stats() {
       <>
         <SectionTitle>Estadísticas</SectionTitle>
         <div className="card">
-          <Empty glyph="📊" title="Todavía no hay saques anotados">
+          <Empty icon={<ChartIcon />} title="Todavía no hay saques anotados">
             En cuanto juguéis un partido aparecerán aquí los ratios de acierto.
           </Empty>
           <button className="btn block" onClick={() => navigate('partidos')}>

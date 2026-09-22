@@ -40,13 +40,24 @@ import { signIn, signOut, useRole, useSync } from '../lib/sync'
 import type { Match, Player } from '../types'
 import { Sheet } from '../ui/Sheet'
 import { Avatar, Crest, Empty, Field, OpponentCrest, ScreenHeader, SectionTitle } from '../ui/bits'
+import {
+  BallIcon,
+  CalendarIcon,
+  ChevronIcon,
+  CoinsIcon,
+  PartyIcon,
+  PeopleIcon,
+  PlusIcon,
+  SaveIcon,
+  ShieldIcon,
+} from '../ui/icons'
 
 const SECTIONS = [
-  { key: 'equipo', label: 'Equipo', glyph: '🛡️', hint: 'Nombre, escudo y euros por fallo' },
-  { key: 'jugadoras', label: 'Jugadoras', glyph: '👥', hint: 'Altas, dorsales y bajas' },
-  { key: 'partidos', label: 'Partidos', glyph: '📅', hint: 'Calendario de la temporada' },
-  { key: 'cobros', label: 'Cobros', glyph: '💶', hint: 'Registrar lo que paga cada una' },
-  { key: 'copia', label: 'Copia de seguridad', glyph: '💾', hint: 'Exportar o restaurar los datos' },
+  { key: 'equipo', label: 'Equipo', icon: <ShieldIcon />, hint: 'Nombre, escudo y euros por fallo' },
+  { key: 'jugadoras', label: 'Jugadoras', icon: <PeopleIcon />, hint: 'Altas, dorsales y bajas' },
+  { key: 'partidos', label: 'Partidos', icon: <CalendarIcon />, hint: 'Calendario de la temporada' },
+  { key: 'cobros', label: 'Cobros', icon: <CoinsIcon />, hint: 'Registrar lo que paga cada una' },
+  { key: 'copia', label: 'Copia de seguridad', icon: <SaveIcon />, hint: 'Exportar o restaurar los datos' },
 ]
 
 export function Admin({ section }: { section: string }) {
@@ -97,14 +108,14 @@ function AdminHome() {
                 onClick={() => navigate(`admin/${item.key}`)}
               >
                 <span className="glyph" aria-hidden="true">
-                  {item.glyph}
+                  {item.icon}
                 </span>
                 <span className="grow">
                   <span className="title">{item.label}</span>
                   <span className="meta">{item.hint}</span>
                 </span>
                 <span className="trail" aria-hidden="true">
-                  ›
+                  <ChevronIcon size={18} />
                 </span>
               </button>
             ))}
@@ -290,7 +301,7 @@ function PlayersSection() {
       <main>
         {rows.length === 0 ? (
           <div className="card">
-            <Empty glyph="🏐" title="Todavía no hay jugadoras">
+            <Empty icon={<BallIcon />} title="Todavía no hay jugadoras">
               Añádelas una a una; luego aparecerán en la convocatoria de cada partido.
             </Empty>
           </div>
@@ -319,6 +330,7 @@ function PlayersSection() {
         )}
 
         <button className="btn block" onClick={() => setEditing('new')}>
+          <PlusIcon size={18} />
           Añadir jugadora
         </button>
       </main>
@@ -430,7 +442,10 @@ function MatchesSection() {
         {matchStatus(state, match.id) === 'live' ? (
           <span className="chip live">EN JUEGO</span>
         ) : (
-          <span className="chip">editar ›</span>
+          <span className="chip">
+            editar
+            <ChevronIcon size={11} />
+          </span>
         )}
       </span>
     </button>
@@ -443,7 +458,7 @@ function MatchesSection() {
         <SectionTitle>Por jugar</SectionTitle>
         {upcoming.length === 0 ? (
           <div className="card">
-            <Empty glyph="📅" title="Sin partidos pendientes">
+            <Empty icon={<CalendarIcon />} title="Sin partidos pendientes">
               Crea el próximo para que el equipo pueda anotar los saques.
             </Empty>
           </div>
@@ -454,6 +469,7 @@ function MatchesSection() {
         )}
 
         <button className="btn block" onClick={() => setEditing('new')}>
+          <PlusIcon size={18} />
           Nuevo partido
         </button>
 
@@ -668,7 +684,7 @@ function PaymentsSection() {
       <main>
         {withDebt.length === 0 ? (
           <div className="card">
-            <Empty glyph="🎉" title="Nadie debe nada" />
+            <Empty icon={<PartyIcon />} title="Nadie debe nada" />
           </div>
         ) : (
           <div className="card flush">
@@ -685,7 +701,10 @@ function PaymentsSection() {
                   </span>
                   <span className="trail">
                     <span className="big">{euros(row.pending)}</span>
-                    <span className="meta">cobrar ›</span>
+                    <span className="meta inline">
+                      cobrar
+                      <ChevronIcon size={11} />
+                    </span>
                   </span>
                 </button>
               ))}

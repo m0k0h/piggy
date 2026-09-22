@@ -27,6 +27,7 @@ import {
   SectionTitle,
   Stat,
 } from '../ui/bits'
+import { BallIcon, CheckIcon, ClipboardIcon, PeopleIcon, ShrugIcon, StarIcon, XIcon } from '../ui/icons'
 
 export function MatchScreen({ matchId }: { matchId: string }) {
   const state = useAppState()
@@ -38,7 +39,7 @@ export function MatchScreen({ matchId }: { matchId: string }) {
         <ScreenHeader title="Partido" onBack={() => navigate('partidos')} />
         <main>
           <div className="card">
-            <Empty glyph="🤷" title="Este partido ya no existe" />
+            <Empty icon={<ShrugIcon />} title="Este partido ya no existe" />
             <button className="btn block" onClick={() => navigate('partidos')}>
               Ver los partidos
             </button>
@@ -171,7 +172,7 @@ function CallUp({
       <main>
         {players.length === 0 ? (
           <div className="card">
-            <Empty glyph="🏐" title="No hay jugadoras en la plantilla">
+            <Empty icon={<BallIcon />} title="No hay jugadoras en la plantilla">
               La administradora todavía no ha dado de alta al equipo.
             </Empty>
           </div>
@@ -208,7 +209,7 @@ function CallUp({
                         {player.number ? <span className="meta">Dorsal {player.number}</span> : null}
                       </span>
                       <span className="trail" aria-hidden="true">
-                        {on ? '✓' : ''}
+                        {on ? <CheckIcon size={18} /> : null}
                       </span>
                     </button>
                   )
@@ -298,7 +299,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
 
         {roster.length === 0 ? (
           <div className="card">
-            <Empty glyph="👥" title="No hay nadie apuntada">
+            <Empty icon={<PeopleIcon />} title="No hay nadie apuntada">
               Añade asistentes para poder anotar sus saques.
             </Empty>
             <button className="btn block" onClick={() => setEditingRoster(true)}>
@@ -334,8 +335,17 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
                   const player = state.players[serve.playerId]
                   return (
                     <div key={serve.id} className="log-item">
-                      <span aria-hidden="true">
-                        {serve.result === 'error' ? '❌' : serve.result === 'ace' ? '⭐' : '✅'}
+                      <span
+                        className={`icon ${serve.result === 'error' ? 'err' : serve.result === 'ace' ? 'ace' : 'ok'}`}
+                        aria-hidden="true"
+                      >
+                        {serve.result === 'error' ? (
+                          <XIcon size={16} />
+                        ) : serve.result === 'ace' ? (
+                          <StarIcon size={16} />
+                        ) : (
+                          <CheckIcon size={16} />
+                        )}
                       </span>
                       <span className="grow">{player?.name ?? 'Jugadora'}</span>
                       <span className="muted small">Set {serve.set}</span>
@@ -411,20 +421,20 @@ function ResultSheet({
       <div className="result-buttons">
         <button className="err" onClick={() => onPick('error')}>
           <span className="glyph" aria-hidden="true">
-            ❌
+            <XIcon />
           </span>
           Fallado
           <span className="note">{euros(fine)}</span>
         </button>
         <button className="ok" onClick={() => onPick('in')}>
           <span className="glyph" aria-hidden="true">
-            ✅
+            <CheckIcon />
           </span>
           Dentro
         </button>
         <button className="ace" onClick={() => onPick('ace')}>
           <span className="glyph" aria-hidden="true">
-            ⭐
+            <StarIcon />
           </span>
           Ace
           <span className="note">punto directo</span>
@@ -471,7 +481,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
 
         {rows.length === 0 || total.attempts === 0 ? (
           <div className="card">
-            <Empty glyph="📋" title="No se anotó ningún saque" />
+            <Empty icon={<ClipboardIcon />} title="No se anotó ningún saque" />
           </div>
         ) : (
           <>
@@ -490,7 +500,8 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
                     </span>
                     <span className="trail">
                       <span className={own.errors > 0 ? 'chip bad' : 'chip good'}>
-                        {own.errors} ❌
+                        {own.errors}
+                        <XIcon size={11} aria-hidden="true" />
                       </span>
                       <span className="meta">{own.errors > 0 ? euros(own.errors * fine) : '—'}</span>
                     </span>

@@ -10,15 +10,16 @@ import { MatchScreen } from './screens/MatchScreen'
 import { Pot } from './screens/Pot'
 import { Stats } from './screens/Stats'
 import { Crest } from './ui/bits'
+import { BallIcon, ChartIcon, PigLineIcon } from './ui/icons'
 
 /**
  * La app es la del equipo. La administración vive aparte, en `#/admin`, y no
  * hay ningún botón que lleve allí: es un enlace que solo conoce quien lo lleva.
  */
 const TABS = [
-  { key: 'hucha', label: 'Hucha', glyph: '🐷', screen: Pot },
-  { key: 'partidos', label: 'Partidos', glyph: '🏐', screen: Matches },
-  { key: 'stats', label: 'Stats', glyph: '📊', screen: Stats },
+  { key: 'hucha', label: 'Hucha', icon: <PigLineIcon size={22} />, screen: Pot },
+  { key: 'partidos', label: 'Partidos', icon: <BallIcon size={22} />, screen: Matches },
+  { key: 'stats', label: 'Stats', icon: <ChartIcon size={22} />, screen: Stats },
 ]
 
 export function App() {
@@ -67,9 +68,7 @@ export function App() {
             onClick={() => navigate(item.key)}
             aria-current={tab.key === item.key ? 'page' : undefined}
           >
-            <span className="glyph" aria-hidden="true">
-              {item.glyph}
-            </span>
+            <span className="glyph">{item.icon}</span>
             {item.label}
           </button>
         ))}

@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { hostOf, initials } from '../lib/format'
+import { ChevronIcon } from './icons'
 
 export function Avatar({ name, on = false }: { name: string; on?: boolean }) {
   return (
@@ -27,18 +28,22 @@ export function Stat({
 }
 
 export function Empty({
-  glyph,
+  icon,
   title,
+  highlight = false,
   children,
 }: {
-  glyph: string
+  icon: ReactNode
   title: string
+  /** El hueco de la hucha: círculo rosa tenue detrás del icono. Es la
+   * identidad de esa pantalla, no un estado vacío más. */
+  highlight?: boolean
   children?: ReactNode
 }) {
   return (
-    <div className="empty">
+    <div className={highlight ? 'empty highlight' : 'empty'}>
       <span className="glyph" aria-hidden="true">
-        {glyph}
+        {icon}
       </span>
       <strong>{title}</strong>
       {children ? <p>{children}</p> : null}
@@ -97,7 +102,7 @@ export function ScreenHeader({
   return (
     <header className="topbar">
       <button className="icon-btn" onClick={onBack} aria-label="Volver">
-        ‹
+        <ChevronIcon direction="left" size={20} />
       </button>
       <h1>
         {title}

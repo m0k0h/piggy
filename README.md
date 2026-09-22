@@ -153,6 +153,7 @@ hosting estático.
 | --- | --- |
 | `src/types.ts` | El dominio: jugadoras, partidos, convocatorias, saques, pagos. |
 | `src/lib/image.ts` | Reducción de escudos antes de guardarlos. |
+| `src/ui/icons.tsx` | Todos los iconos de la app, un componente por icono. |
 | `src/lib/store.ts` | Estado, persistencia en el móvil y migración de formatos. |
 | `src/lib/sync.ts` | Conexión con Supabase: sesión, rol, réplica y cola de reintentos. |
 | `src/lib/stats.ts` | Ratios, deudas y totales de la hucha. |
@@ -173,3 +174,11 @@ pise al otro.
 `PLAYER_WRITABLE` en [`src/types.ts`](src/types.ts) y las políticas de
 [`supabase/schema.sql`](supabase/schema.sql) tienen que decir lo mismo; hay un
 test que falla si dejan de coincidir.
+
+## Diseño
+
+El encargo de rediseño visual está en [`docs/ESTILO.md`](docs/ESTILO.md):
+paleta, tipografía (Outfit + Plus Jakarta Sans), radios e iconos de trazo. Es
+la referencia para cualquier pantalla o componente nuevo. `CLAUDE.md` resume
+cómo se aplicó sobre las clases que ya existían, para no tener que releerlo
+entero cada vez.
