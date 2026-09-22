@@ -35,14 +35,18 @@ export function Pot() {
               detallado más abajo, en "Pendiente de pagar". */}
           <div className="amount">{euros(totals.owed)}</div>
           <div className="subtitle">
-            {totals.errors > 0
-              ? `${plural(totals.errors, 'saque fallado', 'saques fallados')} · ${euros(fineAmount(state))} cada uno`
-              : 'Ni un saque fallado todavía'}
+            {totals.errors > 0 ? (
+              <>
+                <strong>{plural(totals.errors, 'saque fallado', 'saques fallados')}</strong> ·{' '}
+                <strong>{euros(fineAmount(state))}</strong>
+              </>
+            ) : (
+              'Ni un saque fallado todavía'
+            )}
           </div>
           {global.attempts > 0 ? (
-            <div className="accuracy">
-              <span className="value">{percent(global.ratio)}</span>
-              <span className="label">de acierto del equipo</span>
+            <div className="accuracy-pill">
+              <strong>{percent(global.ratio)}</strong> de acierto del equipo
             </div>
           ) : null}
         </div>
