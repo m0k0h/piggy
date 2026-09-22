@@ -98,7 +98,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
       <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={goBack} />
       <main>
         <div className="card stack">
-          <div className="inline">
+          <div className="inline top">
             <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} big />
             <div className="grow">
               <div className="small muted">{match.home ? 'En casa' : 'Fuera'}</div>
