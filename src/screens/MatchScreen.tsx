@@ -470,7 +470,7 @@ function ResultSheet({
     .reverse()
 
   return (
-    <Sheet title={`Saque de ${player.name}`} onClose={onClose}>
+    <Sheet title="Resultado del saque" onClose={onClose}>
       <div className="sheet-player">
         <Avatar name={player.name} number={player.number} big />
         <div className="grow">
