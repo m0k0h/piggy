@@ -32,6 +32,7 @@ import {
   CalendarIcon,
   CheckIcon,
   ClipboardIcon,
+  HomeIcon,
   PeopleIcon,
   ShrugIcon,
   StarIcon,
@@ -98,10 +99,13 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
       <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={goBack} />
       <main>
         <div className="card stack">
-          <div className="inline top">
+          <div className="inline wide">
             <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} big />
             <div className="grow">
-              <div className="small muted">{match.home ? 'En casa' : 'Fuera'}</div>
+              <div className="small muted">
+                {match.home ? <HomeIcon size={13} className="home-mark" /> : null}
+                {match.home ? 'En casa' : 'Fuera'}
+              </div>
               <h2>{match.opponent || 'Rival por definir'}</h2>
               <LeagueLink url={match.leagueUrl} />
             </div>

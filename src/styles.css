@@ -348,7 +348,7 @@ main {
 .row:active { background: var(--surface-2); }
 .row .grow { flex: 1; min-width: 0; }
 .row .title { font-size: 14.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.row .title .home-mark { vertical-align: -2px; margin-right: 3px; color: var(--pink-text); }
+.home-mark { vertical-align: -2px; margin-right: 3px; color: var(--pink-text); }
 .row .meta { font-size: 12px; color: var(--muted); }
 .row .trail { text-align: right; flex-shrink: 0; gap: 2px; }
 .row .trail .big {
@@ -668,7 +668,7 @@ main {
 /* Botón de "Iniciar partido" y su aviso, pegados entre sí. */
 .start-group { display: flex; flex-direction: column; gap: 4px; }
 .inline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.inline.top { align-items: flex-start; gap: 16px; }
+.inline.wide { gap: 16px; }
 .inline > .grow { flex: 1; min-width: 0; }
 .spread { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
