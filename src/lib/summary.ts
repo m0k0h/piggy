@@ -1,5 +1,15 @@
 import { euros, matchDate, percent, plural } from './format'
-import { balances, fineAmount, participants, pot, servesOfMatch, tally, tallyByPlayer, teamName } from './stats'
+import {
+  allServes,
+  balances,
+  fineAmount,
+  participants,
+  pot,
+  servesOfMatch,
+  tally,
+  tallyByPlayer,
+  teamName,
+} from './stats'
 import type { AppState, Match } from '../types'
 
 /** Resumen de un partido, pensado para pegarlo en el grupo de WhatsApp. */
@@ -43,25 +53,21 @@ export function matchSummary(state: AppState, match: Match): string {
 /** Estado de cuentas de la hucha, para anunciarlo antes del próximo partido. */
 export function potSummary(state: AppState): string {
   const totals = pot(state)
+  const globalRatio = tally(allServes(state)).ratio
   const lines: string[] = []
 
   lines.push(`🐷 Hucha de ${teamName(state)}`)
-  lines.push(`Llevamos ahorrado: ${euros(totals.paid)}`)
-  if (totals.owed > 0) {
-    lines.push(
-      `De ${euros(totals.owed)} generados por ${plural(totals.errors, 'saque fallado', 'saques fallados')}.`,
-    )
-  }
+  lines.push(`Llevamos ${euros(totals.paid)} ahorrados.`)
 
   const pending = balances(state).filter((row) => row.pending > 0)
   if (pending.length > 0) {
-    lines.push('')
-    lines.push(`Pendiente de pagar (${euros(totals.pending)}):`)
-    for (const row of pending) lines.push(`• ${row.player.name}: ${euros(row.pending)}`)
-  } else if (totals.owed > 0) {
-    lines.push('')
-    lines.push('¡Todas al día! 🎉')
+    const names = pending.map((row) => row.player.name).join(', ')
+    lines.push(`Faltan por pagar ${euros(totals.pending)} de ${names}.`)
   }
+
+  lines.push(`Porcentaje de acierto del equipo: ${percent(globalRatio)}`)
+  lines.push('')
+  lines.push('https://m0k0h.github.io/piggy/#/hucha')
   return lines.join('\n')
 }
 
