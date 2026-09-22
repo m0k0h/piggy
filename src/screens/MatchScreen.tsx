@@ -358,7 +358,9 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
                       </span>
                     </span>
                   ) : (
-                    <span className="line muted">No ha sacado</span>
+                    <span className="line">
+                      <span className="chip">No ha sacado</span>
+                    </span>
                   )}
                 </button>
               )

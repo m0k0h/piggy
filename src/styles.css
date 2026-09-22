@@ -579,7 +579,6 @@ main {
 .player-tile .head .avatar { width: 30px; height: 30px; font-size: 11px; }
 .player-tile .name { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; }
 .player-tile .line { display: flex; gap: 6px; align-items: center; margin-top: auto; flex-wrap: wrap; }
-.player-tile .line.muted { color: var(--muted); font-size: 12px; font-weight: 600; }
 
 /* Cabecera de la hoja de resultado: avatar con el dorsal, acierto y últimos saques. */
 .sheet-player { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
