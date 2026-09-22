@@ -1,13 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js'
-import {
-  COLLECTIONS,
-  PLAYER_WRITABLE,
-  type Collection,
-  type Role,
-  type Settings,
-  type Syncable,
-} from '../types'
+import { COLLECTIONS, PLAYER_WRITABLE, type Collection, type Role, type Syncable } from '../types'
+import { teamConfig } from './config'
 import { applyRemote, rowsOf, setSyncPublisher } from './store'
 
 /**
@@ -181,18 +175,17 @@ export function disconnect() {
   setSnapshot(INITIAL)
 }
 
-/** Conecta (o reconecta) con los ajustes actuales. Sin claves, se queda en local. */
-export async function connect(settings: Settings) {
+/** Conecta con la base de datos del equipo. Sin configurar, se queda en local. */
+export async function connect() {
   disconnect()
-  const { supabaseUrl, supabaseAnonKey, teamCode: code } = settings
-  if (!supabaseUrl || !supabaseAnonKey || !code) return
+  if (!teamConfig) return
 
-  teamCode = code.trim()
+  teamCode = teamConfig.code
   setSnapshot({ status: 'connecting', message: '' })
   try {
     // Carga diferida: sin equipo compartido, la app arranca sin bajar el SDK.
     const { createClient } = await import('@supabase/supabase-js')
-    client = createClient(supabaseUrl.trim(), supabaseAnonKey.trim(), {
+    client = createClient(teamConfig.url, teamConfig.anonKey, {
       // La sesión persiste para que la admin no tenga que entrar cada vez.
       auth: { persistSession: true, autoRefreshToken: true, storageKey: 'piggy.auth' },
     })

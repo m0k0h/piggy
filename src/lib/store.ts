@@ -10,7 +10,6 @@ import {
   type Player,
   type Serve,
   type ServeResult,
-  type Settings,
   type Syncable,
   type Team,
 } from '../types'
@@ -19,13 +18,6 @@ const STORAGE_KEY = 'piggy.state.v2'
 /** Formato anterior, cuando el estado del partido vivía dentro del propio partido. */
 const LEGACY_KEY = 'piggy.state.v1'
 
-export const DEFAULT_SETTINGS: Settings = {
-  teamUrl: 'https://sportagia.voleimasters.cat/#/equip/31',
-  teamCode: '',
-  supabaseUrl: '',
-  supabaseAnonKey: '',
-}
-
 const now = () => new Date().toISOString()
 export const newId = () => crypto.randomUUID()
 
@@ -33,6 +25,7 @@ const defaultTeam = (): Team => ({
   id: TEAM_ROW_ID,
   name: 'Mi equipo',
   fineAmount: 1,
+  logo: '',
   createdAt: now(),
   updatedAt: now(),
   deletedAt: null,
@@ -45,7 +38,6 @@ const empty = (): AppState => ({
   serves: {},
   payments: {},
   team: defaultTeam(),
-  settings: DEFAULT_SETTINGS,
 })
 
 /** Sube un estado del formato v1, donde `status` y `roster` estaban en el partido. */
@@ -72,7 +64,7 @@ export function migrate(raw: string): AppState {
     }
   }
 
-  const oldSettings = (old.settings ?? {}) as Partial<Settings & { teamName: string; fineAmount: number }>
+  const oldSettings = (old.settings ?? {}) as { teamName?: string; fineAmount?: number }
   return {
     ...base,
     players: (old.players ?? {}) as AppState['players'],
@@ -84,13 +76,6 @@ export function migrate(raw: string): AppState {
       ...defaultTeam(),
       name: oldSettings.teamName ?? 'Mi equipo',
       fineAmount: typeof oldSettings.fineAmount === 'number' ? oldSettings.fineAmount : 1,
-    },
-    settings: {
-      ...DEFAULT_SETTINGS,
-      teamUrl: oldSettings.teamUrl ?? DEFAULT_SETTINGS.teamUrl,
-      teamCode: oldSettings.teamCode ?? '',
-      supabaseUrl: oldSettings.supabaseUrl ?? '',
-      supabaseAnonKey: oldSettings.supabaseAnonKey ?? '',
     },
   }
 }
@@ -107,7 +92,6 @@ function load(): AppState {
         ...empty(),
         ...parsed,
         team: { ...defaultTeam(), ...(parsed.team ?? {}) },
-        settings: { ...DEFAULT_SETTINGS, ...(parsed.settings ?? {}) },
       }
     }
     const legacy = localStorage.getItem(LEGACY_KEY)
@@ -176,7 +160,7 @@ function born<T extends Syncable>(fields: Omit<T, keyof Syncable>, id: string = 
 
 // --- Equipo ----------------------------------------------------------------
 
-export function updateTeam(patch: Partial<Pick<Team, 'name' | 'fineAmount'>>) {
+export function updateTeam(patch: Partial<Pick<Team, 'name' | 'fineAmount' | 'logo'>>) {
   write('team', [{ ...state.team, ...patch, updatedAt: now() }])
 }
 
@@ -278,12 +262,6 @@ export function removePayment(id: string) {
   write('payments', [{ ...current, deletedAt: now(), updatedAt: now() }])
 }
 
-// --- Ajustes de este móvil -------------------------------------------------
-
-export function updateSettings(patch: Partial<Settings>) {
-  commit({ ...state, settings: { ...state.settings, ...patch } })
-}
-
 // --- Sincronización --------------------------------------------------------
 
 /**
@@ -319,10 +297,9 @@ export function importState(json: string) {
     ...empty(),
     ...parsed,
     team: { ...defaultTeam(), ...(parsed.team ?? {}) },
-    settings: { ...state.settings, ...(parsed.settings ?? {}) },
   })
 }
 
 export function resetState() {
-  commit({ ...empty(), team: state.team, settings: state.settings })
+  commit({ ...empty(), team: state.team })
 }

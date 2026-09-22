@@ -107,3 +107,18 @@ export function ScreenHeader({
     </header>
   )
 }
+
+/** Escudo del equipo, con las iniciales de reserva mientras no haya imagen. */
+export function Crest({
+  team,
+  big = false,
+}: {
+  team: { name: string; logo: string }
+  big?: boolean
+}) {
+  return (
+    <span className={big ? 'crest crest-big' : 'crest'} aria-hidden="true">
+      {team.logo ? <img src={team.logo} alt="" /> : initials(team.name)}
+    </span>
+  )
+}

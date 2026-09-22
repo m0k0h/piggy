@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import type { AppState, Lineup, Match, Payment, Player, Serve } from '../../types'
-import { DEFAULT_SETTINGS } from '../store'
 import { balances, currentSet, matchStatus, participants, pot, tally, upcomingMatches } from '../stats'
 
 const stamp = { createdAt: '2025-10-01T10:00', updatedAt: '2025-10-01T10:00', deletedAt: null }
@@ -50,8 +49,7 @@ const state = (rows: Partial<AppState>, fine = 1): AppState => ({
   lineups: {},
   serves: {},
   payments: {},
-  team: { id: 'team', name: 'Equipo', fineAmount: fine, ...stamp },
-  settings: DEFAULT_SETTINGS,
+  team: { id: 'team', name: 'Equipo', fineAmount: fine, logo: '', ...stamp },
   ...rows,
 })
 

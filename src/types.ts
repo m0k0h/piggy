@@ -80,16 +80,8 @@ export interface Team extends Syncable {
   name: string
   /** Euros por saque fallado. */
   fineAmount: number
-}
-
-/** Configuración de este móvil. No se sincroniza: dice a qué equipo conectarse. */
-export interface Settings {
-  /** URL del equipo en Sportagia, para el importador. */
-  teamUrl: string
-  /** Código compartido: todas las que lo usan ven los mismos datos. */
-  teamCode: string
-  supabaseUrl: string
-  supabaseAnonKey: string
+  /** Escudo del equipo, ya reducido, como data URL. Vacío si no hay. */
+  logo: string
 }
 
 export interface AppState {
@@ -99,7 +91,6 @@ export interface AppState {
   serves: Record<string, Serve>
   payments: Record<string, Payment>
   team: Team
-  settings: Settings
 }
 
 /** Las colecciones que viajan a la base de datos. */

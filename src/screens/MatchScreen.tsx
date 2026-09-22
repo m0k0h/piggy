@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { euros, matchDateLong, percent, plural, relativeDay } from '../lib/format'
 import { goBack, navigate } from '../lib/router'
 import { matchSummary, share } from '../lib/summary'
-import { addPlayer, addServe, removeServe, saveLineup, useAppState } from '../lib/store'
+import { addServe, removeServe, saveLineup, useAppState } from '../lib/store'
 import {
   allPlayers,
   currentSet,
@@ -15,9 +15,7 @@ import {
   tally,
   tallyByPlayer,
 } from '../lib/stats'
-import { useRole } from '../lib/sync'
 import type { AppState, Match, Player, ServeResult } from '../types'
-import { MatchSheet } from './Matches'
 import { Sheet } from '../ui/Sheet'
 import { Avatar, Empty, RatioBar, ScreenHeader, SectionTitle, Stat } from '../ui/bits'
 
@@ -49,21 +47,10 @@ export function MatchScreen({ matchId }: { matchId: string }) {
 
 const titleOf = (match: Match) => `${match.home ? 'vs' : '@'} ${match.opponent || 'Rival'}`
 
-/** Botón de editar, solo para quien puede cambiar la ficha del partido. */
-function EditAction({ onEdit }: { onEdit: () => void }) {
-  if (useRole() !== 'admin') return null
-  return (
-    <button className="btn ghost small" onClick={onEdit}>
-      Editar
-    </button>
-  )
-}
-
 // --------------------------------------------------------------- programado
 
 function MatchPreview({ match, state }: { match: Match; state: AppState }) {
   const [callUp, setCallUp] = useState(false)
-  const [editing, setEditing] = useState(false)
 
   if (callUp) {
     return (
@@ -85,7 +72,6 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
         title={titleOf(match)}
         subtitle={relativeDay(match.date)}
         onBack={goBack}
-        actions={<EditAction onEdit={() => setEditing(true)} />}
       />
       <main>
         <div className="card stack">
@@ -103,7 +89,6 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
           <p className="small muted center">Primero te preguntará quién ha venido.</p>
         </div>
       </main>
-      {editing ? <MatchSheet match={match} onClose={() => setEditing(false)} /> : null}
     </>
   )
 }
@@ -121,25 +106,13 @@ function CallUp({
   onCancel: () => void
   onConfirm: (roster: string[]) => void
 }) {
-  const isAdmin = useRole() === 'admin'
   const players = allPlayers(state)
   const [selected, setSelected] = useState<string[]>(() => rosterIds(state, match.id))
-  const [adding, setAdding] = useState(false)
-  const [newName, setNewName] = useState('')
 
   const toggle = (id: string) =>
     setSelected((current) =>
       current.includes(id) ? current.filter((x) => x !== id) : [...current, id],
     )
-
-  const quickAdd = () => {
-    const name = newName.trim()
-    if (!name) return
-    const player = addPlayer(name)
-    setSelected((current) => [...current, player.id])
-    setNewName('')
-    setAdding(false)
-  }
 
   return (
     <>
@@ -152,9 +125,7 @@ function CallUp({
         {players.length === 0 ? (
           <div className="card">
             <Empty glyph="🏐" title="No hay jugadoras en la plantilla">
-              {isAdmin
-                ? 'Añade al menos una para poder anotar saques.'
-                : 'La administradora todavía no ha dado de alta al equipo.'}
+              La administradora todavía no ha dado de alta al equipo.
             </Empty>
           </div>
         ) : (
@@ -199,35 +170,6 @@ function CallUp({
             </div>
           </>
         )}
-
-        {isAdmin ? (
-          adding ? (
-            <div className="card stack">
-              <div className="field">
-                <input
-                  value={newName}
-                  onChange={(event) => setNewName(event.target.value)}
-                  onKeyDown={(event) => event.key === 'Enter' && quickAdd()}
-                  placeholder="Nombre de la jugadora"
-                  autoFocus
-                  autoComplete="off"
-                />
-              </div>
-              <div className="btn-row">
-                <button className="btn ghost" onClick={() => setAdding(false)}>
-                  Cancelar
-                </button>
-                <button className="btn" onClick={quickAdd} disabled={!newName.trim()}>
-                  Añadir
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button className="btn ghost block" onClick={() => setAdding(true)}>
-              + Falta alguien
-            </button>
-          )
-        ) : null}
 
         <button
           className="btn block"
@@ -455,7 +397,6 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
   const total = tally(serves)
   const fine = fineAmount(state)
   const fines = total.errors * fine
-  const [editing, setEditing] = useState(false)
   const [toast, setToast] = useState('')
 
   const rows = participants(state, match.id)
@@ -475,7 +416,6 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
         title={titleOf(match)}
         subtitle={matchDateLong(match.date)}
         onBack={() => navigate('partidos')}
-        actions={<EditAction onEdit={() => setEditing(true)} />}
       />
       <main>
         <div className="stat-row">
@@ -526,7 +466,6 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
           Reabrir para seguir anotando
         </button>
       </main>
-      {editing ? <MatchSheet match={match} onClose={() => setEditing(false)} /> : null}
     </>
   )
 }

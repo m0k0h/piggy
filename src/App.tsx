@@ -1,43 +1,31 @@
 import { useEffect } from 'react'
 import { euros } from './lib/format'
 import { navigate, useRoute } from './lib/router'
-import { getState, useAppState } from './lib/store'
-import { pot, teamName } from './lib/stats'
-import { connect, retry, useRole, useSync } from './lib/sync'
-import type { Role } from './types'
-import { Import } from './screens/Import'
-import { Join } from './screens/Join'
+import { useAppState } from './lib/store'
+import { pot } from './lib/stats'
+import { connect, retry, useSync } from './lib/sync'
+import { Admin } from './screens/Admin'
 import { Matches } from './screens/Matches'
 import { MatchScreen } from './screens/MatchScreen'
 import { Pot } from './screens/Pot'
-import { Roster } from './screens/Roster'
-import { Settings } from './screens/Settings'
 import { Stats } from './screens/Stats'
+import { Crest } from './ui/bits'
 
-interface Tab {
-  key: string
-  label: string
-  glyph: string
-  screen: () => React.JSX.Element
-  /** La plantilla solo la gestiona la admin, así que al equipo no le ocupa sitio. */
-  adminOnly?: boolean
-}
-
-const TABS: Tab[] = [
+/**
+ * La app es la del equipo. La administración vive aparte, en `#/admin`, y no
+ * hay ningún botón que lleve allí: es un enlace que solo conoce quien lo lleva.
+ */
+const TABS = [
   { key: 'hucha', label: 'Hucha', glyph: '🐷', screen: Pot },
   { key: 'partidos', label: 'Partidos', glyph: '🏐', screen: Matches },
-  { key: 'plantilla', label: 'Plantilla', glyph: '👥', screen: Roster, adminOnly: true },
   { key: 'stats', label: 'Stats', glyph: '📊', screen: Stats },
 ]
 
-const tabsFor = (role: Role) => TABS.filter((tab) => role === 'admin' || !tab.adminOnly)
-
 export function App() {
   const route = useRoute()
-  const role = useRole()
 
   useEffect(() => {
-    void connect(getState().settings)
+    void connect()
   }, [])
 
   useEffect(() => {
@@ -48,6 +36,13 @@ export function App() {
 
   const [head, param] = route
 
+  if (head === 'admin') {
+    return (
+      <div className="app">
+        <Admin section={param ?? ''} />
+      </div>
+    )
+  }
   if (head === 'partido' && param) {
     return (
       <div className="app">
@@ -55,31 +50,9 @@ export function App() {
       </div>
     )
   }
-  if (head === 'unirse' && param) {
-    return (
-      <div className="app">
-        <Join token={param} />
-      </div>
-    )
-  }
-  if (head === 'importar') {
-    return (
-      <div className="app">
-        <Import />
-      </div>
-    )
-  }
-  if (head === 'ajustes') {
-    return (
-      <div className="app">
-        <Settings />
-      </div>
-    )
-  }
 
-  const tabs = tabsFor(role)
-  const current = tabs.find((tab) => tab.key === head) ?? tabs[0]
-  const Screen = current.screen
+  const tab = TABS.find((item) => item.key === head) ?? TABS[0]
+  const Screen = tab.screen
 
   return (
     <div className="app has-tabs">
@@ -88,16 +61,16 @@ export function App() {
         <Screen />
       </main>
       <nav className="tabbar">
-        {tabs.map((tab) => (
+        {TABS.map((item) => (
           <button
-            key={tab.key}
-            onClick={() => navigate(tab.key)}
-            aria-current={current.key === tab.key ? 'page' : undefined}
+            key={item.key}
+            onClick={() => navigate(item.key)}
+            aria-current={tab.key === item.key ? 'page' : undefined}
           >
             <span className="glyph" aria-hidden="true">
-              {tab.glyph}
+              {item.glyph}
             </span>
-            {tab.label}
+            {item.label}
           </button>
         ))}
       </nav>
@@ -112,8 +85,9 @@ function TopBar() {
 
   return (
     <header className="topbar">
+      <Crest team={state.team} />
       <h1>
-        {teamName(state)}
+        {state.team.name}
         <span className="sub">
           {totals.pending > 0 ? `${euros(totals.pending)} en la hucha` : 'Hucha al día'}
         </span>
@@ -121,9 +95,12 @@ function TopBar() {
       {sync.status !== 'off' ? (
         <span className={`dot ${sync.status}`} title={sync.message || sync.status} />
       ) : null}
-      <button className="icon-btn" onClick={() => navigate('ajustes')} aria-label="Ajustes">
-        ⚙
-      </button>
+      {/* Solo aparece con la sesión abierta, para volver a administración. */}
+      {sync.signedIn ? (
+        <button className="btn ghost small" onClick={() => navigate('admin')}>
+          Admin
+        </button>
+      ) : null}
     </header>
   )
 }

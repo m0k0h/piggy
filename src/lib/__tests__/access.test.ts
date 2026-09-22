@@ -78,7 +78,7 @@ describe('migrate desde el formato anterior', () => {
     },
     serves: { s1: { id: 's1', matchId: 'm1', playerId: 'p1', result: 'error', set: 1, createdAt: 'a', updatedAt: 'a', deletedAt: null } },
     payments: {},
-    settings: { teamName: 'Volei Masters', fineAmount: 2, teamCode: 'ABC123', supabaseUrl: 'https://x.supabase.co', supabaseAnonKey: 'k', teamUrl: 'https://sportagia.example/#/equip/31' },
+    settings: { teamName: 'Volei Masters', fineAmount: 2 },
   })
 
   const migrated = migrate(legacy)
@@ -97,8 +97,7 @@ describe('migrate desde el formato anterior', () => {
     expect(migrated.team).toMatchObject({ name: 'Volei Masters', fineAmount: 2 })
   })
 
-  it('conserva la conexión y el resto de los datos', () => {
-    expect(migrated.settings).toMatchObject({ teamCode: 'ABC123', supabaseUrl: 'https://x.supabase.co' })
+  it('conserva jugadoras y saques', () => {
     expect(migrated.players.p1.name).toBe('Anna')
     expect(migrated.serves.s1.result).toBe('error')
   })

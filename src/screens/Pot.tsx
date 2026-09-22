@@ -2,20 +2,16 @@ import { useState } from 'react'
 import { euros, matchDate, percent, plural, relativeDay } from '../lib/format'
 import { navigate } from '../lib/router'
 import { potSummary, share } from '../lib/summary'
-import { addPayment, removePayment, useAppState } from '../lib/store'
-import { allPayments, balances, fineAmount, matchStatus, pot, upcomingMatches } from '../lib/stats'
+import { useAppState } from '../lib/store'
+import { balances, fineAmount, matchStatus, pot, upcomingMatches } from '../lib/stats'
 import type { Balance } from '../lib/stats'
-import { useRole } from '../lib/sync'
-import { Sheet } from '../ui/Sheet'
 import { Avatar, Empty, SectionTitle } from '../ui/bits'
 
 export function Pot() {
   const state = useAppState()
-  const isAdmin = useRole() === 'admin'
   const totals = pot(state)
   const rows = balances(state)
   const next = upcomingMatches(state)[0]
-  const [paying, setPaying] = useState<Balance | null>(null)
   const [toast, setToast] = useState('')
 
   const withDebt = rows.filter((row) => row.pending > 0)
@@ -69,15 +65,8 @@ export function Pot() {
       ) : (
         <div className="card">
           <Empty glyph="📅" title="No hay ningún partido a la vista">
-            {isAdmin
-              ? 'Crea el próximo para poder anotar los saques.'
-              : 'Cuando la administradora prepare el próximo, aparecerá aquí.'}
+            Cuando se prepare el próximo, aparecerá aquí.
           </Empty>
-          {isAdmin ? (
-            <button className="btn block" onClick={() => navigate('partidos')}>
-              Crear partido
-            </button>
-          ) : null}
         </div>
       )}
 
@@ -88,15 +77,8 @@ export function Pot() {
       {rows.length === 0 ? (
         <div className="card">
           <Empty glyph="🐷" title="La hucha está vacía">
-            {isAdmin
-              ? 'Añade la plantilla y empieza a anotar saques.'
-              : 'En cuanto se anoten saques, aparecerá aquí lo que debe cada una.'}
+            En cuanto se anoten saques, aparecerá aquí lo que debe cada una.
           </Empty>
-          {isAdmin ? (
-            <button className="btn block" onClick={() => navigate('plantilla')}>
-              Ir a la plantilla
-            </button>
-          ) : null}
         </div>
       ) : withDebt.length === 0 ? (
         <div className="card">
@@ -110,11 +92,7 @@ export function Pot() {
         <div className="card flush">
           <div className="list">
             {withDebt.map((row) => (
-              <DebtRow
-                key={row.player.id}
-                row={row}
-                onPay={isAdmin ? () => setPaying(row) : null}
-              />
+              <DebtRow key={row.player.id} row={row} />
             ))}
           </div>
         </div>
@@ -124,16 +102,14 @@ export function Pot() {
         Compartir estado de la hucha
       </button>
       {toast ? <div className="banner good">{toast}</div> : null}
-
-      {paying ? <PaymentSheet row={paying} onClose={() => setPaying(null)} /> : null}
     </>
   )
 }
 
-/** Una deudora. Solo la administradora la abre para registrar el pago. */
-function DebtRow({ row, onPay }: { row: Balance; onPay: (() => void) | null }) {
-  const body = (
-    <>
+/** La hucha se consulta desde aquí; cobrar es cosa de administración. */
+function DebtRow({ row }: { row: Balance }) {
+  return (
+    <div className="row">
       <Avatar name={row.player.name} />
       <span className="grow">
         <span className="title">{row.player.name}</span>
@@ -144,83 +120,7 @@ function DebtRow({ row, onPay }: { row: Balance; onPay: (() => void) | null }) {
       </span>
       <span className="trail">
         <span className="big">{euros(row.pending)}</span>
-        {onPay ? <span className="meta">cobrar ›</span> : null}
       </span>
-    </>
-  )
-
-  return onPay ? (
-    <button className="row" onClick={onPay}>
-      {body}
-    </button>
-  ) : (
-    <div className="row">{body}</div>
-  )
-}
-
-function PaymentSheet({ row, onClose }: { row: Balance; onClose: () => void }) {
-  const state = useAppState()
-  const [amount, setAmount] = useState(String(row.pending))
-  const [note, setNote] = useState('')
-  const value = Number(amount.replace(',', '.'))
-  const history = allPayments(state)
-    .filter((payment) => payment.playerId === row.player.id)
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-
-  return (
-    <Sheet title={`Pago de ${row.player.name}`} onClose={onClose}>
-      <div className="form">
-        <p className="small muted">
-          Debe {euros(row.pending)} por {plural(row.tally.errors, 'saque fallado', 'saques fallados')}.
-        </p>
-        <label className="field">
-          <span>Cuánto pone</span>
-          <input
-            value={amount}
-            onChange={(event) => setAmount(event.target.value)}
-            inputMode="decimal"
-            autoFocus
-          />
-        </label>
-        <label className="field">
-          <span>Nota (opcional)</span>
-          <input
-            value={note}
-            onChange={(event) => setNote(event.target.value)}
-            placeholder="En mano, Bizum..."
-            autoComplete="off"
-          />
-        </label>
-        <button
-          className="btn block"
-          disabled={!Number.isFinite(value) || value <= 0}
-          onClick={() => {
-            addPayment(row.player.id, value, note)
-            onClose()
-          }}
-        >
-          Registrar {Number.isFinite(value) && value > 0 ? euros(value) : ''}
-        </button>
-
-        {history.length > 0 ? (
-          <div className="stack">
-            <SectionTitle>Pagos anteriores</SectionTitle>
-            <div className="log">
-              {history.map((payment) => (
-                <div key={payment.id} className="log-item">
-                  <span className="grow">
-                    {euros(payment.amount)}
-                    {payment.note ? ` · ${payment.note}` : ''}
-                  </span>
-                  <button className="undo" onClick={() => removePayment(payment.id)}>
-                    Deshacer
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
-      </div>
-    </Sheet>
+    </div>
   )
 }

@@ -540,3 +540,33 @@ main {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* ---------------------------------------------------------------- escudo */
+.crest {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.crest img { width: 100%; height: 100%; object-fit: contain; }
+
+.crest-big { width: 84px; height: 84px; border-radius: 20px; }
+
+/* --------------------------------------------------------- administración */
+.admin-menu { display: flex; flex-direction: column; }
+
+.admin-menu .row .glyph {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 18px;
+  flex-shrink: 0;
+}
