@@ -9,10 +9,11 @@
   --on-hero: #ffffff;                     /* texto/icono ENCIMA del degradado del hero */
   --hero: linear-gradient(135deg, #d42a7d 0%, #a51f79 100%);
   --hero-shadow: 0 10px 28px rgba(165, 31, 121, 0.35);
-  /* --red normal (#ff7a7a) se pensó para tarjetas oscuras; sobre el rosa del
-     hero queda demasiado parecido en tono. Este rojo, más saturado, es solo
-     para avisos dentro del hero. */
+  /* --red y --green normales se pensaron para tarjetas oscuras; sobre el
+     rosa del hero piden más punch. Estos dos son solo para avisos ahí
+     dentro: el rojo más saturado, el verde más vivo y satisfactorio. */
   --hero-bad: #ff3b57;
+  --hero-good: #1de77f;
 
   /* Cerdita */
   --pig: #ffa8c6;
@@ -304,7 +305,7 @@ main {
 
 /* Por encima o por debajo del 50% de acierto: en vez de teñir la cifra, un
    borde de color alrededor de toda la píldora — a ver cómo queda. */
-.pot .pill-good { border-color: var(--green); }
+.pot .pill-good { border-color: var(--hero-good); }
 .pot .pill-bad { border-color: var(--hero-bad); }
 
 /* ---------------------------------------------------------------- stats */
