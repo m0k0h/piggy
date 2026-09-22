@@ -6,7 +6,7 @@ import { useAppState } from '../lib/store'
 import { balances, fineAmount, matchStatus, pot, upcomingMatches } from '../lib/stats'
 import type { Balance } from '../lib/stats'
 import { Avatar, Empty, SectionTitle } from '../ui/bits'
-import { CalendarIcon, PartyIcon, PigIcon, PigLineIcon } from '../ui/icons'
+import { CalendarIcon, HomeIcon, PartyIcon, PigIcon, PigLineIcon } from '../ui/icons'
 
 export function Pot() {
   const state = useAppState()
@@ -61,7 +61,15 @@ export function Pot() {
               {matchStatus(state, next.id) === 'live' ? 'Partido en juego' : 'Próximo partido'}
             </span>
             <span className="title">
-              {next.home ? 'vs' : '@'} {next.opponent}
+              {next.home ? (
+                <>
+                  <HomeIcon size={15} className="home-mark" />
+                  <span className="sr-only">En casa · </span>
+                </>
+              ) : (
+                '@ '
+              )}
+              {next.opponent}
             </span>
             <span className="meta">
               {matchDate(next.date)} · {relativeDay(next.date)}

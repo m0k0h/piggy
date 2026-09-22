@@ -230,3 +230,14 @@ export function ClipboardIcon({ size = 24, ...props }: IconProps) {
     </svg>
   )
 }
+
+/** Casa: partido que se juega en el pabellón propio. */
+export function HomeIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M4 11.5 12 4l8 7.5" />
+      <path d="M6 10v9.5a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V10" />
+      <path d="M10 20.5V14a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v6.5" />
+    </svg>
+  )
+}

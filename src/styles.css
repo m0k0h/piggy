@@ -116,7 +116,22 @@ h1, h2, h3 { margin: 0; line-height: 1.2; font-family: var(--display); }
 
 .topbar h1 { font-size: 19px; font-weight: 700; letter-spacing: -0.015em; flex: 1; }
 
-.topbar .sub { display: block; font-size: 12px; color: var(--muted); font-weight: 500; }
+.topbar .sub {
+  display: block;
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--pink-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.topbar .sub-mini {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
 
 .icon-btn {
   display: grid;
@@ -298,6 +313,7 @@ main {
 .row:active { background: var(--surface-2); }
 .row .grow { flex: 1; min-width: 0; }
 .row .title { font-size: 14.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .title .home-mark { vertical-align: -2px; margin-right: 3px; color: var(--pink-text); }
 .row .meta { font-size: 12px; color: var(--muted); }
 .row .trail { text-align: right; flex-shrink: 0; gap: 2px; }
 .row .trail .big {
