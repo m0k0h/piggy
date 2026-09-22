@@ -3,7 +3,7 @@ import { euros, matchDate, percent, plural, relativeDay } from '../lib/format'
 import { navigate } from '../lib/router'
 import { potSummary, share } from '../lib/summary'
 import { useAppState } from '../lib/store'
-import { balances, fineAmount, matchStatus, pot, upcomingMatches } from '../lib/stats'
+import { allServes, balances, fineAmount, matchStatus, pot, tally, upcomingMatches } from '../lib/stats'
 import type { Balance } from '../lib/stats'
 import { Avatar, Empty, SectionTitle } from '../ui/bits'
 import { CalendarIcon, HomeIcon, PartyIcon, PigIcon, PigLineIcon } from '../ui/icons'
@@ -11,6 +11,7 @@ import { CalendarIcon, HomeIcon, PartyIcon, PigIcon, PigLineIcon } from '../ui/i
 export function Pot() {
   const state = useAppState()
   const totals = pot(state)
+  const global = tally(allServes(state))
   const rows = balances(state)
   const next = upcomingMatches(state)[0]
   const [toast, setToast] = useState('')
@@ -29,28 +30,21 @@ export function Pot() {
       <div className="card pot">
         <PigLineIcon size={168} className="hero-mark" />
         <div className="hero-content">
-          <div className="label">Llevamos ahorrado</div>
-          <div className="amount">{euros(totals.paid)}</div>
-          {totals.owed > 0 ? (
-            <>
-              <div className="detail">
-                de {euros(totals.owed)} · {plural(totals.errors, 'saque fallado', 'saques fallados')} a{' '}
-                {euros(fineAmount(state))}
-              </div>
-              <div
-                className="pot-bar"
-                role="img"
-                aria-label={`${euros(totals.paid)} cobrados de ${euros(totals.owed)}`}
-              >
-                {/* Sin nada cobrado no pintamos barra: el mínimo de anchura mentiría. */}
-                {totals.paid > 0 ? (
-                  <i style={{ width: `${Math.round((totals.paid / totals.owed) * 100)}%` }} />
-                ) : null}
-              </div>
-            </>
-          ) : (
-            <div className="detail">Ni un saque fallado todavía. Va a durar poco.</div>
-          )}
+          <div className="label">Total de la hucha</div>
+          {/* Siempre el total generado, esté cobrado o no: lo pendiente se ve
+              detallado más abajo, en "Pendiente de pagar". */}
+          <div className="amount">{euros(totals.owed)}</div>
+          <div className="subtitle">
+            {totals.errors > 0
+              ? `${plural(totals.errors, 'saque fallado', 'saques fallados')} · ${euros(fineAmount(state))} cada uno`
+              : 'Ni un saque fallado todavía'}
+          </div>
+          {global.attempts > 0 ? (
+            <div className="accuracy">
+              <span className="value">{percent(global.ratio)}</span>
+              <span className="label">de acierto del equipo</span>
+            </div>
+          ) : null}
         </div>
       </div>
 

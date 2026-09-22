@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
-import { euros, percent } from './lib/format'
+import { euros } from './lib/format'
 import { navigate, useRoute } from './lib/router'
 import { useAppState } from './lib/store'
-import { allServes, pot, tally } from './lib/stats'
+import { pot } from './lib/stats'
 import { connect, retry, useSync } from './lib/sync'
 import { Admin } from './screens/Admin'
 import { Matches } from './screens/Matches'
@@ -81,25 +81,18 @@ function TopBar() {
   const state = useAppState()
   const sync = useSync()
   const totals = pot(state)
-  const global = tally(allServes(state))
 
   return (
     <header className="topbar">
       <Crest team={state.team} />
       <h1>
         {state.team.name}
-        {global.attempts === 0 ? (
-          <span className="sub">Sin saques todavía</span>
-        ) : (
-          <>
-            {/* El total generado, no lo ya pagado: es lo primero que se pregunta el equipo. */}
-            <span className="sub">{euros(totals.owed)} en total</span>
-            <span className="sub-mini">
-              {totals.pending > 0 ? `${euros(totals.pending)} pendientes · ` : ''}
-              {percent(global.ratio)} de acierto
-            </span>
-          </>
-        )}
+        {/* El desglose (pendiente, % de acierto) ya está en el bloque rosa de
+            la Hucha; aquí solo el total, a modo de recordatorio en el resto
+            de pantallas. */}
+        <span className="sub">
+          {totals.owed > 0 ? `${euros(totals.owed)} en total` : 'Sin fallos todavía'}
+        </span>
       </h1>
       {sync.status !== 'off' ? (
         <span className={`dot ${sync.status}`} title={sync.message || sync.status} />
