@@ -145,7 +145,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
           <button className="btn block" onClick={() => saveLineup(match.id, { status: 'live' })} disabled={attendees.length === 0}>
             Iniciar partido
           </button>
-          <p className="small warn center">
+          <p className="small accent center">
             {attendees.length === 0
               ? 'Hace falta al menos una asistente para poder anotar saques.'
               : 'Asegúrate de añadir a todas las asistentes.'}
