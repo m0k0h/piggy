@@ -94,13 +94,13 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
             <div className="grow">
               <div className="small muted">{match.home ? 'En casa' : 'Fuera'}</div>
               <h2>{match.opponent || 'Rival por definir'}</h2>
+              <LeagueLink url={match.leagueUrl} />
             </div>
           </div>
-          <div className="small muted">
+          <div className="match-date">
             {matchDateLong(match.date)}
             {match.venue ? ` · ${match.venue}` : ''}
           </div>
-          <LeagueLink url={match.leagueUrl} />
         </div>
 
         <SectionTitle aside={attendees.length > 0 ? <span>{attendees.length}</span> : null}>
@@ -109,7 +109,9 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
         <div className="card stack">
           {attendees.length === 0 ? (
             <p className="small muted center">
-              Todavía no ha venido nadie. Apunta a quien esté en el pabellón.
+              Todavía no ha venido nadie.
+              <br />
+              Apunta a quien esté en el pabellón.
             </p>
           ) : (
             <div className="attendees">
