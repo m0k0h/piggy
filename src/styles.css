@@ -660,12 +660,13 @@ main {
 .empty.highlight .glyph svg { width: 74px; height: 74px; }
 
 .muted { color: var(--muted); }
+.warn { color: var(--amber); }
 .small { font-size: 12px; }
 .center { text-align: center; }
 .stack { display: flex; flex-direction: column; gap: 12px; }
 
 /* Botón de "Iniciar partido" y su aviso, pegados entre sí. */
-.start-group { display: flex; flex-direction: column; gap: 8px; }
+.start-group { display: flex; flex-direction: column; gap: 4px; }
 .inline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .inline.top { align-items: flex-start; gap: 16px; }
 .inline > .grow { flex: 1; min-width: 0; }
