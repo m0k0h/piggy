@@ -29,6 +29,7 @@
   --red: #ff7a7a;
   --red-soft: #3a1c1c;
   --amber: #f0b03c;
+  --amber-soft: rgba(240, 176, 60, 0.18);
 
   /* Estado pagado (fondo claro deliberado: destaca como una etiqueta "hecho") */
   --ok-bg: #dff3e6;
@@ -373,6 +374,7 @@ main {
 }
 
 .avatar.on { background: var(--pink); color: var(--on-accent); }
+.avatar.big { width: 52px; height: 52px; font-size: 16px; }
 
 /* ---------------------------------------------------------------- chips */
 .chip {
@@ -578,19 +580,41 @@ main {
 .player-tile .name { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; }
 .player-tile .line { display: flex; gap: 6px; align-items: center; margin-top: auto; flex-wrap: wrap; }
 
+/* Cabecera de la hoja de resultado: avatar con el dorsal, acierto y últimos saques. */
+.sheet-player { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.sheet-player > .grow { flex: 1; min-width: 0; }
+.sheet-player .title { font-family: var(--display); font-weight: 700; font-size: 16px; }
+.sheet-player .meta { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+
+.last-serves { display: flex; gap: 4px; flex-shrink: 0; }
+
+.serve-dot {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.serve-dot.error { background: var(--red-soft); color: var(--red); }
+.serve-dot.in { background: var(--ok-bg); color: var(--ok-text); }
+.serve-dot.ace { background: var(--amber-soft); color: var(--amber); }
+
 .result-buttons { display: grid; gap: 10px; }
 
 .result-buttons button {
   display: flex;
   align-items: center;
-  gap: 12px;
-  min-height: 62px;
-  padding: 0 18px;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 16px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-2);
   color: var(--text);
-  font-size: 16px;
+  font-size: 14.5px;
   font-weight: 700;
 }
 
@@ -598,7 +622,7 @@ main {
 .result-buttons .note { margin-left: auto; font-size: 13px; font-weight: 600; opacity: 0.75; }
 .result-buttons button.err { background: var(--red-soft); color: var(--red); border-color: transparent; }
 .result-buttons button.ok { background: var(--ok-bg); color: var(--ok-text); border-color: transparent; }
-.result-buttons button.ace { background: var(--pink-soft); color: var(--pink-text); border-color: transparent; }
+.result-buttons button.ace { background: var(--amber-soft); color: var(--amber); border-color: transparent; }
 
 .log { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
 
@@ -613,7 +637,7 @@ main {
 .log-item .icon { display: grid; place-items: center; flex-shrink: 0; color: var(--muted); }
 .log-item .icon.err { color: var(--red); }
 .log-item .icon.ok { color: var(--ok-text); }
-.log-item .icon.ace { color: var(--pink-text); }
+.log-item .icon.ace { color: var(--amber); }
 .log-item:last-child { border-bottom: 0; }
 .log-item .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
