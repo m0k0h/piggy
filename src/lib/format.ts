@@ -47,6 +47,10 @@ export function relativeDay(value: string): string {
 export const percent = (ratio: number | null): string =>
   ratio === null ? '—' : `${Math.round(ratio * 100)}%`
 
+/** "3/12 saques fallidos · 75% de acierto": el resumen que se repite en cada fila de jugadora. */
+export const serveSummary = (errors: number, attempts: number, ratio: number | null): string =>
+  `${errors}/${attempts} saques fallidos · ${percent(ratio)} de acierto`
+
 export function initials(name: string): string {
   const words = name.trim().split(/\s+/).filter(Boolean)
   if (words.length === 0) return '?'

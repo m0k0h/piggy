@@ -2,10 +2,18 @@ import { useState, type ReactNode } from 'react'
 import { initials } from '../lib/format'
 import { ChevronIcon, ExternalLinkIcon } from './icons'
 
-export function Avatar({ name, on = false }: { name: string; on?: boolean }) {
+export function Avatar({
+  name,
+  number,
+  on = false,
+}: {
+  name: string
+  number?: string
+  on?: boolean
+}) {
   return (
     <span className={on ? 'avatar on' : 'avatar'} aria-hidden="true">
-      {initials(name)}
+      {number?.trim() ? number.trim() : initials(name)}
     </span>
   )
 }
