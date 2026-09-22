@@ -25,20 +25,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - name: Diagnóstico temporal (secret vs variable, no imprime valores)
-        run: |
-          check() {
-            if [ -z "$2" ]; then echo "$1: VACÍO"; else echo "$1: presente (${#2} caracteres)"; fi
-          }
-          check "secrets.VITE_SUPABASE_URL" "$SECRET_URL"
-          check "vars.VITE_SUPABASE_URL" "$VAR_URL"
-          check "secrets.VITE_SUPABASE_ANON_KEY" "$SECRET_KEY"
-          check "vars.VITE_SUPABASE_ANON_KEY" "$VAR_KEY"
-        env:
-          SECRET_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VAR_URL: ${{ vars.VITE_SUPABASE_URL }}
-          SECRET_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VAR_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
       - run: npm run build
         # La conexión con Supabase se compila dentro de la app. La clave `anon`
         # es pública por diseño; lo que protege los datos son las políticas de
@@ -47,3 +33,21 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_TEAM_CODE: ${{ secrets.VITE_TEAM_CODE }}
+      - uses: actions/configure-pages@v5
+        # Activa Pages en el repositorio la primera vez, sin tener que
+        # entrar a Settings → Pages a mano.
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
