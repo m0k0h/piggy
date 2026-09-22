@@ -3,7 +3,7 @@ import { euros, matchDate, percent, plural, relativeDay } from '../lib/format'
 import { navigate } from '../lib/router'
 import { potSummary, share } from '../lib/summary'
 import { useAppState } from '../lib/store'
-import { allServes, balances, fineAmount, matchStatus, pot, tally, upcomingMatches } from '../lib/stats'
+import { allServes, balances, matchStatus, pot, tally, upcomingMatches } from '../lib/stats'
 import type { Balance } from '../lib/stats'
 import { Avatar, Empty, SectionTitle } from '../ui/bits'
 import { CalendarIcon, HomeIcon, PartyIcon, PigIcon, PigLineIcon } from '../ui/icons'
@@ -34,21 +34,20 @@ export function Pot() {
           {/* Siempre el total generado, esté cobrado o no: lo pendiente se ve
               detallado más abajo, en "Pendiente de pagar". */}
           <div className="amount">{euros(totals.owed)}</div>
-          <div className="subtitle">
-            {totals.errors > 0 ? (
-              <>
-                <strong>{plural(totals.errors, 'saque fallado', 'saques fallados')}</strong> ·{' '}
-                <strong>{euros(fineAmount(state))}</strong>
-              </>
-            ) : (
-              'Ni un saque fallado todavía'
-            )}
+          {/* Cuántos fallos lo componen ya se lee bajo el nombre del club, en
+              la cabecera; aquí solo las píldoras que de verdad destacan. */}
+          <div className="pills">
+            {global.attempts > 0 ? (
+              <span className="pill">
+                <strong>{percent(global.ratio)}</strong> de acierto
+              </span>
+            ) : null}
+            {totals.pending > 0 ? (
+              <span className="pill pill-alert">
+                <strong>{euros(totals.pending)}</strong> pendiente
+              </span>
+            ) : null}
           </div>
-          {global.attempts > 0 ? (
-            <div className="accuracy-pill">
-              <strong>{percent(global.ratio)}</strong> de acierto del equipo
-            </div>
-          ) : null}
         </div>
       </div>
 

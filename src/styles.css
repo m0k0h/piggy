@@ -248,24 +248,21 @@ main {
   margin-top: 8px;
 }
 
-/* "3 saques fallados · 1 €": texto corrido, con los números destacados
-   en negrita — un apunte de estilo, sin competir con la cifra grande. */
-.pot .subtitle {
-  margin-top: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  opacity: 0.92;
+/* Las píldoras del hero: el % de acierto siempre, y "pendiente" solo si
+   alguien debe dinero — se nota, pero sin agrandar la tarjeta con una
+   sección aparte. */
+.pot .pills {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
 }
 
-.pot .subtitle strong { font-weight: 800; }
-
-/* El % de acierto es la píldora principal del hero: se nota, pero sin
-   agrandar la tarjeta con una sección aparte. */
-.pot .accuracy-pill {
+.pot .pill {
   display: inline-flex;
   align-items: baseline;
   gap: 5px;
-  margin-top: 12px;
   padding: 7px 16px;
   border-radius: var(--radius-pill);
   background: rgb(255 255 255 / 20%);
@@ -273,12 +270,15 @@ main {
   font-weight: 600;
 }
 
-.pot .accuracy-pill strong {
+.pot .pill strong {
   font-family: var(--display);
   font-size: 19px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
+
+/* La misma píldora, pero avisando de que hay dinero por cobrar. */
+.pot .pill-alert { background: rgb(255 255 255 / 32%); }
 
 /* ---------------------------------------------------------------- stats */
 .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }

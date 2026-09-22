@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
-import { euros } from './lib/format'
+import { euros, plural } from './lib/format'
 import { navigate, useRoute } from './lib/router'
 import { useAppState } from './lib/store'
-import { pot } from './lib/stats'
+import { fineAmount, pot } from './lib/stats'
 import { connect, retry, useSync } from './lib/sync'
 import { Admin } from './screens/Admin'
 import { Matches } from './screens/Matches'
@@ -87,11 +87,13 @@ function TopBar() {
       <Crest team={state.team} />
       <h1>
         {state.team.name}
-        {/* El desglose (pendiente, % de acierto) ya está en el bloque rosa de
-            la Hucha; aquí solo el total, a modo de recordatorio en el resto
-            de pantallas. */}
+        {/* El total y el % de acierto ya están en el bloque rosa de la
+            Hucha; aquí, justo bajo el nombre del club, cuántos fallos lo
+            componen — el mismo dato que antes vivía dentro del hero. */}
         <span className="sub">
-          {totals.owed > 0 ? `${euros(totals.owed)} en total` : 'Sin fallos todavía'}
+          {totals.errors > 0
+            ? `${plural(totals.errors, 'saque fallado', 'saques fallados')} · ${euros(fineAmount(state))}`
+            : 'Ni un saque fallado todavía'}
         </span>
       </h1>
       {sync.status !== 'off' ? (
