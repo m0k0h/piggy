@@ -357,7 +357,9 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
                         {percent(own.ratio)}
                       </span>
                     </span>
-                  ) : null}
+                  ) : (
+                    <span className="line muted">No ha sacado</span>
+                  )}
                 </button>
               )
             })}
