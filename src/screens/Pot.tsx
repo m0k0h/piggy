@@ -1,12 +1,13 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { euros, matchDate, percent, relativeDay, serveSummary } from '../lib/format'
 import { navigate } from '../lib/router'
 import { potSummary, share } from '../lib/summary'
 import { useAppState } from '../lib/store'
-import { allServes, balances, matchStatus, pot, tally, upcomingMatches } from '../lib/stats'
+import { allPayments, allServes, balances, matchStatus, pot, tally, upcomingMatches } from '../lib/stats'
 import type { Balance } from '../lib/stats'
+import type { AppState, Payment } from '../types'
 import { Avatar, Empty, SectionTitle } from '../ui/bits'
-import { CalendarIcon, HomeIcon, PartyIcon, PigIcon, PigLineIcon } from '../ui/icons'
+import { CalendarIcon, CoinsIcon, HomeIcon, PartyIcon, PigIcon, PigLineIcon } from '../ui/icons'
 
 export function Pot() {
   const state = useAppState()
@@ -17,6 +18,9 @@ export function Pot() {
   const [toast, setToast] = useState('')
 
   const withDebt = rows.filter((row) => row.pending > 0)
+  const lastPayments = [...allPayments(state)]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 3)
 
   const onShare = async () => {
     const result = await share(potSummary(state))
@@ -24,6 +28,69 @@ export function Pot() {
     else if (result === 'failed') setToast('No se ha podido compartir')
     setTimeout(() => setToast(''), 2500)
   }
+
+  const pendingSection: ReactNode = (
+    <>
+      <SectionTitle
+        aside={
+          totals.pending > 0 ? <span className="chip money">{euros(totals.pending)}</span> : null
+        }
+      >
+        Pendiente de pagar
+      </SectionTitle>
+
+      {rows.length === 0 ? (
+        <div className="card">
+          <Empty icon={<PigIcon size={74} />} title="La hucha está vacía" highlight>
+            En cuanto se anoten saques, aparecerá aquí lo que debe cada una.
+          </Empty>
+        </div>
+      ) : withDebt.length === 0 ? (
+        <div className="card">
+          <Empty icon={<PartyIcon />} title="Todas al día">
+            {totals.owed > 0 ? (
+              <>
+                No queda nada por cobrar.
+                <br />
+                Los {euros(totals.paid)} ya están en la hucha.
+              </>
+            ) : (
+              'Aún no hay fallos anotados.'
+            )}
+          </Empty>
+        </div>
+      ) : (
+        <div className="card flush">
+          <div className="list">
+            {withDebt.map((row) => (
+              <DebtRow key={row.player.id} row={row} />
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  )
+
+  const lastPaymentsSection: ReactNode = (
+    <>
+      <SectionTitle>Últimos pagos</SectionTitle>
+      {lastPayments.length === 0 ? (
+        <div className="card">
+          <Empty icon={<CoinsIcon />} title="Todavía no hay pagos">
+            Se registran desde administración, en Cobros.
+          </Empty>
+        </div>
+      ) : (
+        <div className="card flush">
+          <div className="list">
+            {lastPayments.map((payment) => (
+              <PaymentRow key={payment.id} payment={payment} state={state} />
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  )
 
   return (
     <>
@@ -86,42 +153,16 @@ export function Pot() {
         </div>
       )}
 
-      <SectionTitle
-        aside={
-          totals.pending > 0 ? <span className="chip money">{euros(totals.pending)}</span> : null
-        }
-      >
-        Pendiente de pagar
-      </SectionTitle>
-
-      {rows.length === 0 ? (
-        <div className="card">
-          <Empty icon={<PigIcon size={74} />} title="La hucha está vacía" highlight>
-            En cuanto se anoten saques, aparecerá aquí lo que debe cada una.
-          </Empty>
-        </div>
-      ) : withDebt.length === 0 ? (
-        <div className="card">
-          <Empty icon={<PartyIcon />} title="Todas al día">
-            {totals.owed > 0 ? (
-              <>
-                No queda nada por cobrar.
-                <br />
-                Los {euros(totals.paid)} ya están en la hucha.
-              </>
-            ) : (
-              'Aún no hay fallos anotados.'
-            )}
-          </Empty>
-        </div>
+      {withDebt.length > 0 ? (
+        <>
+          {pendingSection}
+          {lastPaymentsSection}
+        </>
       ) : (
-        <div className="card flush">
-          <div className="list">
-            {withDebt.map((row) => (
-              <DebtRow key={row.player.id} row={row} />
-            ))}
-          </div>
-        </div>
+        <>
+          {lastPaymentsSection}
+          {pendingSection}
+        </>
       )}
 
       <button className="btn ghost block" onClick={onShare}>
@@ -146,6 +187,26 @@ function DebtRow({ row }: { row: Balance }) {
       </span>
       <span className="trail">
         <span className="big">{euros(row.pending)}</span>
+      </span>
+    </div>
+  )
+}
+
+/** Un pago ya registrado: solo lectura, cobrar es cosa de administración. */
+function PaymentRow({ payment, state }: { payment: Payment; state: AppState }) {
+  const player = state.players[payment.playerId]
+  return (
+    <div className="row">
+      <Avatar name={player?.name ?? 'Jugadora'} number={player?.number} />
+      <span className="grow">
+        <span className="title">{player?.name ?? 'Jugadora'}</span>
+        <span className="meta">
+          {payment.note ? `${payment.note} · ` : ''}
+          {matchDate(payment.createdAt)}
+        </span>
+      </span>
+      <span className="trail">
+        <span className="big">{euros(payment.amount)}</span>
       </span>
     </div>
   )
