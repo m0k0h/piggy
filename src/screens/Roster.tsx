@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { euros, percent, plural } from '../lib/format'
 import { navigate } from '../lib/router'
 import { addPlayer, removePlayer, updatePlayer, useAppState } from '../lib/store'
 import { balances } from '../lib/stats'
+import { useRole } from '../lib/sync'
 import type { Player } from '../types'
 import { Sheet } from '../ui/Sheet'
 import { Avatar, Empty, Field, SectionTitle } from '../ui/bits'
@@ -11,6 +12,7 @@ type Editing = Player | 'new' | null
 
 export function Roster() {
   const state = useAppState()
+  const isAdmin = useRole() === 'admin'
   const rows = balances(state)
   const [editing, setEditing] = useState<Editing>(null)
 
@@ -21,24 +23,31 @@ export function Roster() {
       {rows.length === 0 ? (
         <div className="card">
           <Empty glyph="🏐" title="Todavía no hay jugadoras">
-            Añádelas a mano o impórtalas desde Sportagia.
+            {isAdmin
+              ? 'Añádelas a mano o impórtalas desde Sportagia.'
+              : 'La administradora todavía no ha dado de alta al equipo.'}
           </Empty>
-          <div className="btn-row">
-            <button className="btn ghost" onClick={() => navigate('importar')}>
-              Importar
-            </button>
-            <button className="btn" onClick={() => setEditing('new')}>
-              Añadir
-            </button>
-          </div>
+          {isAdmin ? (
+            <div className="btn-row">
+              <button className="btn ghost" onClick={() => navigate('importar')}>
+                Importar
+              </button>
+              <button className="btn" onClick={() => setEditing('new')}>
+                Añadir
+              </button>
+            </div>
+          ) : null}
         </div>
       ) : (
         <>
           <div className="card flush">
             <div className="list">
               {rows.map(({ player, tally, pending }) => (
-                <button key={player.id} className="row" onClick={() => setEditing(player)}>
-                  <Avatar name={player.name} />
+                <PlayerRow
+                  key={player.id}
+                  onEdit={isAdmin ? () => setEditing(player) : null}
+                  avatar={<Avatar name={player.name} />}
+                >
                   <span className="grow">
                     <span className="title">{player.name}</span>
                     <span className="meta">
@@ -51,19 +60,21 @@ export function Roster() {
                       {pending > 0 ? euros(pending) : 'al día'}
                     </span>
                   </span>
-                </button>
+                </PlayerRow>
               ))}
             </div>
           </div>
 
-          <div className="btn-row">
-            <button className="btn ghost" onClick={() => navigate('importar')}>
-              Importar
-            </button>
-            <button className="btn" onClick={() => setEditing('new')}>
-              Añadir jugadora
-            </button>
-          </div>
+          {isAdmin ? (
+            <div className="btn-row">
+              <button className="btn ghost" onClick={() => navigate('importar')}>
+                Importar
+              </button>
+              <button className="btn" onClick={() => setEditing('new')}>
+                Añadir jugadora
+              </button>
+            </div>
+          ) : null}
         </>
       )}
 
@@ -74,6 +85,29 @@ export function Roster() {
         />
       ) : null}
     </>
+  )
+}
+
+/** En la vista de jugadora la plantilla se consulta, no se toca. */
+function PlayerRow({
+  avatar,
+  onEdit,
+  children,
+}: {
+  avatar: ReactNode
+  onEdit: (() => void) | null
+  children: ReactNode
+}) {
+  return onEdit ? (
+    <button className="row" onClick={onEdit}>
+      {avatar}
+      {children}
+    </button>
+  ) : (
+    <div className="row">
+      {avatar}
+      {children}
+    </div>
   )
 }
 

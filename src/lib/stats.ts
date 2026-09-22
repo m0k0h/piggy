@@ -1,4 +1,4 @@
-import type { AppState, Match, Payment, Player, Serve } from '../types'
+import { TEAM_ROW_ID, type AppState, type Lineup, type Match, type MatchStatus, type Payment, type Player, type Serve } from '../types'
 
 const alive = <T extends { deletedAt: string | null }>(rows: Record<string, T>) =>
   Object.values(rows).filter((row) => row.deletedAt === null)
@@ -12,23 +12,49 @@ export const allMatches = (s: AppState): Match[] =>
 export const allServes = (s: AppState): Serve[] => alive(s.serves)
 export const allPayments = (s: AppState): Payment[] => alive(s.payments)
 
+export const fineAmount = (s: AppState): number => s.team.fineAmount
+export const teamName = (s: AppState): string => s.team.name
+
+/** Convocatoria de un partido, si ya se inició. */
+export const lineupOf = (s: AppState, matchId: string): Lineup | null => {
+  const lineup = s.lineups[matchId]
+  return lineup && lineup.deletedAt === null ? lineup : null
+}
+
+/** Sin convocatoria, el partido sigue simplemente programado. */
+export const matchStatus = (s: AppState, matchId: string): MatchStatus =>
+  lineupOf(s, matchId)?.status ?? 'scheduled'
+
+export const rosterIds = (s: AppState, matchId: string): string[] => lineupOf(s, matchId)?.roster ?? []
+
+/** Las convocadas que siguen en la plantilla, en el orden en que se muestran. */
+export const rosterOf = (s: AppState, matchId: string): Player[] =>
+  rosterIds(s, matchId)
+    .map((id) => s.players[id])
+    .filter((player): player is Player => Boolean(player) && player.deletedAt === null)
+    .sort((a, b) => a.name.localeCompare(b.name, 'es'))
+
 /** Partidos aún por jugar o en curso, del más próximo al más lejano. */
 export const upcomingMatches = (s: AppState): Match[] =>
   allMatches(s)
-    .filter((m) => m.status !== 'finished')
+    .filter((match) => matchStatus(s, match.id) !== 'finished')
     .sort((a, b) => a.date.localeCompare(b.date))
 
 export const finishedMatches = (s: AppState): Match[] =>
-  allMatches(s).filter((m) => m.status === 'finished')
+  allMatches(s).filter((match) => matchStatus(s, match.id) === 'finished')
+
+/** Partidos con acta: los que ya tienen algo que contar. */
+export const playedMatches = (s: AppState): Match[] =>
+  allMatches(s).filter((match) => matchStatus(s, match.id) !== 'scheduled')
 
 export const servesOfMatch = (s: AppState, matchId: string): Serve[] =>
   allServes(s)
     .filter((serve) => serve.matchId === matchId)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
 
-/** Quién cuenta en el acta de un partido: la convocatoria más quien llegó a sacar. */
-export function participants(s: AppState, matchId: string, roster: string[]) {
-  const ids = new Set(roster)
+/** Quién cuenta en el acta: la convocatoria más cualquiera que llegara a sacar. */
+export function participants(s: AppState, matchId: string): Player[] {
+  const ids = new Set(rosterIds(s, matchId))
   for (const serve of allServes(s)) {
     if (serve.matchId === matchId) ids.add(serve.playerId)
   }
@@ -97,7 +123,7 @@ export function balances(s: AppState): Balance[] {
   return [...active, ...departed]
     .map((player) => {
       const own = tallyByPlayer(serves, player.id)
-      const owed = own.errors * s.settings.fineAmount
+      const owed = own.errors * fineAmount(s)
       const paid = payments
         .filter((payment) => payment.playerId === player.id)
         .reduce((sum, payment) => sum + payment.amount, 0)
@@ -117,7 +143,7 @@ export interface Pot {
 /** Totales de la hucha del equipo. */
 export function pot(s: AppState): Pot {
   const errors = tally(allServes(s)).errors
-  const owed = errors * s.settings.fineAmount
+  const owed = errors * fineAmount(s)
   const paid = allPayments(s).reduce((sum, payment) => sum + payment.amount, 0)
   return { owed, paid, pending: owed - paid, errors }
 }
@@ -126,3 +152,5 @@ export function pot(s: AppState): Pot {
 export function currentSet(serves: Serve[]): number {
   return serves.reduce((max, serve) => Math.max(max, serve.set), 1)
 }
+
+export { TEAM_ROW_ID }

@@ -8,7 +8,13 @@ Funciona sin cobertura: los datos se guardan en el propio móvil y se suben
 cuando vuelve la conexión. Se puede instalar en la pantalla de inicio como una
 app más.
 
+La administradora prepara el equipo y el calendario; el resto solo abre un
+partido ya creado y anota. La separación la aplica la base de datos, no la
+interfaz.
+
 ## Cómo se usa
+
+Los pasos 1 y 2 son de la administradora. Del 3 al 6 los hace cualquiera.
 
 1. **Plantilla** → añade las jugadoras (o impórtalas, ver más abajo).
 2. **Partidos** → crea el partido contra el rival de turno.
@@ -20,32 +26,60 @@ app más.
 5. El selector de **Set** sirve para separar las estadísticas por set.
 6. Al acabar, **Finalizar**: queda el acta del partido con el ratio de cada una
    y un botón para compartir el resumen por WhatsApp.
-7. En **Hucha** ves quién debe cuánto; al tocar a una jugadora se registra lo
-   que paga. También puedes compartir el estado de cuentas para anunciarlo
-   antes del siguiente partido.
+7. En **Hucha** se ve quién debe cuánto. La administradora toca a una jugadora
+   para registrar lo que paga; el resto lo consulta. El botón de compartir saca
+   el estado de cuentas listo para anunciarlo antes del siguiente partido.
 
-## Compartir la hucha con todo el equipo
+## La base de datos del equipo
 
 Sin configurar nada, la app funciona entera pero solo en un móvil. Para que
 todas veáis lo mismo en tiempo real hace falta un proyecto gratuito de
-Supabase:
+Supabase. Se hace una vez:
 
 1. Crea una cuenta en [supabase.com](https://supabase.com) y un proyecto nuevo.
 2. Abre el **SQL Editor**, pega el contenido de
    [`supabase/schema.sql`](supabase/schema.sql) y pulsa **Run**.
-3. En **Project Settings → API** copia la *Project URL* y la clave *anon*.
-4. En la app: **Ajustes → Compartir con el equipo**, pega las dos, pulsa
-   **Generar código** y luego **Conectar**.
-5. Pulsa **Invitar al equipo**: se genera un enlace que ya lleva dentro la
-   configuración. Quien lo abra entra directo a la misma hucha.
+3. **Authentication → Users → Add user**: tu email y una contraseña, con *Auto
+   Confirm User* marcado. Ese es tu usuario de administradora. El equipo no
+   necesita ninguno.
+4. **Project Settings → API**: copia la *Project URL* y la clave *anon*.
+5. En la app: **Ajustes → Sincronización**, pega las dos, pulsa **Generar
+   código** y luego **Conectar**.
+6. **Ajustes → Soy la admin**: entra con el email y la contraseña del paso 3.
+   El móvil recuerda la sesión.
+7. **Invitar al equipo**: genera un enlace que ya lleva la configuración
+   dentro. Quien lo abra entra directo a anotar saques.
 
 El punto verde de la cabecera indica que está sincronizado. Si se va la
 conexión en el pabellón, se sigue anotando igual y los cambios suben solos al
 volver.
 
-> **Sobre la privacidad:** quien tenga el enlace de invitación puede leer y
-> escribir los datos del equipo. Es suficiente para una hucha de saques, pero
-> no guardes aquí nada sensible.
+## Quién puede hacer qué
+
+| | Administradora | Resto del equipo |
+| --- | --- | --- |
+| Plantilla de jugadoras | Crear, editar, quitar | No la ve |
+| Calendario de partidos | Crear, editar, borrar, importar | Solo consultar |
+| Convocatoria e inicio del partido | Sí | Sí |
+| Anotar y corregir saques | Sí | Sí |
+| Hucha y estadísticas | Ver y cobrar | Solo ver |
+| Nombre del equipo y euros por fallo | Cambiar | Solo ver |
+
+La administradora es simplemente quien ha iniciado sesión. El enlace es el
+mismo para todas: **el secreto es la contraseña, no la URL**, que se comparte
+por WhatsApp y queda en el historial del navegador.
+
+Y la separación no es cosmética. Las reglas de
+[`supabase/schema.sql`](supabase/schema.sql) las aplica Postgres: sin sesión
+iniciada, la base de datos solo acepta escrituras en convocatorias y saques.
+Un intento de crear una jugadora se rechaza en el servidor aunque alguien
+modificara la app en su navegador. Nadie, ni la administradora, puede borrar
+filas: la app marca lo borrado con un campo, así que un fallo no se lleva por
+delante el historial.
+
+> **Hasta dónde llega:** quien tenga el enlace de invitación puede leer los
+> datos del equipo y anotar saques. Es lo que queremos. Pero no guardes aquí
+> nada que no dirías en el vestuario.
 
 ## Importar desde Sportagia
 
@@ -74,13 +108,13 @@ del importador ya está hecho.
 ```bash
 npm install
 npm run dev      # servidor local
-npm test         # tests de la lógica de cuentas y del importador
+npm test         # cuentas, importador, permisos y migración de datos
 npm run lint
 npm run build    # genera dist/
 ```
 
-El flujo completo (crear plantilla, jugar un partido, cobrar, importar) está
-cubierto por los tests de `src/lib/__tests__/`.
+Los tests de `src/lib/__tests__/` cubren las cuentas de la hucha, el parser del
+importador, el reparto de permisos y la migración desde el formato anterior.
 
 ### Publicar
 
@@ -93,9 +127,9 @@ Vercel o cualquier hosting estático.
 
 | Dónde | Qué hay |
 | --- | --- |
-| `src/types.ts` | El dominio: jugadoras, partidos, saques, pagos. |
-| `src/lib/store.ts` | Estado y persistencia en el móvil. |
-| `src/lib/sync.ts` | Sincronización con Supabase (opcional, con cola de reintentos). |
+| `src/types.ts` | El dominio: jugadoras, partidos, convocatorias, saques, pagos. |
+| `src/lib/store.ts` | Estado, persistencia en el móvil y migración de formatos. |
+| `src/lib/sync.ts` | Conexión con Supabase: sesión, rol, réplica y cola de reintentos. |
 | `src/lib/stats.ts` | Ratios, deudas y totales de la hucha. |
 | `src/lib/sportagia.ts` | Importador y parser de lo pegado. |
 | `src/lib/summary.ts` | Los textos que se comparten por WhatsApp. |
@@ -103,3 +137,13 @@ Vercel o cualquier hosting estático.
 
 Los borrados son lógicos y cada fila lleva `updatedAt`: así dos móviles que
 anotan a la vez nunca se pisan, gana siempre la versión más reciente.
+
+La convocatoria y el estado del acta viven en su propia colección (`lineups`),
+separados de la ficha del partido. Eso es lo que permite que el equipo pueda
+iniciar y cerrar un partido sin tener permiso para tocar la fecha o el rival, y
+que la administradora corrija el calendario mientras alguien anota sin que uno
+pise al otro.
+
+`PLAYER_WRITABLE` en [`src/types.ts`](src/types.ts) y las políticas de
+[`supabase/schema.sql`](supabase/schema.sql) tienen que decir lo mismo; hay un
+test que falla si dejan de coincidir.

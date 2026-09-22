@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
+import { euros } from './lib/format'
 import { navigate, useRoute } from './lib/router'
 import { getState, useAppState } from './lib/store'
-import { connect, retry, useSync } from './lib/sync'
-import { pot } from './lib/stats'
-import { euros } from './lib/format'
+import { pot, teamName } from './lib/stats'
+import { connect, retry, useRole, useSync } from './lib/sync'
+import type { Role } from './types'
 import { Import } from './screens/Import'
 import { Join } from './screens/Join'
 import { Matches } from './screens/Matches'
@@ -13,24 +14,27 @@ import { Roster } from './screens/Roster'
 import { Settings } from './screens/Settings'
 import { Stats } from './screens/Stats'
 
-const TABS = [
-  { key: 'hucha', label: 'Hucha', glyph: '🐷' },
-  { key: 'partidos', label: 'Partidos', glyph: '🏐' },
-  { key: 'plantilla', label: 'Plantilla', glyph: '👥' },
-  { key: 'stats', label: 'Stats', glyph: '📊' },
-] as const
-
-type TabKey = (typeof TABS)[number]['key']
-
-const TAB_SCREENS: Record<TabKey, () => React.JSX.Element> = {
-  hucha: Pot,
-  partidos: Matches,
-  plantilla: Roster,
-  stats: Stats,
+interface Tab {
+  key: string
+  label: string
+  glyph: string
+  screen: () => React.JSX.Element
+  /** La plantilla solo la gestiona la admin, así que al equipo no le ocupa sitio. */
+  adminOnly?: boolean
 }
+
+const TABS: Tab[] = [
+  { key: 'hucha', label: 'Hucha', glyph: '🐷', screen: Pot },
+  { key: 'partidos', label: 'Partidos', glyph: '🏐', screen: Matches },
+  { key: 'plantilla', label: 'Plantilla', glyph: '👥', screen: Roster, adminOnly: true },
+  { key: 'stats', label: 'Stats', glyph: '📊', screen: Stats },
+]
+
+const tabsFor = (role: Role) => TABS.filter((tab) => role === 'admin' || !tab.adminOnly)
 
 export function App() {
   const route = useRoute()
+  const role = useRole()
 
   useEffect(() => {
     void connect(getState().settings)
@@ -73,8 +77,9 @@ export function App() {
     )
   }
 
-  const tab: TabKey = TABS.some((t) => t.key === head) ? (head as TabKey) : 'hucha'
-  const Screen = TAB_SCREENS[tab]
+  const tabs = tabsFor(role)
+  const current = tabs.find((tab) => tab.key === head) ?? tabs[0]
+  const Screen = current.screen
 
   return (
     <div className="app has-tabs">
@@ -83,16 +88,16 @@ export function App() {
         <Screen />
       </main>
       <nav className="tabbar">
-        {TABS.map((item) => (
+        {tabs.map((tab) => (
           <button
-            key={item.key}
-            onClick={() => navigate(item.key)}
-            aria-current={tab === item.key ? 'page' : undefined}
+            key={tab.key}
+            onClick={() => navigate(tab.key)}
+            aria-current={current.key === tab.key ? 'page' : undefined}
           >
             <span className="glyph" aria-hidden="true">
-              {item.glyph}
+              {tab.glyph}
             </span>
-            {item.label}
+            {tab.label}
           </button>
         ))}
       </nav>
@@ -108,7 +113,7 @@ function TopBar() {
   return (
     <header className="topbar">
       <h1>
-        {state.settings.teamName}
+        {teamName(state)}
         <span className="sub">
           {totals.pending > 0 ? `${euros(totals.pending)} en la hucha` : 'Hucha al día'}
         </span>

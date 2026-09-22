@@ -2,21 +2,20 @@ import { useState } from 'react'
 import { euros, matchDateLong, percent, plural, relativeDay } from '../lib/format'
 import { goBack, navigate } from '../lib/router'
 import { matchSummary, share } from '../lib/summary'
-import {
-  addPlayer,
-  addServe,
-  removeServe,
-  updateMatch,
-  useAppState,
-} from '../lib/store'
+import { addPlayer, addServe, removeServe, saveLineup, useAppState } from '../lib/store'
 import {
   allPlayers,
   currentSet,
+  fineAmount,
+  matchStatus,
   participants,
+  rosterIds,
+  rosterOf,
   servesOfMatch,
   tally,
   tallyByPlayer,
 } from '../lib/stats'
+import { useRole } from '../lib/sync'
 import type { AppState, Match, Player, ServeResult } from '../types'
 import { MatchSheet } from './Matches'
 import { Sheet } from '../ui/Sheet'
@@ -42,17 +41,23 @@ export function MatchScreen({ matchId }: { matchId: string }) {
     )
   }
 
-  if (match.status === 'live') return <LiveMatch match={match} state={state} />
-  if (match.status === 'finished') return <MatchReport match={match} state={state} />
+  const status = matchStatus(state, matchId)
+  if (status === 'live') return <LiveMatch match={match} state={state} />
+  if (status === 'finished') return <MatchReport match={match} state={state} />
   return <MatchPreview match={match} state={state} />
 }
 
-const rosterOf = (state: AppState, match: Match): Player[] =>
-  match.roster
-    .map((id) => state.players[id])
-    .filter((player): player is Player => Boolean(player) && player.deletedAt === null)
-
 const titleOf = (match: Match) => `${match.home ? 'vs' : '@'} ${match.opponent || 'Rival'}`
+
+/** Botón de editar, solo para quien puede cambiar la ficha del partido. */
+function EditAction({ onEdit }: { onEdit: () => void }) {
+  if (useRole() !== 'admin') return null
+  return (
+    <button className="btn ghost small" onClick={onEdit}>
+      Editar
+    </button>
+  )
+}
 
 // --------------------------------------------------------------- programado
 
@@ -67,7 +72,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
         state={state}
         onCancel={() => setCallUp(false)}
         onConfirm={(roster) => {
-          updateMatch(match.id, { roster, status: 'live' })
+          saveLineup(match.id, { roster, status: 'live' })
           setCallUp(false)
         }}
       />
@@ -80,11 +85,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
         title={titleOf(match)}
         subtitle={relativeDay(match.date)}
         onBack={goBack}
-        actions={
-          <button className="btn ghost small" onClick={() => setEditing(true)}>
-            Editar
-          </button>
-        }
+        actions={<EditAction onEdit={() => setEditing(true)} />}
       />
       <main>
         <div className="card stack">
@@ -120,8 +121,9 @@ function CallUp({
   onCancel: () => void
   onConfirm: (roster: string[]) => void
 }) {
+  const isAdmin = useRole() === 'admin'
   const players = allPlayers(state)
-  const [selected, setSelected] = useState<string[]>(match.roster)
+  const [selected, setSelected] = useState<string[]>(() => rosterIds(state, match.id))
   const [adding, setAdding] = useState(false)
   const [newName, setNewName] = useState('')
 
@@ -150,7 +152,9 @@ function CallUp({
         {players.length === 0 ? (
           <div className="card">
             <Empty glyph="🏐" title="No hay jugadoras en la plantilla">
-              Añade al menos una para poder anotar saques.
+              {isAdmin
+                ? 'Añade al menos una para poder anotar saques.'
+                : 'La administradora todavía no ha dado de alta al equipo.'}
             </Empty>
           </div>
         ) : (
@@ -196,32 +200,34 @@ function CallUp({
           </>
         )}
 
-        {adding ? (
-          <div className="card stack">
-            <div className="field">
-              <input
-                value={newName}
-                onChange={(event) => setNewName(event.target.value)}
-                onKeyDown={(event) => event.key === 'Enter' && quickAdd()}
-                placeholder="Nombre de la jugadora"
-                autoFocus
-                autoComplete="off"
-              />
+        {isAdmin ? (
+          adding ? (
+            <div className="card stack">
+              <div className="field">
+                <input
+                  value={newName}
+                  onChange={(event) => setNewName(event.target.value)}
+                  onKeyDown={(event) => event.key === 'Enter' && quickAdd()}
+                  placeholder="Nombre de la jugadora"
+                  autoFocus
+                  autoComplete="off"
+                />
+              </div>
+              <div className="btn-row">
+                <button className="btn ghost" onClick={() => setAdding(false)}>
+                  Cancelar
+                </button>
+                <button className="btn" onClick={quickAdd} disabled={!newName.trim()}>
+                  Añadir
+                </button>
+              </div>
             </div>
-            <div className="btn-row">
-              <button className="btn ghost" onClick={() => setAdding(false)}>
-                Cancelar
-              </button>
-              <button className="btn" onClick={quickAdd} disabled={!newName.trim()}>
-                Añadir
-              </button>
-            </div>
-          </div>
-        ) : (
-          <button className="btn ghost block" onClick={() => setAdding(true)}>
-            + Falta alguien
-          </button>
-        )}
+          ) : (
+            <button className="btn ghost block" onClick={() => setAdding(true)}>
+              + Falta alguien
+            </button>
+          )
+        ) : null}
 
         <button
           className="btn block"
@@ -239,14 +245,14 @@ function CallUp({
 
 function LiveMatch({ match, state }: { match: Match; state: AppState }) {
   const serves = servesOfMatch(state, match.id)
-  const roster = rosterOf(state, match)
+  const roster = rosterOf(state, match.id)
   const [set, setSet] = useState(() => currentSet(serves))
   const [picking, setPicking] = useState<Player | null>(null)
   const [editingRoster, setEditingRoster] = useState(false)
   const [confirmEnd, setConfirmEnd] = useState(false)
 
   const total = tally(serves)
-  const fines = total.errors * state.settings.fineAmount
+  const fines = total.errors * fineAmount(state)
   const recent = [...serves].reverse().slice(0, 8)
 
   if (editingRoster) {
@@ -256,7 +262,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
         state={state}
         onCancel={() => setEditingRoster(false)}
         onConfirm={(next) => {
-          updateMatch(match.id, { roster: next })
+          saveLineup(match.id, { roster: next })
           setEditingRoster(false)
         }}
       />
@@ -366,7 +372,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
       {picking ? (
         <ResultSheet
           player={picking}
-          fine={state.settings.fineAmount}
+          fine={fineAmount(state)}
           onPick={(result) => {
             addServe(match.id, picking.id, result, set)
             setPicking(null)
@@ -379,9 +385,8 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
         <Sheet title="¿Finalizar el partido?" onClose={() => setConfirmEnd(false)}>
           <div className="stack">
             <p className="small muted">
-              Se cierra el acta con {plural(total.attempts, 'saque', 'saques')} y {euros(fines)} para la
-              hucha. Podrás
-              reabrirlo si falta algo.
+              Se cierra el acta con {plural(total.attempts, 'saque', 'saques')} y {euros(fines)} para
+              la hucha. Podrás reabrirlo si falta algo.
             </p>
             <div className="btn-row">
               <button className="btn ghost" onClick={() => setConfirmEnd(false)}>
@@ -390,7 +395,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
               <button
                 className="btn"
                 onClick={() => {
-                  updateMatch(match.id, { status: 'finished' })
+                  saveLineup(match.id, { status: 'finished' })
                   setConfirmEnd(false)
                 }}
               >
@@ -447,13 +452,13 @@ function ResultSheet({
 
 function MatchReport({ match, state }: { match: Match; state: AppState }) {
   const serves = servesOfMatch(state, match.id)
-  const roster = participants(state, match.id, match.roster)
   const total = tally(serves)
-  const fines = total.errors * state.settings.fineAmount
+  const fine = fineAmount(state)
+  const fines = total.errors * fine
   const [editing, setEditing] = useState(false)
   const [toast, setToast] = useState('')
 
-  const rows = roster
+  const rows = participants(state, match.id)
     .map((player) => ({ player, own: tallyByPlayer(serves, player.id) }))
     .sort((a, b) => b.own.errors - a.own.errors || b.own.attempts - a.own.attempts)
 
@@ -470,11 +475,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
         title={titleOf(match)}
         subtitle={matchDateLong(match.date)}
         onBack={() => navigate('partidos')}
-        actions={
-          <button className="btn ghost small" onClick={() => setEditing(true)}>
-            Editar
-          </button>
-        }
+        actions={<EditAction onEdit={() => setEditing(true)} />}
       />
       <main>
         <div className="stat-row">
@@ -507,9 +508,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
                       <span className={own.errors > 0 ? 'chip bad' : 'chip good'}>
                         {own.errors} ❌
                       </span>
-                      <span className="meta">
-                        {own.errors > 0 ? euros(own.errors * state.settings.fineAmount) : '—'}
-                      </span>
+                      <span className="meta">{own.errors > 0 ? euros(own.errors * fine) : '—'}</span>
                     </span>
                   </div>
                 ))}
@@ -523,10 +522,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
         </button>
         {toast ? <div className="banner good">{toast}</div> : null}
 
-        <button
-          className="btn quiet"
-          onClick={() => updateMatch(match.id, { status: 'live' })}
-        >
+        <button className="btn quiet" onClick={() => saveLineup(match.id, { status: 'live' })}>
           Reabrir para seguir anotando
         </button>
       </main>

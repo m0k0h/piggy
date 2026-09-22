@@ -3,9 +3,10 @@ import { euros, matchDate, percent, plural } from '../lib/format'
 import { navigate } from '../lib/router'
 import { useAppState } from '../lib/store'
 import {
-  allMatches,
   allPlayers,
   allServes,
+  fineAmount,
+  playedMatches,
   servesOfMatch,
   tally,
   tallyByPlayer,
@@ -22,13 +23,13 @@ const ORDERS: { key: Order; label: string }[] = [
 
 export function Stats() {
   const state = useAppState()
-  const matches = allMatches(state).filter((match) => match.status !== 'scheduled')
+  const matches = playedMatches(state)
   const [scope, setScope] = useState('all')
   const [order, setOrder] = useState<Order>('ratio')
 
   const serves = scope === 'all' ? allServes(state) : servesOfMatch(state, scope)
   const total = tally(serves)
-  const fine = state.settings.fineAmount
+  const fine = fineAmount(state)
 
   const rows = allPlayers(state)
     .map((player) => ({ player, own: tallyByPlayer(serves, player.id) }))

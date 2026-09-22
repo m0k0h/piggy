@@ -2,7 +2,15 @@ import { useState } from 'react'
 import { defaultMatchDate, euros, matchDate, percent, relativeDay, toInputValue } from '../lib/format'
 import { navigate } from '../lib/router'
 import { addMatch, removeMatch, updateMatch, useAppState } from '../lib/store'
-import { finishedMatches, servesOfMatch, tally, upcomingMatches } from '../lib/stats'
+import {
+  fineAmount,
+  finishedMatches,
+  matchStatus,
+  servesOfMatch,
+  tally,
+  upcomingMatches,
+} from '../lib/stats'
+import { useRole } from '../lib/sync'
 import type { AppState, Match } from '../types'
 import { Sheet } from '../ui/Sheet'
 import { Empty, Field, SectionTitle } from '../ui/bits'
@@ -11,6 +19,7 @@ type Editing = Match | 'new' | null
 
 export function Matches() {
   const state = useAppState()
+  const isAdmin = useRole() === 'admin'
   const upcoming = upcomingMatches(state)
   const played = finishedMatches(state)
   const [editing, setEditing] = useState<Editing>(null)
@@ -21,7 +30,9 @@ export function Matches() {
       {upcoming.length === 0 ? (
         <div className="card">
           <Empty glyph="📅" title="Sin partidos pendientes">
-            Créalos a mano o tráete el calendario desde Sportagia.
+            {isAdmin
+              ? 'Créalos a mano o tráete el calendario desde Sportagia.'
+              : 'Cuando la administradora prepare el próximo, aparecerá aquí.'}
           </Empty>
         </div>
       ) : (
@@ -34,14 +45,16 @@ export function Matches() {
         </div>
       )}
 
-      <div className="btn-row">
-        <button className="btn ghost" onClick={() => navigate('importar')}>
-          Importar
-        </button>
-        <button className="btn" onClick={() => setEditing('new')}>
-          Nuevo partido
-        </button>
-      </div>
+      {isAdmin ? (
+        <div className="btn-row">
+          <button className="btn ghost" onClick={() => navigate('importar')}>
+            Importar
+          </button>
+          <button className="btn" onClick={() => setEditing('new')}>
+            Nuevo partido
+          </button>
+        </div>
+      ) : null}
 
       {played.length > 0 ? (
         <>
@@ -64,8 +77,9 @@ export function Matches() {
 }
 
 function MatchRow({ match, state }: { match: Match; state: AppState }) {
+  const status = matchStatus(state, match.id)
   const stats = tally(servesOfMatch(state, match.id))
-  const fines = stats.errors * state.settings.fineAmount
+  const fines = stats.errors * fineAmount(state)
 
   return (
     <button className="row" onClick={() => navigate(`partido/${match.id}`)}>
@@ -76,14 +90,14 @@ function MatchRow({ match, state }: { match: Match; state: AppState }) {
         </span>
         <span className="meta">
           {matchDate(match.date)}
-          {match.status === 'finished' ? '' : ` · ${relativeDay(match.date)}`}
+          {status === 'finished' ? '' : ` · ${relativeDay(match.date)}`}
           {match.venue ? ` · ${match.venue}` : ''}
         </span>
       </span>
       <span className="trail">
-        {match.status === 'live' ? (
+        {status === 'live' ? (
           <span className="chip live">EN JUEGO</span>
-        ) : match.status === 'finished' ? (
+        ) : status === 'finished' ? (
           <>
             <span className="big">{percent(stats.ratio)}</span>
             <span className="meta">{euros(fines)}</span>
@@ -96,6 +110,7 @@ function MatchRow({ match, state }: { match: Match; state: AppState }) {
   )
 }
 
+/** Alta y edición del partido: fecha, rival y sitio. Solo la administradora. */
 export function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => void }) {
   const [date, setDate] = useState(match ? toInputValue(match.date) : defaultMatchDate())
   const [opponent, setOpponent] = useState(match?.opponent ?? '')
@@ -105,14 +120,14 @@ export function MatchSheet({ match, onClose }: { match: Match | null; onClose: (
 
   const save = () => {
     if (!opponent.trim() || !date) return
-    if (match) updateMatch(match.id, { date, opponent: opponent.trim(), venue: venue.trim(), home })
-    else {
-      const created = addMatch({ date, opponent, venue, home })
+    if (match) {
+      updateMatch(match.id, { date, opponent: opponent.trim(), venue: venue.trim(), home })
       onClose()
-      navigate(`partido/${created.id}`)
       return
     }
+    const created = addMatch({ date, opponent, venue, home })
     onClose()
+    navigate(`partido/${created.id}`)
   }
 
   return (

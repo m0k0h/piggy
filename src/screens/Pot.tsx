@@ -3,13 +3,15 @@ import { euros, matchDate, percent, plural, relativeDay } from '../lib/format'
 import { navigate } from '../lib/router'
 import { potSummary, share } from '../lib/summary'
 import { addPayment, removePayment, useAppState } from '../lib/store'
-import { allPayments, balances, pot, upcomingMatches } from '../lib/stats'
+import { allPayments, balances, fineAmount, matchStatus, pot, upcomingMatches } from '../lib/stats'
 import type { Balance } from '../lib/stats'
+import { useRole } from '../lib/sync'
 import { Sheet } from '../ui/Sheet'
 import { Avatar, Empty, SectionTitle } from '../ui/bits'
 
 export function Pot() {
   const state = useAppState()
+  const isAdmin = useRole() === 'admin'
   const totals = pot(state)
   const rows = balances(state)
   const next = upcomingMatches(state)[0]
@@ -31,7 +33,7 @@ export function Pot() {
         <div className="label">Pendiente en la hucha</div>
         <div className="amount">{euros(totals.pending)}</div>
         <div className="detail">
-          {plural(totals.errors, 'saque fallado', 'saques fallados')} a {euros(state.settings.fineAmount)}
+          {plural(totals.errors, 'saque fallado', 'saques fallados')} a {euros(fineAmount(state))}
         </div>
         <div className="pot-split">
           <div>
@@ -49,7 +51,7 @@ export function Pot() {
         <button className="card row" onClick={() => navigate(`partido/${next.id}`)}>
           <span className="grow">
             <span className="meta">
-              {next.status === 'live' ? 'Partido en juego' : 'Próximo partido'}
+              {matchStatus(state, next.id) === 'live' ? 'Partido en juego' : 'Próximo partido'}
             </span>
             <span className="title">
               {next.home ? 'vs' : '@'} {next.opponent}
@@ -59,19 +61,23 @@ export function Pot() {
             </span>
           </span>
           <span className="trail">
-            <span className={next.status === 'live' ? 'chip live' : 'chip money'}>
-              {next.status === 'live' ? 'ANOTAR' : 'Iniciar'}
+            <span className={matchStatus(state, next.id) === 'live' ? 'chip live' : 'chip money'}>
+              {matchStatus(state, next.id) === 'live' ? 'ANOTAR' : 'Iniciar'}
             </span>
           </span>
         </button>
       ) : (
         <div className="card">
           <Empty glyph="📅" title="No hay ningún partido a la vista">
-            Crea el próximo para poder anotar los saques.
+            {isAdmin
+              ? 'Crea el próximo para poder anotar los saques.'
+              : 'Cuando la administradora prepare el próximo, aparecerá aquí.'}
           </Empty>
-          <button className="btn block" onClick={() => navigate('partidos')}>
-            Crear partido
-          </button>
+          {isAdmin ? (
+            <button className="btn block" onClick={() => navigate('partidos')}>
+              Crear partido
+            </button>
+          ) : null}
         </div>
       )}
 
@@ -82,36 +88,33 @@ export function Pot() {
       {rows.length === 0 ? (
         <div className="card">
           <Empty glyph="🐷" title="La hucha está vacía">
-            Añade la plantilla y empieza a anotar saques.
+            {isAdmin
+              ? 'Añade la plantilla y empieza a anotar saques.'
+              : 'En cuanto se anoten saques, aparecerá aquí lo que debe cada una.'}
           </Empty>
-          <button className="btn block" onClick={() => navigate('plantilla')}>
-            Ir a la plantilla
-          </button>
+          {isAdmin ? (
+            <button className="btn block" onClick={() => navigate('plantilla')}>
+              Ir a la plantilla
+            </button>
+          ) : null}
         </div>
       ) : withDebt.length === 0 ? (
         <div className="card">
           <Empty glyph="🎉" title="Todas al día">
-            {totals.owed > 0 ? `Se han pagado ${euros(totals.paid)} en total.` : 'Aún no hay fallos anotados.'}
+            {totals.owed > 0
+              ? `Se han pagado ${euros(totals.paid)} en total.`
+              : 'Aún no hay fallos anotados.'}
           </Empty>
         </div>
       ) : (
         <div className="card flush">
           <div className="list">
             {withDebt.map((row) => (
-              <button key={row.player.id} className="row" onClick={() => setPaying(row)}>
-                <Avatar name={row.player.name} />
-                <span className="grow">
-                  <span className="title">{row.player.name}</span>
-                  <span className="meta">
-                    {plural(row.tally.errors, 'fallo', 'fallos')} · {percent(row.tally.ratio)} dentro
-                    {row.paid > 0 ? ` · ${euros(row.paid)} pagados` : ''}
-                  </span>
-                </span>
-                <span className="trail">
-                  <span className="big">{euros(row.pending)}</span>
-                  <span className="meta">cobrar ›</span>
-                </span>
-              </button>
+              <DebtRow
+                key={row.player.id}
+                row={row}
+                onPay={isAdmin ? () => setPaying(row) : null}
+              />
             ))}
           </div>
         </div>
@@ -124,6 +127,34 @@ export function Pot() {
 
       {paying ? <PaymentSheet row={paying} onClose={() => setPaying(null)} /> : null}
     </>
+  )
+}
+
+/** Una deudora. Solo la administradora la abre para registrar el pago. */
+function DebtRow({ row, onPay }: { row: Balance; onPay: (() => void) | null }) {
+  const body = (
+    <>
+      <Avatar name={row.player.name} />
+      <span className="grow">
+        <span className="title">{row.player.name}</span>
+        <span className="meta">
+          {plural(row.tally.errors, 'fallo', 'fallos')} · {percent(row.tally.ratio)} dentro
+          {row.paid > 0 ? ` · ${euros(row.paid)} pagados` : ''}
+        </span>
+      </span>
+      <span className="trail">
+        <span className="big">{euros(row.pending)}</span>
+        {onPay ? <span className="meta">cobrar ›</span> : null}
+      </span>
+    </>
+  )
+
+  return onPay ? (
+    <button className="row" onClick={onPay}>
+      {body}
+    </button>
+  ) : (
+    <div className="row">{body}</div>
   )
 }
 

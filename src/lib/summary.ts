@@ -1,15 +1,15 @@
 import { euros, matchDate, percent, plural } from './format'
-import { balances, participants, pot, servesOfMatch, tally, tallyByPlayer } from './stats'
+import { balances, fineAmount, participants, pot, servesOfMatch, tally, tallyByPlayer, teamName } from './stats'
 import type { AppState, Match } from '../types'
 
 /** Resumen de un partido, pensado para pegarlo en el grupo de WhatsApp. */
 export function matchSummary(state: AppState, match: Match): string {
   const serves = servesOfMatch(state, match.id)
   const total = tally(serves)
-  const fine = state.settings.fineAmount
+  const fine = fineAmount(state)
   const lines: string[] = []
 
-  lines.push(`🏐 ${state.settings.teamName} ${match.home ? 'vs' : '@'} ${match.opponent}`)
+  lines.push(`🏐 ${teamName(state)} ${match.home ? 'vs' : '@'} ${match.opponent}`)
   lines.push(matchDate(match.date))
   lines.push('')
 
@@ -23,7 +23,7 @@ export function matchSummary(state: AppState, match: Match): string {
   )
   lines.push(`🐷 Hucha del partido: ${euros(total.errors * fine)}`)
 
-  const roster = participants(state, match.id, match.roster)
+  const roster = participants(state, match.id)
     .filter((player) => serves.some((serve) => serve.playerId === player.id))
     .map((player) => ({ player, own: tallyByPlayer(serves, player.id) }))
     .sort((a, b) => b.own.errors - a.own.errors || b.own.attempts - a.own.attempts)
@@ -45,7 +45,7 @@ export function potSummary(state: AppState): string {
   const totals = pot(state)
   const lines: string[] = []
 
-  lines.push(`🐷 Hucha de ${state.settings.teamName}`)
+  lines.push(`🐷 Hucha de ${teamName(state)}`)
   lines.push(
     `${plural(totals.errors, 'saque fallado', 'saques fallados')} · ${euros(totals.owed)} generados · ${euros(totals.paid)} pagados`,
   )

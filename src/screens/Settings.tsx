@@ -1,9 +1,19 @@
 import { useRef, useState } from 'react'
+import { euros } from '../lib/format'
 import { buildInviteLink, randomTeamCode } from '../lib/invite'
 import { goBack, navigate } from '../lib/router'
+import { fineAmount, teamName } from '../lib/stats'
 import { copyText } from '../lib/summary'
-import { exportState, importState, resetState, updateSettings, useAppState } from '../lib/store'
-import { connect, useSync } from '../lib/sync'
+import {
+  exportState,
+  importState,
+  resetState,
+  updateSettings,
+  updateTeam,
+  useAppState,
+} from '../lib/store'
+import { connect, useRole, useSync } from '../lib/sync'
+import { AdminSwitch } from './AdminLogin'
 import { Field, ScreenHeader, SectionTitle } from '../ui/bits'
 
 const STATUS_TEXT: Record<string, string> = {
@@ -16,19 +26,20 @@ const STATUS_TEXT: Record<string, string> = {
 export function Settings() {
   const state = useAppState()
   const sync = useSync()
+  const isAdmin = useRole() === 'admin'
   const { settings } = state
 
-  const [fine, setFine] = useState(String(settings.fineAmount))
-  const [lastFine, setLastFine] = useState(settings.fineAmount)
+  const [fine, setFine] = useState(String(state.team.fineAmount))
+  const [lastFine, setLastFine] = useState(state.team.fineAmount)
   const [toast, setToast] = useState('')
   const [confirmReset, setConfirmReset] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  // Si el importe cambia por sincronización o por un enlace de invitación,
-  // refrescamos el campo sin pisar lo que se esté tecleando.
-  if (lastFine !== settings.fineAmount) {
-    setLastFine(settings.fineAmount)
-    setFine(String(settings.fineAmount))
+  // Si el importe cambia porque lo tocó otra persona del equipo, refrescamos el
+  // campo sin pisar lo que se esté tecleando.
+  if (lastFine !== state.team.fineAmount) {
+    setLastFine(state.team.fineAmount)
+    setFine(String(state.team.fineAmount))
   }
 
   const flash = (message: string) => {
@@ -38,8 +49,8 @@ export function Settings() {
 
   const commitFine = () => {
     const value = Number(fine.replace(',', '.'))
-    if (Number.isFinite(value) && value >= 0) updateSettings({ fineAmount: value })
-    else setFine(String(settings.fineAmount))
+    if (Number.isFinite(value) && value >= 0) updateTeam({ fineAmount: value })
+    else setFine(String(state.team.fineAmount))
   }
 
   const onExport = () => {
@@ -61,33 +72,52 @@ export function Settings() {
     }
   }
 
-  const canShare = Boolean(settings.supabaseUrl && settings.supabaseAnonKey && settings.teamCode)
+  const canInvite = Boolean(settings.supabaseUrl && settings.supabaseAnonKey && settings.teamCode)
 
   return (
     <>
       <ScreenHeader title="Ajustes" onBack={goBack} />
       <main>
-        <SectionTitle>Equipo</SectionTitle>
-        <div className="card form">
-          <Field label="Nombre del equipo">
-            <input
-              value={settings.teamName}
-              onChange={(event) => updateSettings({ teamName: event.target.value })}
-              autoComplete="off"
-            />
-          </Field>
-          <Field label="Euros por saque fallado" hint="Lo que cae a la hucha con cada fallo.">
-            <input
-              value={fine}
-              onChange={(event) => setFine(event.target.value)}
-              onBlur={commitFine}
-              inputMode="decimal"
-            />
-          </Field>
-          <button className="btn ghost block" onClick={() => navigate('importar')}>
-            Importar desde Sportagia
-          </button>
+        <SectionTitle>Quién eres</SectionTitle>
+        <div className="card stack">
+          <AdminSwitch />
         </div>
+
+        <SectionTitle>Equipo</SectionTitle>
+        {isAdmin ? (
+          <div className="card form">
+            <Field label="Nombre del equipo">
+              <input
+                value={state.team.name}
+                onChange={(event) => updateTeam({ name: event.target.value })}
+                autoComplete="off"
+              />
+            </Field>
+            <Field label="Euros por saque fallado" hint="Lo que cae a la hucha con cada fallo.">
+              <input
+                value={fine}
+                onChange={(event) => setFine(event.target.value)}
+                onBlur={commitFine}
+                inputMode="decimal"
+              />
+            </Field>
+            <button className="btn ghost block" onClick={() => navigate('importar')}>
+              Importar desde Sportagia
+            </button>
+          </div>
+        ) : (
+          <div className="card stack">
+            <div className="spread">
+              <span className="muted small">Equipo</span>
+              <strong>{teamName(state)}</strong>
+            </div>
+            <div className="spread">
+              <span className="muted small">Por saque fallado</span>
+              <strong>{euros(fineAmount(state))}</strong>
+            </div>
+            <p className="small muted">Esto lo configura la administradora.</p>
+          </div>
+        )}
 
         <SectionTitle
           aside={
@@ -97,7 +127,7 @@ export function Settings() {
             </span>
           }
         >
-          Compartir con el equipo
+          Sincronización
         </SectionTitle>
 
         <div className="card form">
@@ -133,12 +163,14 @@ export function Settings() {
           </Field>
 
           <div className="btn-row">
-            <button
-              className="btn ghost"
-              onClick={() => updateSettings({ teamCode: randomTeamCode() })}
-            >
-              Generar código
-            </button>
+            {isAdmin ? (
+              <button
+                className="btn ghost"
+                onClick={() => updateSettings({ teamCode: randomTeamCode() })}
+              >
+                Generar código
+              </button>
+            ) : null}
             <button className="btn" onClick={() => void connect(state.settings)}>
               Conectar
             </button>
@@ -151,11 +183,11 @@ export function Settings() {
             </div>
           ) : null}
 
-          {canShare ? (
+          {isAdmin && canInvite ? (
             <button
               className="btn ghost block"
               onClick={async () => {
-                const link = buildInviteLink(state.settings)
+                const link = buildInviteLink(state.settings, teamName(state))
                 if (navigator.share) {
                   try {
                     await navigator.share({ title: 'Hucha del equipo', url: link })
@@ -170,6 +202,13 @@ export function Settings() {
               Invitar al equipo
             </button>
           ) : null}
+
+          {isAdmin && canInvite ? (
+            <p className="small muted">
+              El enlace deja entrar a anotar saques, nada más. Para administrar hace falta tu
+              contraseña, y eso lo comprueba la propia base de datos.
+            </p>
+          ) : null}
         </div>
 
         <SectionTitle>Copia de seguridad</SectionTitle>
@@ -178,9 +217,11 @@ export function Settings() {
             <button className="btn ghost" onClick={onExport}>
               Exportar
             </button>
-            <button className="btn ghost" onClick={() => fileRef.current?.click()}>
-              Restaurar
-            </button>
+            {isAdmin ? (
+              <button className="btn ghost" onClick={() => fileRef.current?.click()}>
+                Restaurar
+              </button>
+            ) : null}
           </div>
           <input
             ref={fileRef}
@@ -194,33 +235,36 @@ export function Settings() {
             }}
           />
 
-          {confirmReset ? (
-            <div className="stack">
-              <p className="small muted center">
-                Se borran jugadoras, partidos, saques y pagos de este móvil. Los ajustes se
-                mantienen.
-              </p>
-              <div className="btn-row">
-                <button className="btn ghost" onClick={() => setConfirmReset(false)}>
-                  Cancelar
-                </button>
-                <button
-                  className="btn danger"
-                  onClick={() => {
-                    resetState()
-                    setConfirmReset(false)
-                    flash('Datos borrados')
-                  }}
-                >
-                  Borrar todo
-                </button>
+          {isAdmin ? (
+            confirmReset ? (
+              <div className="stack">
+                <p className="small muted center">
+                  Se borran jugadoras, partidos, saques y pagos de este móvil. Los ajustes se
+                  mantienen, y lo que ya esté en la base de datos del equipo volverá a bajar al
+                  conectar.
+                </p>
+                <div className="btn-row">
+                  <button className="btn ghost" onClick={() => setConfirmReset(false)}>
+                    Cancelar
+                  </button>
+                  <button
+                    className="btn danger"
+                    onClick={() => {
+                      resetState()
+                      setConfirmReset(false)
+                      flash('Datos borrados')
+                    }}
+                  >
+                    Borrar todo
+                  </button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <button className="btn quiet" onClick={() => setConfirmReset(true)}>
-              Borrar todos los datos
-            </button>
-          )}
+            ) : (
+              <button className="btn quiet" onClick={() => setConfirmReset(true)}>
+                Borrar todos los datos de este móvil
+              </button>
+            )
+          ) : null}
         </div>
 
         {toast ? <div className="banner good">{toast}</div> : null}

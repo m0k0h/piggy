@@ -1,39 +1,83 @@
--- Esquema para compartir la hucha entre los móviles del equipo.
+-- Base de datos compartida de la hucha.
 --
--- Cómo usarlo:
+-- Cómo montarlo, una sola vez:
+--
 --   1. Crea un proyecto gratuito en https://supabase.com
---   2. Abre el "SQL Editor" del proyecto y pega este archivo entero
---   3. Pulsa "Run"
---   4. En Project Settings → API copia la "Project URL" y la clave "anon"
---      y pégalas en Ajustes → Compartir con el equipo dentro de la app
+--   2. SQL Editor → pega este archivo entero → Run
+--   3. Authentication → Users → "Add user" → tu email y una contraseña,
+--      con "Auto Confirm User" marcado. Ese es tu usuario de administradora;
+--      el equipo no necesita ninguno.
+--   4. Project Settings → API → copia la "Project URL" y la clave "anon"
+--   5. En la app: Ajustes → Compartir con el equipo → pega las dos, genera el
+--      código del equipo y pulsa Conectar. Luego "Soy la administradora" y
+--      entra con el email y la contraseña del paso 3.
 --
--- Todo el estado viaja en una sola tabla con el documento en JSON: así el
--- esquema no cambia cada vez que la app gana un campo nuevo, y basta una
--- suscripción de realtime para que todas veáis lo mismo al instante.
+-- Quién puede qué:
+--
+--   Cualquiera con el enlace (rol `anon`)  → lee todo; escribe solo
+--                                            convocatorias y saques.
+--   Tú, con la sesión iniciada             → escribe todo: plantilla,
+--   (rol `authenticated`)                    calendario, pagos y ajustes.
+--
+-- Esto no es cosmético: lo aplica Postgres. Aunque alguien modificara la app
+-- en su navegador, un intento de crear una jugadora sin sesión se rechaza aquí.
+--
+-- Nadie puede borrar filas: no hay política de DELETE. La app marca las cosas
+-- como borradas con un campo, así que un fallo no se lleva por delante el
+-- historial. Para borrar de verdad, desde el panel de Supabase.
 
 create table if not exists public.piggy_rows (
   team_code   text        not null,
-  collection  text        not null check (collection in ('players', 'matches', 'serves', 'payments')),
+  collection  text        not null,
   id          text        not null,
   updated_at  timestamptz not null default now(),
   payload     jsonb       not null,
   primary key (team_code, collection, id)
 );
 
+alter table public.piggy_rows drop constraint if exists piggy_rows_collection_check;
+alter table public.piggy_rows add constraint piggy_rows_collection_check
+  check (collection in ('players', 'matches', 'lineups', 'serves', 'payments', 'team'));
+
 create index if not exists piggy_rows_team_idx on public.piggy_rows (team_code, collection);
 
 alter table public.piggy_rows enable row level security;
 
--- El código del equipo es el secreto que da acceso: quien lo tenga (junto con
--- la clave anon, que la app lleva dentro) puede leer y escribir los datos de
--- ese equipo. Es suficiente para una hucha de saques, pero no guardes aquí
--- nada que no dirías en el vestuario. Usa el botón "Generar código" de la app,
--- que crea uno largo y aleatorio, en vez de inventarte uno corto.
-drop policy if exists "acceso con código de equipo" on public.piggy_rows;
-create policy "acceso con código de equipo"
-  on public.piggy_rows
-  for all
+-- El código del equipo es lo que separa a unos equipos de otros y lo que hace
+-- falta para leer. Usa el botón "Generar código" de la app, que crea uno largo
+-- y aleatorio: aquí solo exigimos que no sea trivialmente corto.
+drop policy if exists "leer con el codigo del equipo" on public.piggy_rows;
+create policy "leer con el codigo del equipo"
+  on public.piggy_rows for select
   to anon, authenticated
+  using (length(team_code) >= 6);
+
+-- El equipo anota el partido: quién vino y cómo fue cada saque. Nada más.
+-- La lista de colecciones es la misma que `PLAYER_WRITABLE` en src/types.ts.
+drop policy if exists "el equipo anota el partido" on public.piggy_rows;
+create policy "el equipo anota el partido"
+  on public.piggy_rows for insert
+  to anon
+  with check (length(team_code) >= 6 and collection in ('lineups', 'serves'));
+
+drop policy if exists "el equipo corrige lo que anoto" on public.piggy_rows;
+create policy "el equipo corrige lo que anoto"
+  on public.piggy_rows for update
+  to anon
+  using (collection in ('lineups', 'serves'))
+  with check (length(team_code) >= 6 and collection in ('lineups', 'serves'));
+
+-- Con sesión iniciada: plantilla, calendario, pagos y ajustes del equipo.
+drop policy if exists "la admin prepara el equipo" on public.piggy_rows;
+create policy "la admin prepara el equipo"
+  on public.piggy_rows for insert
+  to authenticated
+  with check (length(team_code) >= 6);
+
+drop policy if exists "la admin corrige el equipo" on public.piggy_rows;
+create policy "la admin corrige el equipo"
+  on public.piggy_rows for update
+  to authenticated
   using (length(team_code) >= 6)
   with check (length(team_code) >= 6);
 

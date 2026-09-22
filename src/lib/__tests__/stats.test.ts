@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import type { AppState, Payment, Player, Serve } from '../../types'
+import type { AppState, Lineup, Match, Payment, Player, Serve } from '../../types'
 import { DEFAULT_SETTINGS } from '../store'
-import { balances, currentSet, pot, tally, upcomingMatches } from '../stats'
+import { balances, currentSet, matchStatus, participants, pot, tally, upcomingMatches } from '../stats'
 
 const stamp = { createdAt: '2025-10-01T10:00', updatedAt: '2025-10-01T10:00', deletedAt: null }
 
 const player = (id: string, name: string): Player => ({ id, name, number: '', externalId: null, ...stamp })
+
 const serve = (id: string, playerId: string, result: Serve['result'], set = 1): Serve => ({
   id,
   matchId: 'm1',
@@ -14,6 +15,7 @@ const serve = (id: string, playerId: string, result: Serve['result'], set = 1): 
   set,
   ...stamp,
 })
+
 const payment = (id: string, playerId: string, amount: number): Payment => ({
   id,
   playerId,
@@ -22,14 +24,34 @@ const payment = (id: string, playerId: string, amount: number): Payment => ({
   ...stamp,
 })
 
+const match = (id: string, date: string, opponent = 'Rival'): Match => ({
+  id,
+  date,
+  opponent,
+  venue: '',
+  home: true,
+  externalId: null,
+  ...stamp,
+})
+
+const lineup = (matchId: string, status: Lineup['status'], roster: string[] = []): Lineup => ({
+  id: matchId,
+  matchId,
+  roster,
+  status,
+  ...stamp,
+})
+
 const byId = <T extends { id: string }>(rows: T[]) => Object.fromEntries(rows.map((r) => [r.id, r]))
 
-const state = (rows: Partial<AppState>): AppState => ({
+const state = (rows: Partial<AppState>, fine = 1): AppState => ({
   players: {},
   matches: {},
+  lineups: {},
   serves: {},
   payments: {},
-  settings: { ...DEFAULT_SETTINGS, fineAmount: 1 },
+  team: { id: 'team', name: 'Equipo', fineAmount: fine, ...stamp },
+  settings: DEFAULT_SETTINGS,
   ...rows,
 })
 
@@ -63,17 +85,14 @@ describe('balances', () => {
     expect(rows[1]).toMatchObject({ owed: 1, paid: 0, pending: 1 })
   })
 
-  it('aplica el importe por fallo configurado', () => {
-    const caro = { ...base, settings: { ...base.settings, fineAmount: 2.5 } }
+  it('aplica el importe por fallo del equipo', () => {
+    const caro = { ...base, team: { ...base.team, fineAmount: 2.5 } }
     expect(balances(caro)[0].owed).toBe(5)
   })
 
   it('mantiene a quien deja el equipo mientras siga debiendo, para que cuadre la hucha', () => {
     const conBaja = state({
-      players: byId([
-        player('p1', 'Anna'),
-        { ...player('p2', 'Marta'), deletedAt: '2025-10-02T10:00' },
-      ]),
+      players: byId([player('p1', 'Anna'), { ...player('p2', 'Marta'), deletedAt: '2025-10-02T10:00' }]),
       serves: byId([serve('s1', 'p1', 'error'), serve('s2', 'p2', 'error'), serve('s3', 'p2', 'error')]),
     })
     const rows = balances(conBaja)
@@ -95,9 +114,7 @@ describe('balances', () => {
       players: byId([player('p1', 'Anna')]),
       serves: byId([serve('s1', 'p1', 'error'), { ...serve('s2', 'p1', 'error'), deletedAt: '2025-10-02T10:00' }]),
     })
-    const rows = balances(conBorrados)
-    expect(rows).toHaveLength(1)
-    expect(rows[0].owed).toBe(1)
+    expect(balances(conBorrados)[0].owed).toBe(1)
   })
 })
 
@@ -121,13 +138,51 @@ describe('currentSet', () => {
   })
 })
 
+describe('estado del partido', () => {
+  it('sin convocatoria el partido sigue programado', () => {
+    const s = state({ matches: byId([match('m1', '2025-11-10T18:00')]) })
+    expect(matchStatus(s, 'm1')).toBe('scheduled')
+  })
+
+  it('la convocatoria es la que dice si está en juego o cerrado', () => {
+    const s = state({
+      matches: byId([match('m1', '2025-11-10T18:00')]),
+      lineups: byId([lineup('m1', 'finished', ['p1'])]),
+    })
+    expect(matchStatus(s, 'm1')).toBe('finished')
+  })
+
+  it('una convocatoria borrada devuelve el partido a programado', () => {
+    const s = state({
+      matches: byId([match('m1', '2025-11-10T18:00')]),
+      lineups: byId([{ ...lineup('m1', 'live'), deletedAt: '2025-10-02T10:00' }]),
+    })
+    expect(matchStatus(s, 'm1')).toBe('scheduled')
+  })
+})
+
 describe('upcomingMatches', () => {
   it('excluye los finalizados y ordena del más próximo al más lejano', () => {
-    const matches = byId([
-      { id: 'a', date: '2025-11-10T18:00', opponent: 'B', venue: '', home: true, status: 'scheduled' as const, roster: [], externalId: null, ...stamp },
-      { id: 'b', date: '2025-10-25T18:00', opponent: 'A', venue: '', home: true, status: 'live' as const, roster: [], externalId: null, ...stamp },
-      { id: 'c', date: '2025-09-01T18:00', opponent: 'C', venue: '', home: true, status: 'finished' as const, roster: [], externalId: null, ...stamp },
-    ])
-    expect(upcomingMatches(state({ matches })).map((m) => m.id)).toEqual(['b', 'a'])
+    const s = state({
+      matches: byId([
+        match('a', '2025-11-10T18:00'),
+        match('b', '2025-10-25T18:00'),
+        match('c', '2025-09-01T18:00'),
+      ]),
+      lineups: byId([lineup('b', 'live'), lineup('c', 'finished')]),
+    })
+    expect(upcomingMatches(s).map((m) => m.id)).toEqual(['b', 'a'])
+  })
+})
+
+describe('participants', () => {
+  it('suma a la convocatoria cualquiera que llegara a sacar', () => {
+    const s = state({
+      players: byId([player('p1', 'Anna'), player('p2', 'Marta')]),
+      matches: byId([match('m1', '2025-11-10T18:00')]),
+      lineups: byId([lineup('m1', 'live', ['p1'])]),
+      serves: byId([serve('s1', 'p2', 'error')]),
+    })
+    expect(participants(s, 'm1').map((p) => p.name)).toEqual(['Anna', 'Marta'])
   })
 })

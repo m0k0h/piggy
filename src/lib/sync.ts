@@ -1,11 +1,19 @@
 import { useSyncExternalStore } from 'react'
 import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js'
-import { COLLECTIONS, type Collection, type Settings, type Syncable } from '../types'
-import { applyRemote, getState, setSyncPublisher } from './store'
+import {
+  COLLECTIONS,
+  PLAYER_WRITABLE,
+  type Collection,
+  type Role,
+  type Settings,
+  type Syncable,
+} from '../types'
+import { applyRemote, rowsOf, setSyncPublisher } from './store'
 
 /**
  * Todo viaja en una sola tabla con el documento en JSON. Así el esquema no
- * cambia cada vez que añadimos un campo, y basta una suscripción de realtime.
+ * cambia cada vez que la app gana un campo nuevo, basta una suscripción de
+ * realtime, y las políticas de permisos se escriben por colección.
  */
 const TABLE = 'piggy_rows'
 
@@ -17,9 +25,21 @@ export interface SyncSnapshot {
   /** Filas locales esperando a subir (por ejemplo, sin cobertura en el pabellón). */
   pending: number
   lastSyncedAt: string | null
+  /** Hay sesión de administradora iniciada. */
+  signedIn: boolean
+  email: string
 }
 
-let snapshot: SyncSnapshot = { status: 'off', message: '', pending: 0, lastSyncedAt: null }
+const INITIAL: SyncSnapshot = {
+  status: 'off',
+  message: '',
+  pending: 0,
+  lastSyncedAt: null,
+  signedIn: false,
+  email: '',
+}
+
+let snapshot: SyncSnapshot = INITIAL
 const watchers = new Set<() => void>()
 
 export const getSyncSnapshot = () => snapshot
@@ -31,6 +51,20 @@ function setSnapshot(patch: Partial<SyncSnapshot>) {
   snapshot = { ...snapshot, ...patch }
   watchers.forEach((w) => w())
 }
+
+/** Estado de la conexión, para pintarlo en la interfaz. */
+export const useSync = () => useSyncExternalStore(subscribeSync, getSyncSnapshot, getSyncSnapshot)
+
+/**
+ * Sin base de datos compartida no hay equipo y la app es toda tuya. En cuanto
+ * la hay, mandas solo si has iniciado sesión: lo demás es vista de jugadora.
+ */
+export function roleOf(snap: SyncSnapshot): Role {
+  if (snap.status === 'off') return 'admin'
+  return snap.signedIn ? 'admin' : 'player'
+}
+
+export const useRole = (): Role => roleOf(useSync())
 
 interface RowRecord {
   team_code: string
@@ -47,6 +81,9 @@ let teamCode = ''
 const queue = new Map<string, RowRecord>()
 let flushTimer: ReturnType<typeof setTimeout> | null = null
 
+const canWrite = (collection: Collection) =>
+  roleOf(snapshot) === 'admin' || PLAYER_WRITABLE.includes(collection)
+
 const toRecord = (collection: Collection, row: Syncable): RowRecord => ({
   team_code: teamCode,
   collection,
@@ -56,7 +93,9 @@ const toRecord = (collection: Collection, row: Syncable): RowRecord => ({
 })
 
 function enqueue(collection: Collection, rows: Syncable[]) {
-  if (!client) return
+  // Sin permiso para esta colección no lo intentamos: un rechazo del servidor
+  // atascaría la cola y con ella los saques, que sí puede escribir cualquiera.
+  if (!client || !canWrite(collection)) return
   for (const row of rows) queue.set(`${collection}:${row.id}`, toRecord(collection, row))
   setSnapshot({ pending: queue.size })
   scheduleFlush()
@@ -89,8 +128,12 @@ async function flush() {
 
 async function pull() {
   if (!client) return
-  const { data, error } = await client.from(TABLE).select('collection,payload').eq('team_code', teamCode)
+  const { data, error } = await client
+    .from(TABLE)
+    .select('collection,payload')
+    .eq('team_code', teamCode)
   if (error) throw new Error(error.message)
+
   const grouped = new Map<Collection, Syncable[]>()
   for (const record of (data ?? []) as Pick<RowRecord, 'collection' | 'payload'>[]) {
     const bucket = grouped.get(record.collection) ?? []
@@ -101,13 +144,14 @@ async function pull() {
 }
 
 /**
- * Sube todo lo local. Se llama justo después de `pull`, cuando el estado local
- * ya es el más reciente de los dos lados, así que nunca pisa nada más nuevo.
+ * Sube todo lo local que este rol pueda escribir. Se llama justo después de
+ * `pull`, cuando el estado local ya es el más reciente de los dos lados, así
+ * que nunca pisa nada más nuevo.
  */
 function pushEverything() {
-  const state = getState()
   for (const collection of COLLECTIONS) {
-    const rows = Object.values(state[collection]) as Syncable[]
+    if (!canWrite(collection)) continue
+    const rows = rowsOf(collection)
     if (rows.length > 0) enqueue(collection, rows)
   }
   scheduleFlush(0)
@@ -134,7 +178,7 @@ export function disconnect() {
   client = null
   queue.clear()
   setSyncPublisher(null)
-  setSnapshot({ status: 'off', message: '', pending: 0 })
+  setSnapshot(INITIAL)
 }
 
 /** Conecta (o reconecta) con los ajustes actuales. Sin claves, se queda en local. */
@@ -149,8 +193,13 @@ export async function connect(settings: Settings) {
     // Carga diferida: sin equipo compartido, la app arranca sin bajar el SDK.
     const { createClient } = await import('@supabase/supabase-js')
     client = createClient(supabaseUrl.trim(), supabaseAnonKey.trim(), {
-      auth: { persistSession: false },
+      // La sesión persiste para que la admin no tenga que entrar cada vez.
+      auth: { persistSession: true, autoRefreshToken: true, storageKey: 'piggy.auth' },
     })
+
+    const { data } = await client.auth.getSession()
+    setSnapshot({ signedIn: Boolean(data.session), email: data.session?.user.email ?? '' })
+
     await pull()
     setSyncPublisher(enqueue)
     pushEverything()
@@ -167,6 +216,37 @@ export function retry() {
   if (client) scheduleFlush(0)
 }
 
-/** Estado de la sincronización para pintarlo en Ajustes. */
-export const useSync = () =>
-  useSyncExternalStore(subscribeSync, getSyncSnapshot, getSyncSnapshot)
+// --- Sesión de administradora ----------------------------------------------
+
+export interface AuthResult {
+  ok: boolean
+  message: string
+}
+
+const AUTH_ERRORS: Record<string, string> = {
+  'Invalid login credentials': 'Email o contraseña incorrectos.',
+  'Email not confirmed': 'Ese usuario aún no está confirmado en Supabase.',
+}
+
+export async function signIn(email: string, password: string): Promise<AuthResult> {
+  if (!client) return { ok: false, message: 'Primero conecta la base de datos del equipo.' }
+
+  const { data, error } = await client.auth.signInWithPassword({
+    email: email.trim(),
+    password,
+  })
+  if (error) return { ok: false, message: AUTH_ERRORS[error.message] ?? error.message }
+
+  setSnapshot({ signedIn: true, email: data.user?.email ?? '' })
+  // Ya como admin: bajamos lo que no podíamos ver y subimos lo que no podíamos
+  // escribir (la plantilla y el calendario que tuvieras solo en este móvil).
+  await pull()
+  pushEverything()
+  return { ok: true, message: '' }
+}
+
+export async function signOut() {
+  if (!client) return
+  await client.auth.signOut()
+  setSnapshot({ signedIn: false, email: '' })
+}

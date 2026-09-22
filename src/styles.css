@@ -128,7 +128,8 @@ main {
   max-width: 640px;
   z-index: 30;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: 2px;
   padding: 6px 6px calc(6px + var(--safe-b));
   background: color-mix(in srgb, var(--surface) 92%, transparent);
@@ -172,7 +173,8 @@ main {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
+  flex-wrap: wrap;
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -343,7 +345,7 @@ main {
 
 /* --------------------------------------------------------------- fields */
 .field { display: flex; flex-direction: column; gap: 6px; }
-.field > label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.field > span { font-size: 13px; font-weight: 600; color: var(--muted); }
 
 .field input,
 .field select,
@@ -487,6 +489,21 @@ main {
 /* ----------------------------------------------------------------- bars */
 .bar { height: 6px; border-radius: 3px; background: var(--red); overflow: hidden; }
 .bar > i { display: block; height: 100%; background: var(--green); }
+
+/* ---------------------------------------------------------------- roles */
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.role-pill.admin { background: var(--pink-soft); color: var(--pink); }
 
 /* ---------------------------------------------------------------- misc */
 .empty { text-align: center; color: var(--muted); padding: 28px 16px; }

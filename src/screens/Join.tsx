@@ -30,7 +30,7 @@ export function Join({ token }: { token: string }) {
 
   const join = async () => {
     setBusy(true)
-    updateSettings(invite)
+    updateSettings(invite.settings)
     await connect(getState().settings)
     navigate('hucha')
   }

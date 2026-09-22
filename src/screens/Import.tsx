@@ -11,6 +11,7 @@ import {
 } from '../lib/sportagia'
 import { addMatch, addPlayer, updateSettings, useAppState } from '../lib/store'
 import { allMatches, allPlayers } from '../lib/stats'
+import { useRole } from '../lib/sync'
 import { Empty, Field, ScreenHeader, SectionTitle } from '../ui/bits'
 
 const norm = (value: string) =>
@@ -18,6 +19,7 @@ const norm = (value: string) =>
 
 export function Import() {
   const state = useAppState()
+  const isAdmin = useRole() === 'admin'
   const [url, setUrl] = useState(state.settings.teamUrl)
   const [kind, setKind] = useState<PasteKind>('players')
   const [pasted, setPasted] = useState('')
@@ -90,6 +92,22 @@ export function Import() {
   }
 
   const found = players.length + matches.length
+
+  if (!isAdmin) {
+    return (
+      <>
+        <ScreenHeader title="Importar desde Sportagia" onBack={goBack} />
+        <main>
+          <div className="card">
+            <Empty glyph="🔒" title="Solo la administradora">
+              La plantilla y el calendario los prepara ella. Tú puedes anotar los saques de los
+              partidos ya creados.
+            </Empty>
+          </div>
+        </main>
+      </>
+    )
+  }
 
   return (
     <>

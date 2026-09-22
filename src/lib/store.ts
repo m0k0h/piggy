@@ -1,57 +1,140 @@
 import { useSyncExternalStore } from 'react'
-import type {
-  AppState,
-  Collection,
-  Match,
-  MatchStatus,
-  Payment,
-  Player,
-  Serve,
-  ServeResult,
-  Settings,
-  Syncable,
+import {
+  TEAM_ROW_ID,
+  type AppState,
+  type Collection,
+  type Lineup,
+  type Match,
+  type MatchStatus,
+  type Payment,
+  type Player,
+  type Serve,
+  type ServeResult,
+  type Settings,
+  type Syncable,
+  type Team,
 } from '../types'
 
-const STORAGE_KEY = 'piggy.state.v1'
+const STORAGE_KEY = 'piggy.state.v2'
+/** Formato anterior, cuando el estado del partido vivía dentro del propio partido. */
+const LEGACY_KEY = 'piggy.state.v1'
 
 export const DEFAULT_SETTINGS: Settings = {
-  teamName: 'Mi equipo',
-  fineAmount: 1,
   teamUrl: 'https://sportagia.voleimasters.cat/#/equip/31',
   teamCode: '',
   supabaseUrl: '',
   supabaseAnonKey: '',
 }
 
-const EMPTY: AppState = {
+const now = () => new Date().toISOString()
+export const newId = () => crypto.randomUUID()
+
+const defaultTeam = (): Team => ({
+  id: TEAM_ROW_ID,
+  name: 'Mi equipo',
+  fineAmount: 1,
+  createdAt: now(),
+  updatedAt: now(),
+  deletedAt: null,
+})
+
+const empty = (): AppState => ({
   players: {},
   matches: {},
+  lineups: {},
   serves: {},
   payments: {},
+  team: defaultTeam(),
   settings: DEFAULT_SETTINGS,
+})
+
+/** Sube un estado del formato v1, donde `status` y `roster` estaban en el partido. */
+export function migrate(raw: string): AppState {
+  const old = JSON.parse(raw) as Record<string, never>
+  const base = empty()
+  const oldMatches = (old.matches ?? {}) as Record<string, Match & { status?: MatchStatus; roster?: string[] }>
+  const matches: Record<string, Match> = {}
+  const lineups: Record<string, Lineup> = {}
+
+  for (const [id, entry] of Object.entries(oldMatches)) {
+    const { status, roster, ...match } = entry
+    matches[id] = match
+    if (status && status !== 'scheduled') {
+      lineups[id] = {
+        id,
+        matchId: id,
+        roster: roster ?? [],
+        status,
+        createdAt: match.createdAt,
+        updatedAt: match.updatedAt,
+        deletedAt: null,
+      }
+    }
+  }
+
+  const oldSettings = (old.settings ?? {}) as Partial<Settings & { teamName: string; fineAmount: number }>
+  return {
+    ...base,
+    players: (old.players ?? {}) as AppState['players'],
+    matches,
+    lineups,
+    serves: (old.serves ?? {}) as AppState['serves'],
+    payments: (old.payments ?? {}) as AppState['payments'],
+    team: {
+      ...defaultTeam(),
+      name: oldSettings.teamName ?? 'Mi equipo',
+      fineAmount: typeof oldSettings.fineAmount === 'number' ? oldSettings.fineAmount : 1,
+    },
+    settings: {
+      ...DEFAULT_SETTINGS,
+      teamUrl: oldSettings.teamUrl ?? DEFAULT_SETTINGS.teamUrl,
+      teamCode: oldSettings.teamCode ?? '',
+      supabaseUrl: oldSettings.supabaseUrl ?? '',
+      supabaseAnonKey: oldSettings.supabaseAnonKey ?? '',
+    },
+  }
 }
 
-export const newId = () => crypto.randomUUID()
-const now = () => new Date().toISOString()
+/** Queda a true si este arranque vino del formato antiguo. */
+let migratedOnLoad = false
 
 function load(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return EMPTY
-    const parsed = JSON.parse(raw) as Partial<AppState>
-    return {
-      ...EMPTY,
-      ...parsed,
-      settings: { ...DEFAULT_SETTINGS, ...(parsed.settings ?? {}) },
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<AppState>
+      return {
+        ...empty(),
+        ...parsed,
+        team: { ...defaultTeam(), ...(parsed.team ?? {}) },
+        settings: { ...DEFAULT_SETTINGS, ...(parsed.settings ?? {}) },
+      }
+    }
+    const legacy = localStorage.getItem(LEGACY_KEY)
+    if (legacy) {
+      migratedOnLoad = true
+      return migrate(legacy)
     }
   } catch {
     // Un estado corrupto no debe dejar la app en blanco a mitad de partido.
-    return EMPTY
   }
+  return empty()
 }
 
 let state: AppState = load()
 const listeners = new Set<() => void>()
+
+function persist() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  } catch {
+    // Cuota llena o modo privado: seguimos en memoria antes que romper el registro.
+  }
+}
+
+// Guardamos el formato nuevo en cuanto migramos. Si esperásemos al primer
+// cambio, un móvil que solo consulta repetiría la conversión en cada arranque.
+if (migratedOnLoad) persist()
 
 /** La capa de sync se engancha aquí para subir lo que cambia en local. */
 let onLocalChange: ((collection: Collection, rows: Syncable[]) => void) | null = null
@@ -61,11 +144,7 @@ export function setSyncPublisher(fn: typeof onLocalChange) {
 
 function commit(next: AppState) {
   state = next
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-  } catch {
-    // Cuota llena o modo privado: seguimos en memoria antes que romper el registro.
-  }
+  persist()
   listeners.forEach((l) => l())
 }
 
@@ -79,16 +158,26 @@ export const useAppState = () => useSyncExternalStore(subscribe, getState, getSt
 /** Escribe filas en una colección y las publica al sync. */
 function write<T extends Syncable>(collection: Collection, rows: T[], publish = true) {
   if (rows.length === 0) return
-  const bucket: Record<string, Syncable> = { ...state[collection] }
-  for (const row of rows) bucket[row.id] = row
-  commit({ ...state, [collection]: bucket })
+  if (collection === 'team') {
+    commit({ ...state, team: rows[0] as unknown as Team })
+  } else {
+    const bucket: Record<string, Syncable> = { ...state[collection] }
+    for (const row of rows) bucket[row.id] = row
+    commit({ ...state, [collection]: bucket })
+  }
   if (publish) onLocalChange?.(collection, rows)
 }
 
 /** Crea una fila nueva con los campos de sincronización ya puestos. */
-function born<T extends Syncable>(fields: Omit<T, keyof Syncable>): T {
+function born<T extends Syncable>(fields: Omit<T, keyof Syncable>, id: string = newId()): T {
   const ts = now()
-  return { ...fields, id: newId(), createdAt: ts, updatedAt: ts, deletedAt: null } as T
+  return { ...fields, id, createdAt: ts, updatedAt: ts, deletedAt: null } as T
+}
+
+// --- Equipo ----------------------------------------------------------------
+
+export function updateTeam(patch: Partial<Pick<Team, 'name' | 'fineAmount'>>) {
+  write('team', [{ ...state.team, ...patch, updatedAt: now() }])
 }
 
 // --- Jugadoras -------------------------------------------------------------
@@ -127,8 +216,6 @@ export function addMatch(input: MatchInput): Match {
     opponent: input.opponent.trim(),
     venue: (input.venue ?? '').trim(),
     home: input.home ?? true,
-    status: 'scheduled',
-    roster: [],
     externalId: input.externalId ?? null,
   })
   write('matches', [match])
@@ -137,7 +224,7 @@ export function addMatch(input: MatchInput): Match {
 
 export function updateMatch(
   id: string,
-  patch: Partial<Pick<Match, 'date' | 'opponent' | 'venue' | 'home' | 'status' | 'roster'>>,
+  patch: Partial<Pick<Match, 'date' | 'opponent' | 'venue' | 'home'>>,
 ) {
   const current = state.matches[id]
   if (!current) return
@@ -150,9 +237,18 @@ export function removeMatch(id: string) {
   write('matches', [{ ...current, deletedAt: now(), updatedAt: now() }])
 }
 
-export function setMatchStatus(id: string, status: MatchStatus) {
-  updateMatch(id, { status })
+// --- Convocatoria y estado del acta ----------------------------------------
+
+/** Crea o actualiza la convocatoria de un partido. Su id es el del partido. */
+export function saveLineup(matchId: string, patch: Partial<Pick<Lineup, 'roster' | 'status'>>) {
+  const current = state.lineups[matchId]
+  const next: Lineup = current
+    ? { ...current, ...patch, deletedAt: null, updatedAt: now() }
+    : born<Lineup>({ matchId, roster: patch.roster ?? [], status: patch.status ?? 'live' }, matchId)
+  write('lineups', [next])
 }
+
+export const setMatchStatus = (matchId: string, status: MatchStatus) => saveLineup(matchId, { status })
 
 // --- Saques ----------------------------------------------------------------
 
@@ -182,7 +278,7 @@ export function removePayment(id: string) {
   write('payments', [{ ...current, deletedAt: now(), updatedAt: now() }])
 }
 
-// --- Ajustes ---------------------------------------------------------------
+// --- Ajustes de este móvil -------------------------------------------------
 
 export function updateSettings(patch: Partial<Settings>) {
   commit({ ...state, settings: { ...state.settings, ...patch } })
@@ -195,12 +291,22 @@ export function updateSettings(patch: Partial<Settings>) {
  * y no se republica para no entrar en bucle con el realtime.
  */
 export function applyRemote(collection: Collection, rows: Syncable[]) {
+  if (collection === 'team') {
+    const incoming = rows.find((row) => row.id === TEAM_ROW_ID)
+    if (incoming && incoming.updatedAt > state.team.updatedAt) write('team', [incoming], false)
+    return
+  }
   const bucket = state[collection] as Record<string, Syncable>
   const fresh = rows.filter((row) => {
     const mine = bucket[row.id]
     return !mine || row.updatedAt > mine.updatedAt
   })
   write(collection, fresh, false)
+}
+
+/** Todas las filas locales de una colección, para subirlas de golpe. */
+export function rowsOf(collection: Collection): Syncable[] {
+  return collection === 'team' ? [state.team] : Object.values(state[collection])
 }
 
 // --- Copia de seguridad ----------------------------------------------------
@@ -210,12 +316,13 @@ export const exportState = () => JSON.stringify(state, null, 2)
 export function importState(json: string) {
   const parsed = JSON.parse(json) as Partial<AppState>
   commit({
-    ...EMPTY,
+    ...empty(),
     ...parsed,
+    team: { ...defaultTeam(), ...(parsed.team ?? {}) },
     settings: { ...state.settings, ...(parsed.settings ?? {}) },
   })
 }
 
 export function resetState() {
-  commit({ ...EMPTY, settings: state.settings })
+  commit({ ...empty(), team: state.team, settings: state.settings })
 }
