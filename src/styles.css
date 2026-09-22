@@ -362,6 +362,7 @@ main {
   color: var(--pink-text);
 }
 .row .trail .big.paid { color: var(--muted); text-decoration: line-through; }
+.row .trail .big.good { color: var(--green); }
 
 .avatar {
   display: grid;

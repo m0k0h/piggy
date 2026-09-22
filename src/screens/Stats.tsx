@@ -113,7 +113,9 @@ export function Stats() {
                 <RatioBar ratio={own.ratio} />
               </span>
               <span className="trail">
-                <span className="big">{percent(own.ratio)}</span>
+                <span className={own.ratio !== null && own.ratio > 0.5 ? 'big good' : 'big'}>
+                  {percent(own.ratio)}
+                </span>
                 <span className="meta">{euros(own.errors * fine)}</span>
               </span>
             </div>
