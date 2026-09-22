@@ -652,6 +652,9 @@ main {
 .small { font-size: 12px; }
 .center { text-align: center; }
 .stack { display: flex; flex-direction: column; gap: 12px; }
+
+/* Botón de "Iniciar partido" y su aviso, pegados entre sí. */
+.start-group { display: flex; flex-direction: column; gap: 8px; }
 .inline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .spread { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
