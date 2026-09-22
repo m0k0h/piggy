@@ -49,7 +49,7 @@ export const percent = (ratio: number | null): string =>
 
 /** "3/12 saques fallidos · 75% de acierto": el resumen que se repite en cada fila de jugadora. */
 export const serveSummary = (errors: number, attempts: number, ratio: number | null): string =>
-  `${errors}/${attempts} saques fallidos · ${percent(ratio)} de acierto`
+  attempts === 0 ? 'Sin datos todavía' : `${errors}/${attempts} saques fallidos · ${percent(ratio)} de acierto`
 
 export function initials(name: string): string {
   const words = name.trim().split(/\s+/).filter(Boolean)
