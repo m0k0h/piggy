@@ -103,9 +103,15 @@ export function Pot() {
       ) : withDebt.length === 0 ? (
         <div className="card">
           <Empty icon={<PartyIcon />} title="Todas al día">
-            {totals.owed > 0
-              ? `No queda nada por cobrar: los ${euros(totals.paid)} ya están en la hucha.`
-              : 'Aún no hay fallos anotados.'}
+            {totals.owed > 0 ? (
+              <>
+                No queda nada por cobrar.
+                <br />
+                Los {euros(totals.paid)} ya están en la hucha.
+              </>
+            ) : (
+              'Aún no hay fallos anotados.'
+            )}
           </Empty>
         </div>
       ) : (
