@@ -56,7 +56,7 @@ export function potSummary(state: AppState): string {
   const globalRatio = tally(allServes(state)).ratio
   const lines: string[] = []
 
-  lines.push(`🐷 Hucha de ${teamName(state)}`)
+  lines.push(`🐷 Hucha de saques fallados de ${teamName(state)}`)
   lines.push(`Llevamos ${euros(totals.paid)} ahorrados.`)
 
   const pending = balances(state).filter((row) => row.pending > 0)
