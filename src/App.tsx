@@ -89,7 +89,7 @@ function TopBar() {
       <h1>
         {state.team.name}
         <span className="sub">
-          {totals.pending > 0 ? `${euros(totals.pending)} en la hucha` : 'Hucha al día'}
+          {totals.owed > 0 ? `${euros(totals.paid)} ahorrados` : 'Sin fallos todavía'}
         </span>
       </h1>
       {sync.status !== 'off' ? (

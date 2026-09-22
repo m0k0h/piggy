@@ -195,21 +195,21 @@ main {
 .pot .amount { font-size: 52px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
 .pot .detail { font-size: 13px; opacity: 0.88; }
 
-.pot-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 14px;
+.pot-bar {
+  height: 8px;
+  margin-top: 16px;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 25%);
+  overflow: hidden;
 }
 
-.pot-split div {
-  background: rgb(255 255 255 / 16%);
-  border-radius: var(--radius-sm);
-  padding: 8px 6px;
+.pot-bar > i {
+  display: block;
+  height: 100%;
+  min-width: 8px;
+  border-radius: 4px;
+  background: var(--on-accent);
 }
-
-.pot-split .k { display: block; font-size: 11px; opacity: 0.85; }
-.pot-split .v { font-size: 17px; font-weight: 700; }
 
 /* ---------------------------------------------------------------- stats */
 .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -585,3 +585,19 @@ main {
 
 .link:hover { text-decoration: underline; }
 .link:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; border-radius: 4px; }
+
+/* ------------------------------------------------------------- asistentes */
+.attendees { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.attendee {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.attendee .avatar { width: 28px; height: 28px; font-size: 11px; }

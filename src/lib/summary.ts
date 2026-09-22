@@ -46,15 +46,17 @@ export function potSummary(state: AppState): string {
   const lines: string[] = []
 
   lines.push(`🐷 Hucha de ${teamName(state)}`)
-  lines.push(
-    `${plural(totals.errors, 'saque fallado', 'saques fallados')} · ${euros(totals.owed)} generados · ${euros(totals.paid)} pagados`,
-  )
-  lines.push(`Pendiente: ${euros(totals.pending)}`)
+  lines.push(`Llevamos ahorrado: ${euros(totals.paid)}`)
+  if (totals.owed > 0) {
+    lines.push(
+      `De ${euros(totals.owed)} generados por ${plural(totals.errors, 'saque fallado', 'saques fallados')}.`,
+    )
+  }
 
   const pending = balances(state).filter((row) => row.pending > 0)
   if (pending.length > 0) {
     lines.push('')
-    lines.push('Por pagar:')
+    lines.push(`Pendiente de pagar (${euros(totals.pending)}):`)
     for (const row of pending) lines.push(`• ${row.player.name}: ${euros(row.pending)}`)
   } else if (totals.owed > 0) {
     lines.push('')

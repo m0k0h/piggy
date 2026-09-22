@@ -58,17 +58,25 @@ const titleOf = (match: Match) => `${match.home ? 'vs' : '@'} ${match.opponent |
 
 // --------------------------------------------------------------- programado
 
+/**
+ * Antes del pitido inicial. Apuntar a las asistentes e iniciar el partido son
+ * dos pasos distintos: la lista se puede ir montando según llega la gente al
+ * pabellón, y el partido no arranca hasta que hay alguien para sacar.
+ */
 function MatchPreview({ match, state }: { match: Match; state: AppState }) {
   const [callUp, setCallUp] = useState(false)
+  const attendees = rosterOf(state, match.id)
 
   if (callUp) {
     return (
       <CallUp
         match={match}
         state={state}
+        confirmLabel="Guardar asistentes"
         onCancel={() => setCallUp(false)}
         onConfirm={(roster) => {
-          saveLineup(match.id, { roster, status: 'live' })
+          // El partido sigue programado: esto solo apunta quién ha venido.
+          saveLineup(match.id, { roster, status: 'scheduled' })
           setCallUp(false)
         }}
       />
@@ -77,11 +85,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
 
   return (
     <>
-      <ScreenHeader
-        title={titleOf(match)}
-        subtitle={relativeDay(match.date)}
-        onBack={goBack}
-      />
+      <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={goBack} />
       <main>
         <div className="card stack">
           <div className="inline">
@@ -96,11 +100,39 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
             {match.venue ? ` · ${match.venue}` : ''}
           </div>
           <LeagueLink url={match.leagueUrl} />
-          <button className="btn block" onClick={() => setCallUp(true)}>
-            Iniciar partido
-          </button>
-          <p className="small muted center">Primero te preguntará quién ha venido.</p>
         </div>
+
+        <SectionTitle aside={attendees.length > 0 ? <span>{attendees.length}</span> : null}>
+          Asistentes
+        </SectionTitle>
+        <div className="card stack">
+          {attendees.length === 0 ? (
+            <p className="small muted center">
+              Todavía no ha venido nadie. Apunta a quien esté en el pabellón.
+            </p>
+          ) : (
+            <div className="attendees">
+              {attendees.map((player) => (
+                <span key={player.id} className="attendee">
+                  <Avatar name={player.name} />
+                  {player.name}
+                </span>
+              ))}
+            </div>
+          )}
+          <button className="btn ghost block" onClick={() => setCallUp(true)}>
+            {attendees.length === 0 ? 'Añadir asistentes' : 'Editar asistentes'}
+          </button>
+        </div>
+
+        <button className="btn block" onClick={() => saveLineup(match.id, { status: 'live' })} disabled={attendees.length === 0}>
+          Iniciar partido
+        </button>
+        {attendees.length === 0 ? (
+          <p className="small muted center">
+            Hace falta al menos una asistente para poder anotar saques.
+          </p>
+        ) : null}
       </main>
     </>
   )
@@ -111,11 +143,13 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
 function CallUp({
   match,
   state,
+  confirmLabel,
   onCancel,
   onConfirm,
 }: {
   match: Match
   state: AppState
+  confirmLabel: string
   onCancel: () => void
   onConfirm: (roster: string[]) => void
 }) {
@@ -130,8 +164,8 @@ function CallUp({
   return (
     <>
       <ScreenHeader
-        title="Convocatoria"
-        subtitle={plural(selected.length, 'convocada', 'convocadas')}
+        title="Asistentes"
+        subtitle={plural(selected.length, 'apuntada', 'apuntadas')}
         onBack={onCancel}
       />
       <main>
@@ -184,12 +218,8 @@ function CallUp({
           </>
         )}
 
-        <button
-          className="btn block"
-          onClick={() => onConfirm(selected)}
-          disabled={selected.length === 0}
-        >
-          Empezar partido ({selected.length})
+        <button className="btn block" onClick={() => onConfirm(selected)}>
+          {confirmLabel} ({selected.length})
         </button>
       </main>
     </>
@@ -215,6 +245,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
       <CallUp
         match={match}
         state={state}
+        confirmLabel="Guardar asistentes"
         onCancel={() => setEditingRoster(false)}
         onConfirm={(next) => {
           saveLineup(match.id, { roster: next })
@@ -258,7 +289,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
         <SectionTitle
           aside={
             <button className="btn quiet small" onClick={() => setEditingRoster(true)}>
-              Convocatoria
+              Asistentes
             </button>
           }
         >
@@ -267,11 +298,11 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
 
         {roster.length === 0 ? (
           <div className="card">
-            <Empty glyph="👥" title="No hay nadie convocada">
-              Añade jugadoras a la convocatoria para empezar a anotar.
+            <Empty glyph="👥" title="No hay nadie apuntada">
+              Añade asistentes para poder anotar sus saques.
             </Empty>
             <button className="btn block" onClick={() => setEditingRoster(true)}>
-              Editar convocatoria
+              Editar asistentes
             </button>
           </div>
         ) : (

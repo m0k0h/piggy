@@ -26,21 +26,28 @@ export function Pot() {
   return (
     <>
       <div className="card pot">
-        <div className="label">Pendiente en la hucha</div>
-        <div className="amount">{euros(totals.pending)}</div>
-        <div className="detail">
-          {plural(totals.errors, 'saque fallado', 'saques fallados')} a {euros(fineAmount(state))}
-        </div>
-        <div className="pot-split">
-          <div>
-            <span className="k">Generado</span>
-            <span className="v">{euros(totals.owed)}</span>
-          </div>
-          <div>
-            <span className="k">Ya pagado</span>
-            <span className="v">{euros(totals.paid)}</span>
-          </div>
-        </div>
+        <div className="label">Llevamos ahorrado</div>
+        <div className="amount">{euros(totals.paid)}</div>
+        {totals.owed > 0 ? (
+          <>
+            <div className="detail">
+              de {euros(totals.owed)} · {plural(totals.errors, 'saque fallado', 'saques fallados')} a{' '}
+              {euros(fineAmount(state))}
+            </div>
+            <div
+              className="pot-bar"
+              role="img"
+              aria-label={`${euros(totals.paid)} cobrados de ${euros(totals.owed)}`}
+            >
+              {/* Sin nada cobrado no pintamos barra: el mínimo de anchura mentiría. */}
+              {totals.paid > 0 ? (
+                <i style={{ width: `${Math.round((totals.paid / totals.owed) * 100)}%` }} />
+              ) : null}
+            </div>
+          </>
+        ) : (
+          <div className="detail">Aún no hay saques fallados. Todo llegará.</div>
+        )}
       </div>
 
       {next ? (
@@ -70,8 +77,12 @@ export function Pot() {
         </div>
       )}
 
-      <SectionTitle aside={withDebt.length > 0 ? <span>{withDebt.length}</span> : null}>
-        Quién debe
+      <SectionTitle
+        aside={
+          totals.pending > 0 ? <span className="chip money">{euros(totals.pending)}</span> : null
+        }
+      >
+        Pendiente de pagar
       </SectionTitle>
 
       {rows.length === 0 ? (
@@ -84,7 +95,7 @@ export function Pot() {
         <div className="card">
           <Empty glyph="🎉" title="Todas al día">
             {totals.owed > 0
-              ? `Se han pagado ${euros(totals.paid)} en total.`
+              ? `No queda nada por cobrar: los ${euros(totals.paid)} ya están en la hucha.`
               : 'Aún no hay fallos anotados.'}
           </Empty>
         </div>

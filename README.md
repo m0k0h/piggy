@@ -14,21 +14,26 @@ de datos, no la interfaz.
 
 ## Cómo se usa
 
-Los pasos 1 y 2 son de la administradora, en `#/admin`. Del 3 al 7 los hace
+Los pasos 1 y 2 son de la administradora, en `#/admin`. Del 3 al 8 los hace
 cualquiera del equipo.
 
 1. **Jugadoras** → da de alta la plantilla.
 2. **Partidos** → crea el partido contra el rival de turno.
-3. En la app del equipo, ábrelo y pulsa **Iniciar partido**: te pregunta quién ha venido a la
-   convocatoria. Si aparece alguien de última hora, se añade ahí mismo.
-4. Durante el partido, cada vez que saquemos: toca a la jugadora y marca
-   **Fallado**, **Dentro** o **Ace**. El contador de fallos y los euros van
-   subiendo arriba. Cualquier saque mal anotado se deshace desde la lista.
-5. El selector de **Set** sirve para separar las estadísticas por set.
-6. Al acabar, **Finalizar**: queda el acta del partido con el ratio de cada una
+3. En la app del equipo, abre el partido y pulsa **Añadir asistentes**: marcas a
+   quien haya llegado y guardas. Se puede ir corrigiendo mientras aparece gente;
+   el partido todavía no ha empezado.
+4. Cuando estéis, **Iniciar partido**. Hasta que no hay al menos una asistente
+   el botón está apagado, porque no habría a quién anotarle el saque.
+5. Cada vez que saquemos: toca a la jugadora y marca **Fallado**, **Dentro** o
+   **Ace**. El contador de fallos y los euros van subiendo arriba. Cualquier
+   saque mal anotado se deshace desde la lista, y el botón **Asistentes** sirve
+   para colar a alguien que llegue tarde.
+6. El selector de **Set** sirve para separar las estadísticas por set.
+7. Al acabar, **Finalizar**: queda el acta del partido con el ratio de cada una
    y un botón para compartir el resumen por WhatsApp.
-7. En **Hucha** se ve quién debe cuánto, y el botón de compartir saca el estado
-   de cuentas listo para anunciarlo antes del siguiente partido. Los pagos se
+8. En **Hucha** se ve, arriba y en grande, lo que lleváis ahorrado, y debajo lo
+   que queda por cobrar y de quién. El botón de compartir saca el estado de
+   cuentas listo para anunciarlo antes del siguiente partido. Los pagos se
    registran desde administración, en **Cobros**.
 
 ## La base de datos del equipo
