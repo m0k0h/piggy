@@ -31,23 +31,23 @@ export function Pot() {
         <PigLineIcon size={168} className="hero-mark" />
         <div className="hero-content">
           <div className="label">Total de la hucha</div>
-          {/* Siempre el total generado, esté cobrado o no: lo pendiente se ve
-              detallado más abajo, en "Pendiente de pagar". */}
-          <div className="amount">{euros(totals.owed)}</div>
-          {/* Cuántos fallos lo componen ya se lee bajo el nombre del club, en
-              la cabecera; aquí solo las píldoras que de verdad destacan. */}
-          <div className="pills">
-            {global.attempts > 0 ? (
-              <span className="pill">
-                <strong>{percent(global.ratio)}</strong> de acierto
-              </span>
-            ) : null}
+          {/* Siempre el total generado, esté cobrado o no. Si queda algo sin
+              cobrar, se nota justo al lado, apagado a propósito: llama la
+              atención sin competir con la cifra grande. Saldado del todo, no
+              se añade nada. */}
+          <div className="amount">
+            {euros(totals.owed)}
             {totals.pending > 0 ? (
-              <span className="pill pill-alert">
-                <strong>{euros(totals.pending)}</strong> pendiente
-              </span>
+              <span className="pending-note">{euros(totals.pending)} pendiente</span>
             ) : null}
           </div>
+          {global.attempts > 0 ? (
+            <div className="pills">
+              <span className={`pill ${global.ratio! >= 0.5 ? 'pill-good' : 'pill-bad'}`}>
+                <strong>{percent(global.ratio)}</strong> de acierto
+              </span>
+            </div>
+          ) : null}
         </div>
       </div>
 

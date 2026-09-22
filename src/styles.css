@@ -9,6 +9,10 @@
   --on-hero: #ffffff;                     /* texto/icono ENCIMA del degradado del hero */
   --hero: linear-gradient(135deg, #d42a7d 0%, #a51f79 100%);
   --hero-shadow: 0 10px 28px rgba(165, 31, 121, 0.35);
+  /* --red normal (#ff7a7a) se pensó para tarjetas oscuras; sobre el rosa del
+     hero queda demasiado parecido en tono. Este rojo, más saturado, es solo
+     para avisos dentro del hero. */
+  --hero-bad: #ff3b57;
 
   /* Cerdita */
   --pig: #ffa8c6;
@@ -248,14 +252,23 @@ main {
   margin-top: 8px;
 }
 
-/* Las píldoras del hero: el % de acierto siempre, y "pendiente" solo si
-   alguien debe dinero — se nota, pero sin agrandar la tarjeta con una
-   sección aparte. */
+/* Lo pendiente, pegado al total pero apagado a propósito: se ve que algo no
+   cuadra sin competir con la cifra grande. Saldado del todo, no aparece. */
+.pot .amount .pending-note {
+  display: inline-block;
+  margin-left: 8px;
+  vertical-align: middle;
+  font-family: var(--body);
+  font-size: 14px;
+  font-weight: 600;
+  color: rgb(255 255 255 / 55%);
+  white-space: nowrap;
+}
+
+/* La píldora del % de acierto. */
 .pot .pills {
   display: flex;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
   margin-top: 12px;
 }
 
@@ -277,8 +290,9 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
-/* La misma píldora, pero avisando de que hay dinero por cobrar. */
-.pot .pill-alert { background: rgb(255 255 255 / 32%); }
+/* Por encima o por debajo del 50% de acierto, un apunte de color en la cifra. */
+.pot .pill-good strong { color: var(--green); }
+.pot .pill-bad strong { color: var(--hero-bad); text-shadow: 0 1px 3px rgb(0 0 0 / 25%); }
 
 /* ---------------------------------------------------------------- stats */
 .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }

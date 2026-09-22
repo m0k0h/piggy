@@ -1,8 +1,6 @@
 import { useEffect } from 'react'
-import { euros, plural } from './lib/format'
 import { navigate, useRoute } from './lib/router'
 import { useAppState } from './lib/store'
-import { fineAmount, pot } from './lib/stats'
 import { connect, retry, useSync } from './lib/sync'
 import { Admin } from './screens/Admin'
 import { Matches } from './screens/Matches'
@@ -80,21 +78,13 @@ export function App() {
 function TopBar() {
   const state = useAppState()
   const sync = useSync()
-  const totals = pot(state)
 
   return (
     <header className="topbar">
       <Crest team={state.team} />
       <h1>
         {state.team.name}
-        {/* El total y el % de acierto ya están en el bloque rosa de la
-            Hucha; aquí, justo bajo el nombre del club, cuántos fallos lo
-            componen — el mismo dato que antes vivía dentro del hero. */}
-        <span className="sub">
-          {totals.errors > 0
-            ? `${plural(totals.errors, 'saque fallado', 'saques fallados')} · ${euros(fineAmount(state))}`
-            : 'Ni un saque fallado todavía'}
-        </span>
+        <span className="sub">Temporada 26-27</span>
       </h1>
       {sync.status !== 'off' ? (
         <span className={`dot ${sync.status}`} title={sync.message || sync.status} />
