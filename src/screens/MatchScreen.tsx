@@ -271,7 +271,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
 
   const total = tally(serves)
   const fines = total.errors * fineAmount(state)
-  const recent = [...serves].reverse().slice(0, 8)
+  const history = [...serves].reverse()
 
   if (editingRoster) {
     return (
@@ -368,30 +368,28 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
           </div>
         )}
 
-        {recent.length > 0 ? (
+        {history.length > 0 ? (
           <>
-            <SectionTitle>Últimos saques</SectionTitle>
+            <SectionTitle>Saques del partido</SectionTitle>
             <div className="card tight">
               <div className="log">
-                {groupBySet(recent).map((group) => (
+                {groupBySet(history).map((group) => (
                   <div key={`${group.set}-${group.serves[0].id}`}>
                     <div className="log-set">Set {group.set}</div>
                     {group.serves.map((serve) => {
                       const player = state.players[serve.playerId]
                       return (
                         <div key={serve.id} className="log-item">
-                          <span
-                            className={`icon ${serve.result === 'error' ? 'err' : serve.result === 'ace' ? 'ace' : 'ok'}`}
-                            aria-hidden="true"
-                          >
+                          <span className={`serve-dot ${serve.result}`} aria-hidden="true">
                             {serve.result === 'error' ? (
-                              <XIcon size={16} />
+                              <XIcon size={11} />
                             ) : serve.result === 'ace' ? (
-                              <StarIcon size={16} />
+                              <StarIcon size={11} />
                             ) : (
-                              <CheckIcon size={16} />
+                              <CheckIcon size={11} />
                             )}
                           </span>
+                          <Avatar name={player?.name ?? 'Jugadora'} number={player?.number} />
                           <span className="grow">{player?.name ?? 'Jugadora'}</span>
                           <button
                             className="undo"
