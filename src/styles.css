@@ -667,7 +667,7 @@ main {
 /* Botón de "Iniciar partido" y su aviso, pegados entre sí. */
 .start-group { display: flex; flex-direction: column; gap: 8px; }
 .inline { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.inline.top { align-items: flex-start; }
+.inline.top { align-items: flex-start; gap: 16px; }
 .inline > .grow { flex: 1; min-width: 0; }
 .spread { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 
