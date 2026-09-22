@@ -271,7 +271,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
 
   const total = tally(serves)
   const fines = total.errors * fineAmount(state)
-  const recent = [...serves].reverse().slice(0, 8)
+  const history = [...serves].reverse()
 
   if (editingRoster) {
     return (
@@ -368,12 +368,12 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
           </div>
         )}
 
-        {recent.length > 0 ? (
+        {history.length > 0 ? (
           <>
-            <SectionTitle>Últimos saques</SectionTitle>
+            <SectionTitle>Saques del partido</SectionTitle>
             <div className="card tight">
               <div className="log">
-                {groupBySet(recent).map((group) => (
+                {groupBySet(history).map((group) => (
                   <div key={`${group.set}-${group.serves[0].id}`}>
                     <div className="log-set">Set {group.set}</div>
                     {group.serves.map((serve) => {
