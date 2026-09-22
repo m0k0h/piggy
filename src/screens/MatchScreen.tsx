@@ -434,24 +434,27 @@ function ResultSheet({
   onClose: () => void
 }) {
   return (
-    <Sheet title={`Saque de ${player.name}`} onClose={onClose}>
+    <Sheet
+      title={`Saque de ${player.name}${player.number ? ` · Dorsal ${player.number}` : ''}`}
+      onClose={onClose}
+    >
       <div className="result-buttons">
         <button className="err" onClick={() => onPick('error')}>
           <span className="glyph" aria-hidden="true">
-            <XIcon />
+            <XIcon size={20} />
           </span>
           Fallado
           <span className="note">{euros(fine)}</span>
         </button>
         <button className="ok" onClick={() => onPick('in')}>
           <span className="glyph" aria-hidden="true">
-            <CheckIcon />
+            <CheckIcon size={20} />
           </span>
           Dentro
         </button>
         <button className="ace" onClick={() => onPick('ace')}>
           <span className="glyph" aria-hidden="true">
-            <StarIcon />
+            <StarIcon size={20} />
           </span>
           Ace
           <span className="note">punto directo</span>
