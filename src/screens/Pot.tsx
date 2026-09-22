@@ -31,19 +31,20 @@ export function Pot() {
         <PigLineIcon size={168} className="hero-mark" />
         <div className="hero-content">
           <div className="label">Total de la hucha</div>
-          {/* Siempre el total generado, esté cobrado o no. */}
-          <div className="amount">{euros(totals.owed)}</div>
-          {/* Si queda algo sin cobrar, un badge apagado debajo lo señala sin
-              competir con la cifra grande. Saldado del todo, no aparece. */}
+          {/* Si queda algo sin cobrar, un badge apagado en la línea de antes
+              lo señala sin competir con la cifra grande. Saldado del todo,
+              no aparece. */}
           {totals.pending > 0 ? (
             <div className="pending-badge">
               <strong>{euros(totals.pending)}</strong> pendiente
             </div>
           ) : null}
+          {/* Siempre el total generado, esté cobrado o no. */}
+          <div className="amount">{euros(totals.owed)}</div>
           {global.attempts > 0 ? (
             <div className="pills">
               <span className={`pill ${global.ratio! >= 0.5 ? 'pill-good' : 'pill-bad'}`}>
-                <strong>{percent(global.ratio)}</strong> de acierto
+                <strong>{percent(global.ratio)}</strong> de acierto del equipo
               </span>
             </div>
           ) : null}

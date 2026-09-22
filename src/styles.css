@@ -288,6 +288,7 @@ main {
   align-items: baseline;
   gap: 5px;
   padding: 7px 16px;
+  border: 1.5px solid transparent;
   border-radius: var(--radius-pill);
   background: rgb(255 255 255 / 20%);
   font-size: 12.5px;
@@ -301,9 +302,10 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
-/* Por encima o por debajo del 50% de acierto, un apunte de color en la cifra. */
-.pot .pill-good strong { color: var(--green); }
-.pot .pill-bad strong { color: var(--hero-bad); text-shadow: 0 1px 3px rgb(0 0 0 / 25%); }
+/* Por encima o por debajo del 50% de acierto: en vez de teñir la cifra, un
+   borde de color alrededor de toda la píldora — a ver cómo queda. */
+.pot .pill-good { border-color: var(--green); }
+.pot .pill-bad { border-color: var(--hero-bad); }
 
 /* ---------------------------------------------------------------- stats */
 .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
