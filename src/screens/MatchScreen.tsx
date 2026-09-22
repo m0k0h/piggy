@@ -27,7 +27,16 @@ import {
   SectionTitle,
   Stat,
 } from '../ui/bits'
-import { BallIcon, CheckIcon, ClipboardIcon, PeopleIcon, ShrugIcon, StarIcon, XIcon } from '../ui/icons'
+import {
+  BallIcon,
+  CalendarIcon,
+  CheckIcon,
+  ClipboardIcon,
+  PeopleIcon,
+  ShrugIcon,
+  StarIcon,
+  XIcon,
+} from '../ui/icons'
 
 export function MatchScreen({ matchId }: { matchId: string }) {
   const state = useAppState()
@@ -97,10 +106,10 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
               <LeagueLink url={match.leagueUrl} />
             </div>
           </div>
-          <div className="match-date">
-            {matchDateLong(match.date)}
-            {match.venue ? ` · ${match.venue}` : ''}
-          </div>
+          <span className="chip date">
+            <CalendarIcon size={14} />
+            {matchDateLong(match.date) + (match.venue ? ` · ${match.venue}` : '')}
+          </span>
         </div>
 
         <SectionTitle aside={attendees.length > 0 ? <span>{attendees.length}</span> : null}>

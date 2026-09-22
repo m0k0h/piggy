@@ -394,6 +394,17 @@ main {
 .chip.money { background: var(--pink-soft); color: var(--pink-text); }
 .chip.live { background: var(--red); color: var(--on-hero); }
 
+.chip.date {
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: normal;
+  white-space: normal;
+  align-self: flex-start;
+}
+.chip.date svg { flex-shrink: 0; }
+
 /* ---------------------------------------------------------- segmented */
 .segmented {
   display: grid;
@@ -732,15 +743,6 @@ main {
 
 /* Justo debajo de un nombre de rival, pegado y sin el interlineado del cuerpo. */
 h2 + .link { margin-top: 2px; line-height: 1.15; }
-
-/* Fecha del partido: se distingue del texto secundario ("En casa") de al lado. */
-.match-date {
-  font-family: var(--display);
-  font-size: 13.5px;
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  color: var(--text);
-}
 
 /* ------------------------------------------------------------- asistentes */
 .attendees { display: flex; flex-wrap: wrap; gap: 8px; }

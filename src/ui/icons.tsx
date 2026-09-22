@@ -232,6 +232,17 @@ export function ClipboardIcon({ size = 24, ...props }: IconProps) {
 }
 
 /** Casa: partido que se juega en el pabellón propio. */
+/** Enlace que abre fuera de la app: ficha del rival en la web de la liga. */
+export function ExternalLinkIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M17.5 13.5V19a2 2 0 0 1-2 2H5.5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2H11" />
+      <path d="M14.5 3.5h6v6" />
+      <path d="M20 4 10.5 13.5" />
+    </svg>
+  )
+}
+
 export function HomeIcon({ size = 24, ...props }: IconProps) {
   return (
     <svg {...stroke(size, props)} aria-hidden="true" focusable="false">

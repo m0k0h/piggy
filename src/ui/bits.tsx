@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
-import { hostOf, initials } from '../lib/format'
-import { ChevronIcon } from './icons'
+import { initials } from '../lib/format'
+import { ChevronIcon, ExternalLinkIcon } from './icons'
 
 export function Avatar({ name, on = false }: { name: string; on?: boolean }) {
   return (
@@ -160,7 +160,8 @@ export function LeagueLink({ url }: { url?: string }) {
   if (!url) return null
   return (
     <a className="link" href={url} target="_blank" rel="noopener noreferrer">
-      Ver en la liga · {hostOf(url)} ↗
+      <ExternalLinkIcon size={15} />
+      Ver en la liga
     </a>
   )
 }
