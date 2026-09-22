@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { euros, matchDate, percent, plural, relativeDay } from '../lib/format'
+import { euros, matchDate, percent, relativeDay, serveSummary } from '../lib/format'
 import { navigate } from '../lib/router'
 import { potSummary, share } from '../lib/summary'
 import { useAppState } from '../lib/store'
@@ -130,11 +130,11 @@ export function Pot() {
 function DebtRow({ row }: { row: Balance }) {
   return (
     <div className="row">
-      <Avatar name={row.player.name} />
+      <Avatar name={row.player.name} number={row.player.number} />
       <span className="grow">
         <span className="title">{row.player.name}</span>
         <span className="meta">
-          {plural(row.tally.errors, 'fallo', 'fallos')} · {percent(row.tally.ratio)} dentro
+          {serveSummary(row.tally.errors, row.tally.attempts, row.tally.ratio)}
           {row.paid > 0 ? ` · ${euros(row.paid)} pagados` : ''}
         </span>
       </span>

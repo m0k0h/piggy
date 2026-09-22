@@ -3,8 +3,19 @@ import { TEAM_ROW_ID, type AppState, type Lineup, type Match, type MatchStatus, 
 const alive = <T extends { deletedAt: string | null }>(rows: Record<string, T>) =>
   Object.values(rows).filter((row) => row.deletedAt === null)
 
-export const allPlayers = (s: AppState): Player[] =>
-  alive(s.players).sort((a, b) => a.name.localeCompare(b.name, 'es'))
+/** Sin dorsal, o con uno que no es un número, la jugadora va al final. */
+const dorsalValue = (player: Player): number => {
+  const trimmed = player.number.trim()
+  if (!trimmed) return Infinity
+  const value = Number(trimmed)
+  return Number.isFinite(value) ? value : Infinity
+}
+
+/** El orden de plantilla: por dorsal, y por nombre si hay empate. */
+const byDorsal = (a: Player, b: Player): number =>
+  dorsalValue(a) - dorsalValue(b) || a.name.localeCompare(b.name, 'es')
+
+export const allPlayers = (s: AppState): Player[] => alive(s.players).sort(byDorsal)
 
 export const allMatches = (s: AppState): Match[] =>
   alive(s.matches).sort((a, b) => b.date.localeCompare(a.date))
@@ -32,7 +43,7 @@ export const rosterOf = (s: AppState, matchId: string): Player[] =>
   rosterIds(s, matchId)
     .map((id) => s.players[id])
     .filter((player): player is Player => Boolean(player) && player.deletedAt === null)
-    .sort((a, b) => a.name.localeCompare(b.name, 'es'))
+    .sort(byDorsal)
 
 /** Partidos aún por jugar o en curso, del más próximo al más lejano. */
 export const upcomingMatches = (s: AppState): Match[] =>
@@ -86,7 +97,7 @@ export function participants(s: AppState, matchId: string): Player[] {
   return [...ids]
     .map((id) => s.players[id])
     .filter((player): player is Player => Boolean(player))
-    .sort((a, b) => a.name.localeCompare(b.name, 'es'))
+    .sort(byDorsal)
 }
 
 export interface Tally {
@@ -131,7 +142,7 @@ export interface Balance {
 }
 
 /**
- * Cuentas de la hucha por jugadora, de más deuda pendiente a menos.
+ * Cuentas de la hucha por jugadora, en el orden de plantilla (por dorsal).
  *
  * Incluye a quien ya no está en la plantilla pero sigue debiendo, para que la
  * suma de las filas cuadre siempre con el total de la hucha.
@@ -155,7 +166,7 @@ export function balances(s: AppState): Balance[] {
       return { player, tally: own, owed, paid, pending: owed - paid }
     })
     .filter((row) => activeIds.has(row.player.id) || row.pending > 0)
-    .sort((a, b) => b.pending - a.pending || b.owed - a.owed)
+    .sort((a, b) => byDorsal(a.player, b.player))
 }
 
 export interface Pot {

@@ -103,7 +103,7 @@ export function Stats() {
         <div className="list">
           {rows.map(({ player, own }) => (
             <div key={player.id} className="row">
-              <Avatar name={player.name} />
+              <Avatar name={player.name} number={player.number} />
               <span className="grow">
                 <span className="title">{player.name}</span>
                 <span className="meta">

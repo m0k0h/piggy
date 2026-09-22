@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import type { AppState, Lineup, Match, Payment, Player, Serve } from '../../types'
-import { balances, currentSet, matchStatus, participants, pot, tally, upcomingMatches } from '../stats'
+import { allPlayers, balances, currentSet, matchStatus, participants, pot, tally, upcomingMatches } from '../stats'
 
 const stamp = { createdAt: '2025-10-01T10:00', updatedAt: '2025-10-01T10:00', deletedAt: null }
 
-const player = (id: string, name: string): Player => ({ id, name, number: '', externalId: null, ...stamp })
+const player = (id: string, name: string, number = ''): Player => ({
+  id,
+  name,
+  number,
+  externalId: null,
+  ...stamp,
+})
 
 const serve = (id: string, playerId: string, result: Serve['result'], set = 1): Serve => ({
   id,
@@ -76,11 +82,12 @@ describe('balances', () => {
     payments: byId([payment('pay1', 'p1', 1)]),
   })
 
-  it('resta lo ya pagado y ordena por deuda pendiente', () => {
+  it('resta lo ya pagado a cada jugadora', () => {
     const rows = balances(base)
-    expect(rows.map((r) => r.player.name)).toEqual(['Anna', 'Marta'])
-    expect(rows[0]).toMatchObject({ owed: 2, paid: 1, pending: 1 })
-    expect(rows[1]).toMatchObject({ owed: 1, paid: 0, pending: 1 })
+    const anna = rows.find((r) => r.player.name === 'Anna')
+    const marta = rows.find((r) => r.player.name === 'Marta')
+    expect(anna).toMatchObject({ owed: 2, paid: 1, pending: 1 })
+    expect(marta).toMatchObject({ owed: 1, paid: 0, pending: 1 })
   })
 
   it('aplica el importe por fallo del equipo', () => {
@@ -94,7 +101,7 @@ describe('balances', () => {
       serves: byId([serve('s1', 'p1', 'error'), serve('s2', 'p2', 'error'), serve('s3', 'p2', 'error')]),
     })
     const rows = balances(conBaja)
-    expect(rows.map((r) => r.player.name)).toEqual(['Marta', 'Anna'])
+    expect(rows.map((r) => r.player.name).sort()).toEqual(['Anna', 'Marta'])
     expect(rows.reduce((sum, r) => sum + r.pending, 0)).toBe(pot(conBaja).pending)
   })
 
@@ -170,6 +177,20 @@ describe('upcomingMatches', () => {
       lineups: byId([lineup('b', 'live'), lineup('c', 'finished')]),
     })
     expect(upcomingMatches(s).map((m) => m.id)).toEqual(['b', 'a'])
+  })
+})
+
+describe('allPlayers', () => {
+  it('ordena por dorsal, y por nombre si no tiene o empata', () => {
+    const s = state({
+      players: byId([
+        player('p1', 'Bea', '10'),
+        player('p2', 'Anna', '4'),
+        player('p3', 'Clara'),
+        player('p4', 'Dora'),
+      ]),
+    })
+    expect(allPlayers(s).map((p) => p.name)).toEqual(['Anna', 'Bea', 'Clara', 'Dora'])
   })
 })
 

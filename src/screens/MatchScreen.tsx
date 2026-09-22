@@ -126,7 +126,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
             <div className="attendees">
               {attendees.map((player) => (
                 <span key={player.id} className="attendee">
-                  <Avatar name={player.name} />
+                  <Avatar name={player.name} number={player.number} />
                   {player.name}
                 </span>
               ))}
@@ -216,7 +216,7 @@ function CallUp({
                       onClick={() => toggle(player.id)}
                       aria-pressed={on}
                     >
-                      <Avatar name={player.name} on={on} />
+                      <Avatar name={player.name} number={player.number} on={on} />
                       <span className="grow">
                         <span className="title">{player.name}</span>
                         {player.number ? <span className="meta">Dorsal {player.number}</span> : null}
@@ -503,7 +503,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
               <div className="list">
                 {rows.map(({ player, own }) => (
                   <div key={player.id} className="row">
-                    <Avatar name={player.name} />
+                    <Avatar name={player.name} number={player.number} />
                     <span className="grow">
                       <span className="title">{player.name}</span>
                       <span className="meta">
