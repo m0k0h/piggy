@@ -16,7 +16,22 @@ export interface TeamConfig {
   code: string
 }
 
-const url = import.meta.env.VITE_SUPABASE_URL?.trim() ?? ''
+/**
+ * La web de Supabase enseña la Project URL justo al lado del endpoint REST
+ * (`.../rest/v1/`), y es fácil copiar el que no toca. El cliente ya añade
+ * esas rutas por su cuenta, así que si alguien pega de más nos quedamos solo
+ * con el origen y la app sigue funcionando igual.
+ */
+export function normalizeSupabaseUrl(value: string): string {
+  if (!value) return value
+  try {
+    return new URL(value).origin
+  } catch {
+    return value
+  }
+}
+
+const url = normalizeSupabaseUrl(import.meta.env.VITE_SUPABASE_URL?.trim() ?? '')
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim() ?? ''
 const code = import.meta.env.VITE_TEAM_CODE?.trim() || 'equipo-principal'
 
