@@ -573,8 +573,9 @@ main {
 }
 
 .player-tile:active { transform: scale(0.98); }
+.player-tile .head { display: flex; align-items: center; gap: 8px; }
+.player-tile .head .avatar { width: 30px; height: 30px; font-size: 11px; }
 .player-tile .name { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; }
-.player-tile .num { font-size: 12px; color: var(--muted); font-weight: 600; }
 .player-tile .line { display: flex; gap: 6px; align-items: center; margin-top: auto; flex-wrap: wrap; }
 
 .result-buttons { display: grid; gap: 10px; }
@@ -615,7 +616,29 @@ main {
 .log-item .icon.ace { color: var(--pink-text); }
 .log-item:last-child { border-bottom: 0; }
 .log-item .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.log-item .undo { border: 0; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; padding: 4px 6px; }
+
+.log-item .undo {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 6px;
+  border-radius: var(--radius-pill);
+}
+.log-item .undo:active { background: var(--surface-2); }
+
+/** Cabecera de grupo dentro del log: el set, una vez por tanda de saques. */
+.log-set {
+  padding: 8px 4px 2px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.log > div:first-child .log-set { padding-top: 2px; }
 
 /* ----------------------------------------------------------------- bars */
 .bar { height: 6px; border-radius: var(--radius-pill); background: var(--red); overflow: hidden; }

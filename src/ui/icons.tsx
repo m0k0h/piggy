@@ -243,6 +243,16 @@ export function ExternalLinkIcon({ size = 24, ...props }: IconProps) {
   )
 }
 
+/** Deshacer: la flecha que da marcha atrás sobre un saque anotado. */
+export function UndoIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M9.5 15 4.5 10l5-5" />
+      <path d="M4.5 10h10a5 5 0 0 1 0 10H9" />
+    </svg>
+  )
+}
+
 export function HomeIcon({ size = 24, ...props }: IconProps) {
   return (
     <svg {...stroke(size, props)} aria-hidden="true" focusable="false">

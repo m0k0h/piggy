@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { euros, matchDateLong, percent, plural, relativeDay } from '../lib/format'
+import { euros, matchDateLong, percent, plural, relativeDay, serveSummary } from '../lib/format'
 import { goBack, navigate } from '../lib/router'
 import { matchSummary, share } from '../lib/summary'
 import { addServe, removeServe, saveLineup, useAppState } from '../lib/store'
 import {
   allPlayers,
+  allServes,
   currentSet,
   fineAmount,
   matchStatus,
@@ -15,7 +16,7 @@ import {
   tally,
   tallyByPlayer,
 } from '../lib/stats'
-import type { AppState, Match, Player, ServeResult } from '../types'
+import type { AppState, Match, Player, Serve, ServeResult } from '../types'
 import { Sheet } from '../ui/Sheet'
 import {
   Avatar,
@@ -36,6 +37,7 @@ import {
   PeopleIcon,
   ShrugIcon,
   StarIcon,
+  UndoIcon,
   XIcon,
 } from '../ui/icons'
 
@@ -66,6 +68,17 @@ export function MatchScreen({ matchId }: { matchId: string }) {
 }
 
 const titleOf = (match: Match) => `${match.home ? 'vs' : '@'} ${match.opponent || 'Rival'}`
+
+/** Agrupa saques consecutivos del mismo set, para no repetir la etiqueta en cada fila. */
+function groupBySet(serves: Serve[]): { set: number; serves: Serve[] }[] {
+  const groups: { set: number; serves: Serve[] }[] = []
+  for (const serve of serves) {
+    const last = groups[groups.length - 1]
+    if (last && last.set === serve.set) last.serves.push(serve)
+    else groups.push({ set: serve.set, serves: [serve] })
+  }
+  return groups
+}
 
 // --------------------------------------------------------------- programado
 
@@ -172,6 +185,7 @@ function CallUp({
   onConfirm: (roster: string[]) => void
 }) {
   const players = allPlayers(state)
+  const seasonServes = allServes(state)
   const [selected, setSelected] = useState<string[]>(() => rosterIds(state, match.id))
 
   const toggle = (id: string) =>
@@ -213,6 +227,7 @@ function CallUp({
               <div className="list">
                 {players.map((player) => {
                   const on = selected.includes(player.id)
+                  const own = tallyByPlayer(seasonServes, player.id)
                   return (
                     <button
                       key={player.id}
@@ -223,7 +238,7 @@ function CallUp({
                       <Avatar name={player.name} number={player.number} on={on} />
                       <span className="grow">
                         <span className="title">{player.name}</span>
-                        {player.number ? <span className="meta">Dorsal {player.number}</span> : null}
+                        <span className="meta">{serveSummary(own.errors, own.attempts, own.ratio)}</span>
                       </span>
                       <span className="trail" aria-hidden="true">
                         {on ? <CheckIcon size={18} /> : null}
@@ -329,14 +344,20 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
               const own = tallyByPlayer(serves, player.id)
               return (
                 <button key={player.id} className="player-tile" onClick={() => setPicking(player)}>
-                  <span className="name">{player.name}</span>
-                  {player.number ? <span className="num">#{player.number}</span> : null}
-                  <span className="line">
-                    <span className={own.errors > 0 ? 'chip bad' : 'chip'}>
-                      {plural(own.errors, 'fallo', 'fallos')}
-                    </span>
-                    <span className="chip good">{percent(own.ratio)}</span>
+                  <span className="head">
+                    <Avatar name={player.name} number={player.number} />
+                    <span className="name">{player.name}</span>
                   </span>
+                  {own.attempts > 0 ? (
+                    <span className="line">
+                      <span className={own.errors > 0 ? 'chip bad' : 'chip'}>
+                        {plural(own.errors, 'fallo', 'fallos')}
+                      </span>
+                      <span className={own.ratio !== null && own.ratio < 0.5 ? 'chip bad' : 'chip good'}>
+                        {percent(own.ratio)}
+                      </span>
+                    </span>
+                  ) : null}
                 </button>
               )
             })}
@@ -348,34 +369,38 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
             <SectionTitle>Últimos saques</SectionTitle>
             <div className="card tight">
               <div className="log">
-                {recent.map((serve) => {
-                  const player = state.players[serve.playerId]
-                  return (
-                    <div key={serve.id} className="log-item">
-                      <span
-                        className={`icon ${serve.result === 'error' ? 'err' : serve.result === 'ace' ? 'ace' : 'ok'}`}
-                        aria-hidden="true"
-                      >
-                        {serve.result === 'error' ? (
-                          <XIcon size={16} />
-                        ) : serve.result === 'ace' ? (
-                          <StarIcon size={16} />
-                        ) : (
-                          <CheckIcon size={16} />
-                        )}
-                      </span>
-                      <span className="grow">{player?.name ?? 'Jugadora'}</span>
-                      <span className="muted small">Set {serve.set}</span>
-                      <button
-                        className="undo"
-                        onClick={() => removeServe(serve.id)}
-                        aria-label={`Deshacer saque de ${player?.name ?? 'jugadora'}`}
-                      >
-                        Deshacer
-                      </button>
-                    </div>
-                  )
-                })}
+                {groupBySet(recent).map((group) => (
+                  <div key={`${group.set}-${group.serves[0].id}`}>
+                    <div className="log-set">Set {group.set}</div>
+                    {group.serves.map((serve) => {
+                      const player = state.players[serve.playerId]
+                      return (
+                        <div key={serve.id} className="log-item">
+                          <span
+                            className={`icon ${serve.result === 'error' ? 'err' : serve.result === 'ace' ? 'ace' : 'ok'}`}
+                            aria-hidden="true"
+                          >
+                            {serve.result === 'error' ? (
+                              <XIcon size={16} />
+                            ) : serve.result === 'ace' ? (
+                              <StarIcon size={16} />
+                            ) : (
+                              <CheckIcon size={16} />
+                            )}
+                          </span>
+                          <span className="grow">{player?.name ?? 'Jugadora'}</span>
+                          <button
+                            className="undo"
+                            onClick={() => removeServe(serve.id)}
+                            aria-label={`Deshacer saque de ${player?.name ?? 'jugadora'}`}
+                          >
+                            <UndoIcon size={16} />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))}
               </div>
             </div>
           </>
