@@ -203,7 +203,10 @@ main {
 .card.tight { padding: 12px; }
 .card.flush { padding: 0; overflow: hidden; }
 
-.section-title .btn.quiet { font-size: 12.5px; color: var(--pink-text); }
+/* Sin esto, el botón "Asistentes" (min-height 38px) estira la fila entera
+   y empuja el texto del título hacia abajo por la alineación a la base,
+   descuadrando el espaciado con los títulos que no llevan aside. */
+.section-title .btn.quiet { min-height: auto; padding: 0 6px; font-size: 12.5px; color: var(--pink-text); }
 
 .section-title {
   display: flex;
