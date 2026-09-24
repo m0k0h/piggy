@@ -38,9 +38,12 @@ Lo que hay que saber para aplicarlo sin releer todo el documento:
   contenido para fuera de la app, no interfaz.
 - El componente `Empty` (`src/ui/bits.tsx`) pinta los estados vacíos:
   `icon` es el SVG y `highlight` (booleano) da el círculo rosa tenue de
-  fondo — reservado para "la hucha está vacía" (`src/screens/Pot.tsx`), que
-  es la identidad de esa pantalla. El resto de estados vacíos usa el icono
+  fondo — reservado para un estado vacío que sea la identidad de su
+  pantalla (hoy no lo usa ninguna). El resto de estados vacíos usa el icono
   a secas, sin el círculo, para no repetir ese tratamiento por todas partes.
+- En la portada (`src/screens/Pot.tsx`) los bloques "Pendiente de pagar" y
+  "Últimos pagos" no tienen estado vacío: si nadie debe nada o no hay pagos,
+  el bloque entero (título incluido) no se pinta.
 - Money/cuentas usan `font-variant-numeric: tabular-nums` (ya aplicado a
   `.pot .amount`, `.stat .v`, `.row .trail .big`) para que las cifras no
   bailen al cambiar. Si añades una cifra nueva que se actualice en vivo,

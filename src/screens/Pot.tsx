@@ -7,7 +7,7 @@ import { allPayments, allServes, balances, matchStatus, pot, tally, upcomingMatc
 import type { Balance } from '../lib/stats'
 import type { AppState, Payment } from '../types'
 import { Avatar, Empty, SectionTitle } from '../ui/bits'
-import { CalendarIcon, CoinsIcon, HomeIcon, PartyIcon, PigIcon, PigLineIcon, ShareIcon } from '../ui/icons'
+import { CalendarIcon, HomeIcon, PigLineIcon, ShareIcon } from '../ui/icons'
 
 export function Pot() {
   const state = useAppState()
@@ -29,37 +29,14 @@ export function Pot() {
     setTimeout(() => setToast(''), 2500)
   }
 
-  const pendingSection: ReactNode = (
-    <>
-      <SectionTitle
-        aside={
-          totals.pending > 0 ? <span className="chip money">{euros(totals.pending)}</span> : null
-        }
-      >
-        Pendiente de pagar
-      </SectionTitle>
-
-      {rows.length === 0 ? (
-        <div className="card">
-          <Empty icon={<PigIcon size={74} />} title="La hucha está vacía" highlight>
-            En cuanto se anoten saques, aparecerá aquí lo que debe cada una.
-          </Empty>
-        </div>
-      ) : withDebt.length === 0 ? (
-        <div className="card">
-          <Empty icon={<PartyIcon />} title="Todas al día">
-            {totals.owed > 0 ? (
-              <>
-                No queda nada por cobrar.
-                <br />
-                Los {euros(totals.paid)} ya están en la hucha.
-              </>
-            ) : (
-              'Aún no hay fallos anotados.'
-            )}
-          </Empty>
-        </div>
-      ) : (
+  // Los bloques de pendiente y de últimos pagos solo salen si tienen algo
+  // que enseñar: sin deudas o sin pagos, la portada no pinta el hueco vacío.
+  const pendingSection: ReactNode =
+    withDebt.length > 0 ? (
+      <>
+        <SectionTitle aside={<span className="chip money">{euros(totals.pending)}</span>}>
+          Pendiente de pagar
+        </SectionTitle>
         <div className="card flush">
           <div className="list">
             {withDebt.map((row) => (
@@ -67,20 +44,13 @@ export function Pot() {
             ))}
           </div>
         </div>
-      )}
-    </>
-  )
+      </>
+    ) : null
 
-  const lastPaymentsSection: ReactNode = (
-    <>
-      <SectionTitle>Últimos pagos</SectionTitle>
-      {lastPayments.length === 0 ? (
-        <div className="card">
-          <Empty icon={<CoinsIcon />} title="Todavía no hay pagos">
-            Se registran desde administración, en Cobros.
-          </Empty>
-        </div>
-      ) : (
+  const lastPaymentsSection: ReactNode =
+    lastPayments.length > 0 ? (
+      <>
+        <SectionTitle>Últimos pagos</SectionTitle>
         <div className="card flush">
           <div className="list">
             {lastPayments.map((payment) => (
@@ -88,9 +58,8 @@ export function Pot() {
             ))}
           </div>
         </div>
-      )}
-    </>
-  )
+      </>
+    ) : null
 
   return (
     <>
@@ -157,17 +126,8 @@ export function Pot() {
         </div>
       )}
 
-      {withDebt.length > 0 ? (
-        <>
-          {pendingSection}
-          {lastPaymentsSection}
-        </>
-      ) : (
-        <>
-          {lastPaymentsSection}
-          {pendingSection}
-        </>
-      )}
+      {pendingSection}
+      {lastPaymentsSection}
 
       {toast ? <div className="banner good">{toast}</div> : null}
     </>
