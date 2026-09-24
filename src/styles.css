@@ -640,7 +640,7 @@ main {
   flex-shrink: 0;
 }
 .serve-dot.error { background: var(--red-soft); color: var(--red); }
-.serve-dot.in { background: var(--ok-bg); color: var(--ok-text); }
+.serve-dot.in { background: var(--green-soft); color: var(--green); }
 .serve-dot.ace { background: var(--amber-soft); color: var(--amber); }
 
 .result-buttons { display: grid; gap: 10px; }
