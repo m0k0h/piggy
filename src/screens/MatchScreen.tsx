@@ -303,10 +303,21 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
       <main>
         <div className="live-head">
           <div>
-            <div className="small muted">Fallos · hucha</div>
-            <strong>
-              {total.errors} · {euros(fines)}
-            </strong>
+            <div className="small muted">Partido</div>
+            {total.attempts > 0 ? (
+              <span className="line">
+                <span className={total.errors > 0 ? 'chip bad' : 'chip'}>
+                  {plural(total.errors, 'fallo', 'fallos')}
+                </span>
+                <span className={total.ratio !== null && total.ratio < 0.5 ? 'chip bad' : 'chip good'}>
+                  {percent(total.ratio)}
+                </span>
+              </span>
+            ) : (
+              <span className="line">
+                <span className="chip">Sin saques</span>
+              </span>
+            )}
           </div>
           <div className="set-stepper">
             <button onClick={() => setSet((s) => Math.max(1, s - 1))} aria-label="Set anterior">
