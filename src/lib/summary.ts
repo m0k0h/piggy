@@ -1,4 +1,4 @@
-import { euros, matchDate, percent, plural } from './format'
+import { euros, joinNatural, matchDate, percent, plural } from './format'
 import { balances, fineAmount, participants, pot, servesOfMatch, tally, tallyByPlayer, teamName } from './stats'
 import type { AppState, Match } from '../types'
 
@@ -46,18 +46,18 @@ export function potSummary(state: AppState): string {
   const lines: string[] = []
 
   lines.push(`🐷 Hucha de ${teamName(state)}`)
-  lines.push(`Llevamos ahorrado: ${euros(totals.paid)}`)
-  if (totals.owed > 0) {
-    lines.push(
-      `De ${euros(totals.owed)} generados por ${plural(totals.errors, 'saque fallado', 'saques fallados')}.`,
-    )
+  // El total tiene en cuenta lo que se debe: es lo generado por los fallos,
+  // esté ya cobrado o no — igual que la cifra grande de la app.
+  lines.push(`Llevamos ahorrado: ${euros(totals.owed)}`)
+  if (totals.errors > 0) {
+    lines.push(`${plural(totals.errors, 'saque fallado', 'saques fallados')} en total.`)
   }
 
   const pending = balances(state).filter((row) => row.pending > 0)
   if (pending.length > 0) {
+    const debtors = pending.map((row) => `${row.player.name} (${euros(row.pending)})`)
     lines.push('')
-    lines.push(`Pendiente de pagar (${euros(totals.pending)}):`)
-    for (const row of pending) lines.push(`• ${row.player.name}: ${euros(row.pending)}`)
+    lines.push(`Pendiente de pagar (${euros(totals.pending)}): ${joinNatural(debtors)}.`)
   } else if (totals.owed > 0) {
     lines.push('')
     lines.push('¡Todas al día! 🎉')

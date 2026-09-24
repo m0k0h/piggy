@@ -89,3 +89,12 @@ export function hostOf(url: string): string {
     return url
   }
 }
+
+/**
+ * Une una lista al estilo español: comas entre todos menos los dos últimos,
+ * que van con "y". "Anna, Marta y Laura" en vez de "Anna, Marta, y Laura".
+ */
+export function joinNatural(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? ''
+  return `${items.slice(0, -1).join(', ')} y ${items[items.length - 1]}`
+}
