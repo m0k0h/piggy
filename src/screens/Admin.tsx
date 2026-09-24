@@ -34,7 +34,7 @@ import {
   finishedMatches,
   type Balance,
 } from '../lib/stats'
-import { signIn, signOut, useRole, useSync, wipeMatches } from '../lib/sync'
+import { signIn, signOut, useRole, useSync } from '../lib/sync'
 import type { Match, Player } from '../types'
 import { Sheet } from '../ui/Sheet'
 import { Avatar, Crest, Empty, Field, OpponentCrest, ScreenHeader, SectionTitle } from '../ui/bits'
@@ -128,8 +128,6 @@ function AdminHome() {
           Ver la app del equipo
         </button>
 
-        <WipeMatches />
-
         {sync.signedIn ? (
           <button className="btn quiet" onClick={() => void signOut()}>
             Cerrar sesión ({sync.email})
@@ -137,54 +135,6 @@ function AdminHome() {
         ) : null}
       </main>
     </>
-  )
-}
-
-/**
- * TEMPORAL: limpieza de los partidos de prueba. Quitar este componente (y
- * `wipeMatches`) en cuanto se haya usado.
- */
-function WipeMatches() {
-  const state = useAppState()
-  const [confirming, setConfirming] = useState(false)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const matches = Object.keys(state.matches).length
-  const serves = Object.keys(state.serves).length
-  const payments = Object.keys(state.payments).length
-
-  if (matches === 0 && serves === 0 && payments === 0) return null
-
-  const run = async () => {
-    setBusy(true)
-    setError('')
-    const result = await wipeMatches()
-    setBusy(false)
-    if (result.ok) setConfirming(false)
-    else setError(result.message)
-  }
-
-  return confirming ? (
-    <div className="card stack">
-      <p className="small muted center">
-        Se borran para siempre {plural(matches, 'partido', 'partidos')},{' '}
-        {plural(serves, 'saque', 'saques')} y {plural(payments, 'cobro', 'cobros')}, con las
-        convocatorias. No se puede deshacer. Las jugadoras y los datos del equipo se quedan.
-      </p>
-      {error ? <div className="banner bad">{error}</div> : null}
-      <div className="btn-row">
-        <button className="btn ghost" onClick={() => setConfirming(false)} disabled={busy}>
-          Cancelar
-        </button>
-        <button className="btn danger" onClick={() => void run()} disabled={busy}>
-          {busy ? 'Borrando…' : 'Borrar'}
-        </button>
-      </div>
-    </div>
-  ) : (
-    <button className="btn quiet" onClick={() => setConfirming(true)}>
-      Borrar partidos y cobros
-    </button>
   )
 }
 

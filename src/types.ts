@@ -92,7 +92,7 @@ export interface Team extends Syncable {
   /**
    * Borrado de partidos de prueba: todo partido, convocatoria, saque o cobro creado
    * hasta este momento se quita también de la copia local de cada móvil, para
-   * que nadie lo vuelva a subir. Ver `wipeMatches` en `src/lib/sync.ts`.
+   * que nadie lo vuelva a subir. Lo aplica `applyRemote` en `src/lib/store.ts`.
    */
   resetAt?: string
 }
