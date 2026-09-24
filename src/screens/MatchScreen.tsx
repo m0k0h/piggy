@@ -34,7 +34,9 @@ import {
   CheckIcon,
   ClipboardIcon,
   HomeIcon,
+  MinusIcon,
   PeopleIcon,
+  PlusIcon,
   ShrugIcon,
   StarIcon,
   UndoIcon,
@@ -321,11 +323,11 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
           </div>
           <div className="set-stepper">
             <button onClick={() => setSet((s) => Math.max(1, s - 1))} aria-label="Set anterior">
-              −
+              <MinusIcon size={18} />
             </button>
             <span className="n">Set {set}</span>
             <button onClick={() => setSet((s) => Math.min(9, s + 1))} aria-label="Set siguiente">
-              +
+              <PlusIcon size={18} />
             </button>
           </div>
         </div>
