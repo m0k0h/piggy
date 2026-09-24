@@ -151,8 +151,9 @@ function WipeMatches() {
   const [error, setError] = useState('')
   const matches = Object.keys(state.matches).length
   const serves = Object.keys(state.serves).length
+  const payments = Object.keys(state.payments).length
 
-  if (matches === 0 && serves === 0) return null
+  if (matches === 0 && serves === 0 && payments === 0) return null
 
   const run = async () => {
     setBusy(true)
@@ -166,9 +167,9 @@ function WipeMatches() {
   return confirming ? (
     <div className="card stack">
       <p className="small muted center">
-        Se borran para siempre {plural(matches, 'partido', 'partidos')} y{' '}
-        {plural(serves, 'saque', 'saques')}, con sus convocatorias. No se puede deshacer. Las
-        jugadoras, los cobros y los datos del equipo se quedan.
+        Se borran para siempre {plural(matches, 'partido', 'partidos')},{' '}
+        {plural(serves, 'saque', 'saques')} y {plural(payments, 'cobro', 'cobros')}, con las
+        convocatorias. No se puede deshacer. Las jugadoras y los datos del equipo se quedan.
       </p>
       {error ? <div className="banner bad">{error}</div> : null}
       <div className="btn-row">
@@ -182,7 +183,7 @@ function WipeMatches() {
     </div>
   ) : (
     <button className="btn quiet" onClick={() => setConfirming(true)}>
-      Borrar todos los partidos
+      Borrar partidos y cobros
     </button>
   )
 }

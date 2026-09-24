@@ -90,7 +90,7 @@ export interface Team extends Syncable {
   /** Escudo del equipo, ya reducido, como data URL. Vacío si no hay. */
   logo: string
   /**
-   * Borrado de partidos de prueba: todo partido, convocatoria o saque creado
+   * Borrado de partidos de prueba: todo partido, convocatoria, saque o cobro creado
    * hasta este momento se quita también de la copia local de cada móvil, para
    * que nadie lo vuelva a subir. Ver `wipeMatches` en `src/lib/sync.ts`.
    */

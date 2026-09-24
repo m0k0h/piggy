@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js'
 import { COLLECTIONS, PLAYER_WRITABLE, type Collection, type Role, type Syncable } from '../types'
 import { teamConfig } from './config'
-import { MATCH_COLLECTIONS, applyRemote, markReset, purgeMatchData, rowsOf, setSyncPublisher } from './store'
+import { WIPE_COLLECTIONS, applyRemote, markReset, purgeMatchData, rowsOf, setSyncPublisher } from './store'
 
 /**
  * Todo viaja en una sola tabla con el documento en JSON. Así el esquema no
@@ -213,8 +213,8 @@ export function retry() {
 
 /**
  * Borra de verdad, en la base de datos, todos los partidos con sus
- * convocatorias y saques. Las jugadoras, los cobros y los datos del equipo se
- * quedan. Es para limpiar las pruebas una vez; el botón que lo llama se quita
+ * convocatorias y saques, y todos los cobros. Las jugadoras y los datos del
+ * equipo se quedan. Es para limpiar las pruebas una vez; el botón que lo llama se quita
  * después.
  *
  * Postgres no deja borrar filas a nadie (ver `supabase/schema.sql`), así que
@@ -231,21 +231,21 @@ export async function wipeMatches(): Promise<AuthResult> {
     if (!snapshot.signedIn) return { ok: false, message: 'Hace falta la sesión de administradora.' }
     // Lo que hubiera en cola de esas colecciones ya no tiene que subir.
     for (const key of [...queue.keys()]) {
-      if (MATCH_COLLECTIONS.some((collection) => key.startsWith(`${collection}:`))) queue.delete(key)
+      if (WIPE_COLLECTIONS.some((collection) => key.startsWith(`${collection}:`))) queue.delete(key)
     }
 
     const { data: before, error: countError } = await client
       .from(TABLE)
       .select('id')
       .eq('team_code', teamCode)
-      .in('collection', [...MATCH_COLLECTIONS])
+      .in('collection', [...WIPE_COLLECTIONS])
     if (countError) return { ok: false, message: countError.message }
 
     const { data: gone, error } = await client
       .from(TABLE)
       .delete()
       .eq('team_code', teamCode)
-      .in('collection', [...MATCH_COLLECTIONS])
+      .in('collection', [...WIPE_COLLECTIONS])
       .select('id')
     if (error) return { ok: false, message: error.message }
     if ((before?.length ?? 0) > 0 && (gone?.length ?? 0) === 0) {

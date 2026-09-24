@@ -6,7 +6,7 @@ const withReset = (resetAt: string): Team => ({ ...getState().team, resetAt, upd
 const tick = () => new Promise((resolve) => setTimeout(resolve, 5))
 
 describe('borrado de partidos de prueba', () => {
-  it('al llegar la marca del equipo, cada móvil tira su copia de partidos y saques', async () => {
+  it('al llegar la marca del equipo, cada móvil tira su copia de partidos, saques y cobros', async () => {
     const player = addPlayer('Lucía', '7')
     const match = addMatch({ date: '2026-09-01T18:00', opponent: 'Rival' })
     saveLineup(match.id, { roster: [player.id], status: 'live' })
@@ -22,7 +22,7 @@ describe('borrado de partidos de prueba', () => {
     expect(state.lineups).toEqual({})
     expect(state.serves).toEqual({})
     expect(Object.keys(state.players)).toEqual([player.id])
-    expect(Object.keys(state.payments)).toHaveLength(1)
+    expect(state.payments).toEqual({})
     expect(state.team.resetAt).toBe(resetAt)
   })
 
