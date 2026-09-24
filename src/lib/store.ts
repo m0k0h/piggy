@@ -308,11 +308,6 @@ export function purgeMatchData(before: string) {
   commit(next)
 }
 
-/** Marca en el equipo el momento del borrado, para que lo apliquen el resto de móviles. */
-export function markReset(resetAt: string) {
-  write('team', [{ ...state.team, resetAt, updatedAt: now() }])
-}
-
 /** Todas las filas locales de una colección, para subirlas de golpe. */
 export function rowsOf(collection: Collection): Syncable[] {
   return collection === 'team' ? [state.team] : Object.values(state[collection])
