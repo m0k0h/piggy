@@ -232,12 +232,44 @@ export function ClipboardIcon({ size = 24, ...props }: IconProps) {
 }
 
 /** Casa: partido que se juega en el pabellón propio. */
+/** Enlace que abre fuera de la app: ficha del rival en la web de la liga. */
+export function ExternalLinkIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M17.5 13.5V19a2 2 0 0 1-2 2H5.5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2H11" />
+      <path d="M14.5 3.5h6v6" />
+      <path d="M20 4 10.5 13.5" />
+    </svg>
+  )
+}
+
+/** Deshacer: la flecha que da marcha atrás sobre un saque anotado. */
+export function UndoIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M9.5 15 4.5 10l5-5" />
+      <path d="M4.5 10h10a5 5 0 0 1 0 10H9" />
+    </svg>
+  )
+}
+
 export function HomeIcon({ size = 24, ...props }: IconProps) {
   return (
     <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
       <path d="M4 11.5 12 4l8 7.5" />
       <path d="M6 10v9.5a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V10" />
       <path d="M10 20.5V14a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v6.5" />
+    </svg>
+  )
+}
+
+/** Compartir: la flecha que sale de la bandeja, para mandar la hucha por WhatsApp. */
+export function ShareIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M12 14.5V3.5" />
+      <path d="M7.5 8 12 3.5 16.5 8" />
+      <path d="M8 11H6.5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H16" />
     </svg>
   )
 }

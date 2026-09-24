@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { euros, matchDateLong, percent, plural, relativeDay } from '../lib/format'
+import { euros, matchDateLong, percent, plural, relativeDay, serveSummary } from '../lib/format'
 import { goBack, navigate } from '../lib/router'
 import { matchSummary, share } from '../lib/summary'
 import { addServe, removeServe, saveLineup, useAppState } from '../lib/store'
 import {
   allPlayers,
+  allServes,
   currentSet,
   fineAmount,
   matchStatus,
@@ -15,7 +16,7 @@ import {
   tally,
   tallyByPlayer,
 } from '../lib/stats'
-import type { AppState, Match, Player, ServeResult } from '../types'
+import type { AppState, Match, Player, Serve, ServeResult } from '../types'
 import { Sheet } from '../ui/Sheet'
 import {
   Avatar,
@@ -27,7 +28,18 @@ import {
   SectionTitle,
   Stat,
 } from '../ui/bits'
-import { BallIcon, CheckIcon, ClipboardIcon, PeopleIcon, ShrugIcon, StarIcon, XIcon } from '../ui/icons'
+import {
+  BallIcon,
+  CalendarIcon,
+  CheckIcon,
+  ClipboardIcon,
+  HomeIcon,
+  PeopleIcon,
+  ShrugIcon,
+  StarIcon,
+  UndoIcon,
+  XIcon,
+} from '../ui/icons'
 
 export function MatchScreen({ matchId }: { matchId: string }) {
   const state = useAppState()
@@ -56,6 +68,17 @@ export function MatchScreen({ matchId }: { matchId: string }) {
 }
 
 const titleOf = (match: Match) => `${match.home ? 'vs' : '@'} ${match.opponent || 'Rival'}`
+
+/** Agrupa saques consecutivos del mismo set, para no repetir la etiqueta en cada fila. */
+function groupBySet(serves: Serve[]): { set: number; serves: Serve[] }[] {
+  const groups: { set: number; serves: Serve[] }[] = []
+  for (const serve of serves) {
+    const last = groups[groups.length - 1]
+    if (last && last.set === serve.set) last.serves.push(serve)
+    else groups.push({ set: serve.set, serves: [serve] })
+  }
+  return groups
+}
 
 // --------------------------------------------------------------- programado
 
@@ -89,18 +112,21 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
       <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={goBack} />
       <main>
         <div className="card stack">
-          <div className="inline">
+          <div className="inline wide">
             <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} big />
             <div className="grow">
-              <div className="small muted">{match.home ? 'En casa' : 'Fuera'}</div>
+              <div className="small muted">
+                {match.home ? <HomeIcon size={13} className="home-mark" /> : null}
+                {match.home ? 'En casa' : 'Fuera'}
+              </div>
               <h2>{match.opponent || 'Rival por definir'}</h2>
+              <LeagueLink url={match.leagueUrl} />
             </div>
           </div>
-          <div className="small muted">
-            {matchDateLong(match.date)}
-            {match.venue ? ` · ${match.venue}` : ''}
-          </div>
-          <LeagueLink url={match.leagueUrl} />
+          <span className="chip date">
+            <CalendarIcon size={14} />
+            {matchDateLong(match.date) + (match.venue ? ` · ${match.venue}` : '')}
+          </span>
         </div>
 
         <SectionTitle aside={attendees.length > 0 ? <span>{attendees.length}</span> : null}>
@@ -109,13 +135,15 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
         <div className="card stack">
           {attendees.length === 0 ? (
             <p className="small muted center">
-              Todavía no ha venido nadie. Apunta a quien esté en el pabellón.
+              Todavía no ha venido nadie.
+              <br />
+              Apunta a quien esté en el pabellón.
             </p>
           ) : (
             <div className="attendees">
               {attendees.map((player) => (
                 <span key={player.id} className="attendee">
-                  <Avatar name={player.name} />
+                  <Avatar name={player.name} number={player.number} />
                   {player.name}
                 </span>
               ))}
@@ -126,14 +154,16 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
           </button>
         </div>
 
-        <button className="btn block" onClick={() => saveLineup(match.id, { status: 'live' })} disabled={attendees.length === 0}>
-          Iniciar partido
-        </button>
-        {attendees.length === 0 ? (
-          <p className="small muted center">
-            Hace falta al menos una asistente para poder anotar saques.
+        <div className="start-group">
+          <button className="btn block" onClick={() => saveLineup(match.id, { status: 'live' })} disabled={attendees.length === 0}>
+            Iniciar partido
+          </button>
+          <p className="small accent center">
+            {attendees.length === 0
+              ? 'Hace falta al menos una asistente para poder anotar saques.'
+              : 'Asegúrate de añadir a todas las asistentes.'}
           </p>
-        ) : null}
+        </div>
       </main>
     </>
   )
@@ -155,6 +185,7 @@ function CallUp({
   onConfirm: (roster: string[]) => void
 }) {
   const players = allPlayers(state)
+  const seasonServes = allServes(state)
   const [selected, setSelected] = useState<string[]>(() => rosterIds(state, match.id))
 
   const toggle = (id: string) =>
@@ -196,6 +227,7 @@ function CallUp({
               <div className="list">
                 {players.map((player) => {
                   const on = selected.includes(player.id)
+                  const own = tallyByPlayer(seasonServes, player.id)
                   return (
                     <button
                       key={player.id}
@@ -203,10 +235,10 @@ function CallUp({
                       onClick={() => toggle(player.id)}
                       aria-pressed={on}
                     >
-                      <Avatar name={player.name} on={on} />
+                      <Avatar name={player.name} number={player.number} on={on} />
                       <span className="grow">
                         <span className="title">{player.name}</span>
-                        {player.number ? <span className="meta">Dorsal {player.number}</span> : null}
+                        <span className="meta">{serveSummary(own.errors, own.attempts, own.ratio)}</span>
                       </span>
                       <span className="trail" aria-hidden="true">
                         {on ? <CheckIcon size={18} /> : null}
@@ -239,7 +271,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
 
   const total = tally(serves)
   const fines = total.errors * fineAmount(state)
-  const recent = [...serves].reverse().slice(0, 8)
+  const history = [...serves].reverse()
 
   if (editingRoster) {
     return (
@@ -312,53 +344,65 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
               const own = tallyByPlayer(serves, player.id)
               return (
                 <button key={player.id} className="player-tile" onClick={() => setPicking(player)}>
-                  <span className="name">{player.name}</span>
-                  {player.number ? <span className="num">#{player.number}</span> : null}
-                  <span className="line">
-                    <span className={own.errors > 0 ? 'chip bad' : 'chip'}>
-                      {plural(own.errors, 'fallo', 'fallos')}
-                    </span>
-                    <span className="chip good">{percent(own.ratio)}</span>
+                  <span className="head">
+                    <Avatar name={player.name} number={player.number} />
+                    <span className="name">{player.name}</span>
                   </span>
+                  {own.attempts > 0 ? (
+                    <span className="line">
+                      <span className={own.errors > 0 ? 'chip bad' : 'chip'}>
+                        {plural(own.errors, 'fallo', 'fallos')}
+                      </span>
+                      <span className={own.ratio !== null && own.ratio < 0.5 ? 'chip bad' : 'chip good'}>
+                        {percent(own.ratio)}
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="line">
+                      <span className="chip">No ha sacado</span>
+                    </span>
+                  )}
                 </button>
               )
             })}
           </div>
         )}
 
-        {recent.length > 0 ? (
+        {history.length > 0 ? (
           <>
-            <SectionTitle>Últimos saques</SectionTitle>
+            <SectionTitle>Saques del partido</SectionTitle>
             <div className="card tight">
               <div className="log">
-                {recent.map((serve) => {
-                  const player = state.players[serve.playerId]
-                  return (
-                    <div key={serve.id} className="log-item">
-                      <span
-                        className={`icon ${serve.result === 'error' ? 'err' : serve.result === 'ace' ? 'ace' : 'ok'}`}
-                        aria-hidden="true"
-                      >
-                        {serve.result === 'error' ? (
-                          <XIcon size={16} />
-                        ) : serve.result === 'ace' ? (
-                          <StarIcon size={16} />
-                        ) : (
-                          <CheckIcon size={16} />
-                        )}
-                      </span>
-                      <span className="grow">{player?.name ?? 'Jugadora'}</span>
-                      <span className="muted small">Set {serve.set}</span>
-                      <button
-                        className="undo"
-                        onClick={() => removeServe(serve.id)}
-                        aria-label={`Deshacer saque de ${player?.name ?? 'jugadora'}`}
-                      >
-                        Deshacer
-                      </button>
-                    </div>
-                  )
-                })}
+                {groupBySet(history).map((group) => (
+                  <div key={`${group.set}-${group.serves[0].id}`}>
+                    <div className="log-set">Set {group.set}</div>
+                    {group.serves.map((serve) => {
+                      const player = state.players[serve.playerId]
+                      return (
+                        <div key={serve.id} className="log-item">
+                          <span className={`serve-dot ${serve.result}`} aria-hidden="true">
+                            {serve.result === 'error' ? (
+                              <XIcon size={11} />
+                            ) : serve.result === 'ace' ? (
+                              <StarIcon size={11} />
+                            ) : (
+                              <CheckIcon size={11} />
+                            )}
+                          </span>
+                          <Avatar name={player?.name ?? 'Jugadora'} number={player?.number} />
+                          <span className="grow">{player?.name ?? 'Jugadora'}</span>
+                          <button
+                            className="undo"
+                            onClick={() => removeServe(serve.id)}
+                            aria-label={`Deshacer saque de ${player?.name ?? 'jugadora'}`}
+                          >
+                            <UndoIcon size={16} />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ))}
               </div>
             </div>
           </>
@@ -368,6 +412,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
       {picking ? (
         <ResultSheet
           player={picking}
+          serves={serves}
           fine={fineAmount(state)}
           onPick={(result) => {
             addServe(match.id, picking.id, result, set)
@@ -407,34 +452,66 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
 
 function ResultSheet({
   player,
+  serves,
   fine,
   onPick,
   onClose,
 }: {
   player: Player
+  serves: Serve[]
   fine: number
   onPick: (result: ServeResult) => void
   onClose: () => void
 }) {
+  const own = tallyByPlayer(serves, player.id)
+  const lastFive = serves
+    .filter((serve) => serve.playerId === player.id)
+    .slice(-5)
+    .reverse()
+
   return (
-    <Sheet title={`Saque de ${player.name}`} onClose={onClose}>
+    <Sheet title="Resultado del saque" onClose={onClose}>
+      <div className="sheet-player">
+        <Avatar name={player.name} number={player.number} big />
+        <div className="grow">
+          <div className="title">{player.name}</div>
+          <div className="meta">
+            {own.attempts > 0 ? `${percent(own.ratio)} de acierto` : 'Todavía no ha sacado'}
+          </div>
+        </div>
+        {lastFive.length > 0 ? (
+          <div className="last-serves" aria-hidden="true">
+            {lastFive.map((serve) => (
+              <span key={serve.id} className={`serve-dot ${serve.result}`}>
+                {serve.result === 'error' ? (
+                  <XIcon size={11} />
+                ) : serve.result === 'ace' ? (
+                  <StarIcon size={11} />
+                ) : (
+                  <CheckIcon size={11} />
+                )}
+              </span>
+            ))}
+          </div>
+        ) : null}
+      </div>
       <div className="result-buttons">
         <button className="err" onClick={() => onPick('error')}>
           <span className="glyph" aria-hidden="true">
-            <XIcon />
+            <XIcon size={20} />
           </span>
           Fallado
           <span className="note">{euros(fine)}</span>
         </button>
         <button className="ok" onClick={() => onPick('in')}>
           <span className="glyph" aria-hidden="true">
-            <CheckIcon />
+            <CheckIcon size={20} />
           </span>
           Dentro
         </button>
         <button className="ace" onClick={() => onPick('ace')}>
           <span className="glyph" aria-hidden="true">
-            <StarIcon />
+            <StarIcon size={20} />
           </span>
           Ace
           <span className="note">punto directo</span>
@@ -490,7 +567,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
               <div className="list">
                 {rows.map(({ player, own }) => (
                   <div key={player.id} className="row">
-                    <Avatar name={player.name} />
+                    <Avatar name={player.name} number={player.number} />
                     <span className="grow">
                       <span className="title">{player.name}</span>
                       <span className="meta">

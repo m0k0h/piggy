@@ -1,11 +1,22 @@
 import { useState, type ReactNode } from 'react'
-import { hostOf, initials } from '../lib/format'
-import { ChevronIcon } from './icons'
+import { initials } from '../lib/format'
+import { ChevronIcon, ExternalLinkIcon } from './icons'
 
-export function Avatar({ name, on = false }: { name: string; on?: boolean }) {
+export function Avatar({
+  name,
+  number,
+  on = false,
+  big = false,
+}: {
+  name: string
+  number?: string
+  on?: boolean
+  big?: boolean
+}) {
+  const className = ['avatar', on && 'on', big && 'big'].filter(Boolean).join(' ')
   return (
-    <span className={on ? 'avatar on' : 'avatar'} aria-hidden="true">
-      {initials(name)}
+    <span className={className} aria-hidden="true">
+      {number?.trim() ? number.trim() : initials(name)}
     </span>
   )
 }
@@ -160,7 +171,8 @@ export function LeagueLink({ url }: { url?: string }) {
   if (!url) return null
   return (
     <a className="link" href={url} target="_blank" rel="noopener noreferrer">
-      Ver en la liga · {hostOf(url)} ↗
+      <ExternalLinkIcon size={15} />
+      Ver en la liga
     </a>
   )
 }

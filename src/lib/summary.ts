@@ -1,5 +1,15 @@
 import { euros, joinNatural, matchDate, percent, plural } from './format'
-import { balances, fineAmount, participants, pot, servesOfMatch, tally, tallyByPlayer, teamName } from './stats'
+import {
+  allServes,
+  balances,
+  fineAmount,
+  participants,
+  pot,
+  servesOfMatch,
+  tally,
+  tallyByPlayer,
+  teamName,
+} from './stats'
 import type { AppState, Match } from '../types'
 
 /** Resumen de un partido, pensado para pegarlo en el grupo de WhatsApp. */
@@ -43,6 +53,7 @@ export function matchSummary(state: AppState, match: Match): string {
 /** Estado de cuentas de la hucha, para anunciarlo antes del próximo partido. */
 export function potSummary(state: AppState): string {
   const totals = pot(state)
+  const globalRatio = tally(allServes(state)).ratio
   const lines: string[] = []
 
   lines.push(`🐷 Hucha de ${teamName(state)}`)
@@ -62,6 +73,10 @@ export function potSummary(state: AppState): string {
     lines.push('')
     lines.push('¡Todas al día! 🎉')
   }
+
+  lines.push(`Porcentaje de acierto del equipo: ${percent(globalRatio)}`)
+  lines.push('')
+  lines.push('https://m0k0h.github.io/piggy/#/hucha')
   return lines.join('\n')
 }
 

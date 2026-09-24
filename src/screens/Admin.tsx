@@ -5,9 +5,9 @@ import {
   matchDate,
   normalizeImageUrl,
   normalizeUrl,
-  percent,
   plural,
   relativeDay,
+  serveSummary,
   toInputValue,
 } from '../lib/format'
 import { teamConfig } from '../lib/config'
@@ -319,19 +319,18 @@ function PlayersSection() {
             <div className="list">
               {rows.map(({ player, tally, pending }) => (
                 <button key={player.id} className="row" onClick={() => setEditing(player)}>
-                  <Avatar name={player.name} />
+                  <Avatar name={player.name} number={player.number} />
                   <span className="grow">
                     <span className="title">{player.name}</span>
                     <span className="meta">
-                      {player.number ? `Dorsal ${player.number} · ` : ''}
-                      {plural(tally.attempts, 'saque', 'saques')} · {percent(tally.ratio)} dentro
+                      {serveSummary(tally.errors, tally.attempts, tally.ratio)}
                     </span>
                   </span>
-                  <span className="trail">
-                    <span className={pending > 0 ? 'chip money' : 'chip good'}>
-                      {pending > 0 ? euros(pending) : 'al día'}
+                  {pending > 0 ? (
+                    <span className="trail">
+                      <span className="chip money">{euros(pending)}</span>
                     </span>
-                  </span>
+                  ) : null}
                 </button>
               ))}
             </div>
@@ -700,11 +699,11 @@ function PaymentsSection() {
             <div className="list">
               {withDebt.map((row) => (
                 <button key={row.player.id} className="row" onClick={() => setPaying(row)}>
-                  <Avatar name={row.player.name} />
+                  <Avatar name={row.player.name} number={row.player.number} />
                   <span className="grow">
                     <span className="title">{row.player.name}</span>
                     <span className="meta">
-                      {plural(row.tally.errors, 'fallo', 'fallos')}
+                      {serveSummary(row.tally.errors, row.tally.attempts, row.tally.ratio)}
                       {row.paid > 0 ? ` · ${euros(row.paid)} pagados` : ''}
                     </span>
                   </span>
