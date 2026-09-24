@@ -53,28 +53,29 @@ export function matchSummary(state: AppState, match: Match): string {
 /** Estado de cuentas de la hucha, para anunciarlo antes del próximo partido. */
 export function potSummary(state: AppState): string {
   const totals = pot(state)
-  const globalRatio = tally(allServes(state)).ratio
+  const globalTally = tally(allServes(state))
   const lines: string[] = []
 
   lines.push(`🐷 Hucha de ${teamName(state)}`)
   // El total tiene en cuenta lo que se debe: es lo generado por los fallos,
   // esté ya cobrado o no — igual que la cifra grande de la app.
   lines.push(`Llevamos ahorrado: ${euros(totals.owed)}`)
-  if (totals.errors > 0) {
-    lines.push(`${plural(totals.errors, 'saque fallado', 'saques fallados')} en total.`)
-  }
 
   const pending = balances(state).filter((row) => row.pending > 0)
   if (pending.length > 0) {
+    // El total sin paréntesis, los importes de cada una sí: es la cifra que
+    // manda en la frase, no un dato más entre los nombres.
     const debtors = pending.map((row) => `${row.player.name} (${euros(row.pending)})`)
-    lines.push('')
-    lines.push(`Pendiente de pagar (${euros(totals.pending)}): ${joinNatural(debtors)}.`)
+    lines.push(`Pendiente de pagar ${euros(totals.pending)}: ${joinNatural(debtors)}.`)
   } else if (totals.owed > 0) {
-    lines.push('')
     lines.push('¡Todas al día! 🎉')
   }
 
-  lines.push(`Porcentaje de acierto del equipo: ${percent(globalRatio)}`)
+  lines.push('')
+  lines.push(`Porcentaje de acierto del equipo: ${percent(globalTally.ratio)}`)
+  if (globalTally.attempts > 0) {
+    lines.push(`${globalTally.errors}/${globalTally.attempts} saques fallados`)
+  }
   lines.push('')
   lines.push('https://m0k0h.github.io/piggy/#/hucha')
   return lines.join('\n')

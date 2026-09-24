@@ -62,9 +62,10 @@ describe('potSummary', () => {
       }),
     )
     // Anna debe más y va primera; Laura y Marta empatan, y entre ellas
-    // desempata el orden alfabético.
+    // desempata el orden alfabético. El total va sin paréntesis, los
+    // importes de cada una sí.
     expect(text).toContain(
-      `Pendiente de pagar (${euros(4)}): Anna (${euros(2)}), Laura (${euros(1)}) y Marta (${euros(1)}).`,
+      `Pendiente de pagar ${euros(4)}: Anna (${euros(2)}), Laura (${euros(1)}) y Marta (${euros(1)}).`,
     )
   })
 
@@ -75,7 +76,7 @@ describe('potSummary', () => {
         serves: byId([serve('s1', 'p1', 'error')]),
       }),
     )
-    expect(text).toContain(`Pendiente de pagar (${euros(1)}): Anna (${euros(1)}).`)
+    expect(text).toContain(`Pendiente de pagar ${euros(1)}: Anna (${euros(1)}).`)
   })
 
   it('sin nadie pendiente, avisa de que todas están al día', () => {
@@ -88,5 +89,18 @@ describe('potSummary', () => {
     )
     expect(text).toContain('¡Todas al día!')
     expect(text).not.toContain('Pendiente de pagar')
+  })
+
+  it('después del porcentaje de acierto añade fallados/total', () => {
+    const text = potSummary(
+      state({
+        players: byId([player('p1', 'Anna')]),
+        serves: byId([serve('s1', 'p1', 'error'), serve('s2', 'p1', 'in'), serve('s3', 'p1', 'ace')]),
+      }),
+    )
+    const lines = text.split('\n')
+    const ratioIndex = lines.findIndex((line) => line.startsWith('Porcentaje de acierto'))
+    expect(ratioIndex).toBeGreaterThan(-1)
+    expect(lines[ratioIndex + 1]).toBe('1/3 saques fallados')
   })
 })
