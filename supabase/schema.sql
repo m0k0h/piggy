@@ -8,9 +8,10 @@
 --      con "Auto Confirm User" marcado. Ese es tu usuario de administradora;
 --      el equipo no necesita ninguno.
 --   4. Project Settings → API → copia la "Project URL" y la clave "anon"
---   5. En la app: Ajustes → Compartir con el equipo → pega las dos, genera el
---      código del equipo y pulsa Conectar. Luego "Soy la administradora" y
---      entra con el email y la contraseña del paso 3.
+--   5. En GitHub: Settings → Secrets and variables → Actions, crea
+--      VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY con esos dos valores y
+--      vuelve a lanzar el despliegue. Para administrar, entra en #/admin con
+--      el email y la contraseña del paso 3.
 --
 -- Quién puede qué:
 --

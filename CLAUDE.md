@@ -27,7 +27,7 @@ Lo que hay que saber para aplicarlo sin releer todo el documento:
   mismo lenguaje visual (lienzo 24×24, trazo 1.8, `currentColor`, esquinas
   redondeadas). `docs/ESTILO.md` solo da el SVG de 7 (pelota, barras,
   calendario, más, chevron, cerdita a color, cerdita de trazo); el resto
-  (escudo, personas, monedas, guardar, check, aspa, estrella, fiesta,
+  (escudo, personas, monedas, check, aspa, estrella, fiesta,
   encogimiento de hombros, portapapeles) están diseñados a mano siguiendo el
   mismo estilo porque la app usa más emojis de los que el documento cubre
   explícitamente. Si hace falta un icono que no está, créalo ahí con el

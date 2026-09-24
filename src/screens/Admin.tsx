@@ -17,12 +17,9 @@ import {
   addMatch,
   addPayment,
   addPlayer,
-  exportState,
-  importState,
   removeMatch,
   removePayment,
   removePlayer,
-  resetState,
   updateMatch,
   updatePlayer,
   updateTeam,
@@ -49,7 +46,6 @@ import {
   PartyIcon,
   PeopleIcon,
   PlusIcon,
-  SaveIcon,
   ShieldIcon,
 } from '../ui/icons'
 
@@ -58,7 +54,6 @@ const SECTIONS = [
   { key: 'jugadoras', label: 'Jugadoras', icon: <PeopleIcon />, hint: 'Altas, dorsales y bajas' },
   { key: 'partidos', label: 'Partidos', icon: <CalendarIcon />, hint: 'Calendario de la temporada' },
   { key: 'cobros', label: 'Cobros', icon: <CoinsIcon />, hint: 'Registrar lo que paga cada una' },
-  { key: 'copia', label: 'Copia de seguridad', icon: <SaveIcon />, hint: 'Exportar o restaurar los datos' },
 ]
 
 export function Admin({ section }: { section: string }) {
@@ -75,8 +70,6 @@ export function Admin({ section }: { section: string }) {
       return <MatchesSection />
     case 'cobros':
       return <PaymentsSection />
-    case 'copia':
-      return <BackupSection />
     default:
       return <AdminHome />
   }
@@ -722,100 +715,6 @@ function PaymentsSection() {
       </main>
 
       {paying ? <PaymentSheet row={paying} onClose={() => setPaying(null)} /> : null}
-    </>
-  )
-}
-
-// ------------------------------------------------------------ copia de datos
-
-function BackupSection() {
-  const [toast, setToast] = useState('')
-  const [confirmReset, setConfirmReset] = useState(false)
-  const fileRef = useRef<HTMLInputElement>(null)
-
-  const flash = (message: string) => {
-    setToast(message)
-    setTimeout(() => setToast(''), 2500)
-  }
-
-  const onExport = () => {
-    const blob = new Blob([exportState()], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `hucha-${new Date().toISOString().slice(0, 10)}.json`
-    link.click()
-    URL.revokeObjectURL(url)
-  }
-
-  const onRestore = async (file: File) => {
-    try {
-      importState(await file.text())
-      flash('Copia restaurada')
-    } catch {
-      flash('Ese archivo no es una copia válida')
-    }
-  }
-
-  return (
-    <>
-      <ScreenHeader title="Copia de seguridad" onBack={() => navigate('admin')} />
-      <main>
-        <div className="card form">
-          <p className="small muted">
-            Un archivo con la plantilla, el calendario, los saques y los pagos. Útil antes de un
-            cambio grande.
-          </p>
-          <div className="btn-row">
-            <button className="btn ghost" onClick={onExport}>
-              Exportar
-            </button>
-            <button className="btn ghost" onClick={() => fileRef.current?.click()}>
-              Restaurar
-            </button>
-          </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="application/json"
-            className="sr-only"
-            onChange={(event) => {
-              const file = event.target.files?.[0]
-              if (file) void onRestore(file)
-              event.target.value = ''
-            }}
-          />
-
-          {confirmReset ? (
-            <div className="stack">
-              <p className="small muted center">
-                Se borra todo de este móvil. Lo que ya esté en la base de datos del equipo volverá a
-                bajar al reconectar.
-              </p>
-              <div className="btn-row">
-                <button className="btn ghost" onClick={() => setConfirmReset(false)}>
-                  Cancelar
-                </button>
-                <button
-                  className="btn danger"
-                  onClick={() => {
-                    resetState()
-                    setConfirmReset(false)
-                    flash('Datos borrados')
-                  }}
-                >
-                  Borrar todo
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button className="btn quiet" onClick={() => setConfirmReset(true)}>
-              Borrar los datos de este móvil
-            </button>
-          )}
-          {toast ? <div className="banner good">{toast}</div> : null}
-        </div>
-      </main>
     </>
   )
 }

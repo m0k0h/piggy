@@ -290,20 +290,3 @@ export function applyRemote(collection: Collection, rows: Syncable[]) {
 export function rowsOf(collection: Collection): Syncable[] {
   return collection === 'team' ? [state.team] : Object.values(state[collection])
 }
-
-// --- Copia de seguridad ----------------------------------------------------
-
-export const exportState = () => JSON.stringify(state, null, 2)
-
-export function importState(json: string) {
-  const parsed = JSON.parse(json) as Partial<AppState>
-  commit({
-    ...empty(),
-    ...parsed,
-    team: { ...defaultTeam(), ...(parsed.team ?? {}) },
-  })
-}
-
-export function resetState() {
-  commit({ ...empty(), team: state.team })
-}
