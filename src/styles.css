@@ -581,6 +581,8 @@ main {
   border: 1px solid var(--line);
 }
 
+.live-head .line { display: flex; gap: 6px; align-items: center; margin-top: 4px; flex-wrap: wrap; }
+
 .set-stepper { display: flex; align-items: center; gap: 4px; margin-left: auto; }
 
 .set-stepper button {
@@ -660,7 +662,7 @@ main {
 .result-buttons .glyph { display: grid; place-items: center; }
 .result-buttons .note { margin-left: auto; font-size: 13px; font-weight: 600; opacity: 0.75; }
 .result-buttons button.err { background: var(--red-soft); color: var(--red); border-color: transparent; }
-.result-buttons button.ok { background: var(--ok-bg); color: var(--ok-text); border-color: transparent; }
+.result-buttons button.ok { background: var(--green-soft); color: var(--green); border-color: transparent; }
 .result-buttons button.ace { background: var(--amber-soft); color: var(--amber); border-color: transparent; }
 
 .log { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
