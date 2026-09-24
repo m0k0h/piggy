@@ -110,6 +110,15 @@ export function PlusIcon({ size = 24, ...props }: IconProps) {
   )
 }
 
+/** Pareja de `PlusIcon`: bajar un valor, como el set del partido en marcha. */
+export function MinusIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, { strokeWidth: 2, ...props })} aria-hidden="true" focusable="false">
+      <path d="M5 12h14" />
+    </svg>
+  )
+}
+
 /** Fin de fila / avanzar. Usa `direction="left"` para el botón de volver. */
 export function ChevronIcon({
   size = 24,
