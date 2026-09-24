@@ -419,7 +419,7 @@ main {
   white-space: nowrap;
 }
 
-.chip.good { background: var(--ok-bg); color: var(--ok-text); }
+.chip.good { background: var(--green-soft); color: var(--green); }
 .chip.bad { background: var(--red-soft); color: var(--red); }
 .chip.money { background: var(--pink-soft); color: var(--pink-text); }
 .chip.live { background: var(--red); color: var(--on-hero); }
