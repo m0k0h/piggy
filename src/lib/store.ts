@@ -290,17 +290,17 @@ export function applyRemote(collection: Collection, rows: Syncable[]) {
   write(collection, fresh, false)
 }
 
-/** Lo que se va con el borrado de partidos: el partido y todo lo anotado en él. */
-export const MATCH_COLLECTIONS = ['matches', 'lineups', 'serves'] as const
+/** Lo que se va con el borrado de prueba: los partidos con todo lo anotado, y los cobros. */
+export const WIPE_COLLECTIONS = ['matches', 'lineups', 'serves', 'payments'] as const
 
 /**
- * Quita de la copia local los partidos, convocatorias y saques creados hasta
- * `before`, sin publicarlo: en el servidor ya no existen. Las jugadoras, los
- * cobros y los datos del equipo no se tocan.
+ * Quita de la copia local los partidos, convocatorias, saques y cobros creados
+ * hasta `before`, sin publicarlo: en el servidor ya no existen. Las jugadoras
+ * y los datos del equipo no se tocan.
  */
 export function purgeMatchData(before: string) {
   const next = { ...state }
-  for (const collection of MATCH_COLLECTIONS) {
+  for (const collection of WIPE_COLLECTIONS) {
     next[collection] = Object.fromEntries(
       Object.entries(state[collection]).filter(([, row]) => row.createdAt > before),
     ) as never
