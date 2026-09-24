@@ -8,9 +8,10 @@
 --      con "Auto Confirm User" marcado. Ese es tu usuario de administradora;
 --      el equipo no necesita ninguno.
 --   4. Project Settings → API → copia la "Project URL" y la clave "anon"
---   5. En la app: Ajustes → Compartir con el equipo → pega las dos, genera el
---      código del equipo y pulsa Conectar. Luego "Soy la administradora" y
---      entra con el email y la contraseña del paso 3.
+--   5. En GitHub: Settings → Secrets and variables → Actions, crea
+--      VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY con esos dos valores y
+--      vuelve a lanzar el despliegue. Para administrar, entra en #/admin con
+--      el email y la contraseña del paso 3.
 --
 -- Quién puede qué:
 --
@@ -44,8 +45,8 @@ create index if not exists piggy_rows_team_idx on public.piggy_rows (team_code, 
 alter table public.piggy_rows enable row level security;
 
 -- El código del equipo es lo que separa a unos equipos de otros y lo que hace
--- falta para leer. Usa el botón "Generar código" de la app, que crea uno largo
--- y aleatorio: aquí solo exigimos que no sea trivialmente corto.
+-- falta para leer. Sale de VITE_TEAM_CODE (por defecto "equipo-principal"):
+-- aquí solo exigimos que no sea trivialmente corto.
 drop policy if exists "leer con el codigo del equipo" on public.piggy_rows;
 create policy "leer con el codigo del equipo"
   on public.piggy_rows for select

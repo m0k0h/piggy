@@ -76,7 +76,9 @@ recuerda la sesión; mientras la tengas abierta aparece un botón **Admin** en l
 cabecera para ir y volver.
 
 Desde ahí se gestiona el **equipo** (nombre, escudo, euros por fallo), las
-**jugadoras**, los **partidos**, los **cobros** y la **copia de seguridad**.
+**jugadoras**, los **partidos** y los **cobros**. Los datos viven en la base de
+datos del equipo; si algún día quieres una copia aparte, exporta la tabla
+`piggy_rows` desde el panel de Supabase.
 
 ### El rival
 

@@ -158,16 +158,6 @@ export function CoinsIcon({ size = 24, ...props }: IconProps) {
   )
 }
 
-export function SaveIcon({ size = 24, ...props }: IconProps) {
-  return (
-    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
-      <path d="M5 3h11l3 3v15H5z" />
-      <path d="M8 3v6h8V3" />
-      <path d="M8 21v-7h8v7" />
-    </svg>
-  )
-}
-
 export function CheckIcon({ size = 24, ...props }: IconProps) {
   return (
     <svg {...stroke(size, { strokeWidth: 2.2, ...props })} aria-hidden="true" focusable="false">
