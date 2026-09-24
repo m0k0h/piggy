@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js'
 import { COLLECTIONS, PLAYER_WRITABLE, type Collection, type Role, type Syncable } from '../types'
 import { teamConfig } from './config'
-import { applyRemote, rowsOf, setSyncPublisher } from './store'
+import { MATCH_COLLECTIONS, applyRemote, markReset, purgeMatchData, rowsOf, setSyncPublisher } from './store'
 
 /**
  * Todo viaja en una sola tabla con el documento en JSON. Así el esquema no
@@ -207,6 +207,59 @@ export async function connect() {
 /** Reintenta lo que quedó en la cola, por ejemplo al volver la conexión. */
 export function retry() {
   if (client) scheduleFlush(0)
+}
+
+// --- Borrado de partidos de prueba (temporal) -------------------------------
+
+/**
+ * Borra de verdad, en la base de datos, todos los partidos con sus
+ * convocatorias y saques. Las jugadoras, los cobros y los datos del equipo se
+ * quedan. Es para limpiar las pruebas una vez; el botón que lo llama se quita
+ * después.
+ *
+ * Postgres no deja borrar filas a nadie (ver `supabase/schema.sql`), así que
+ * antes hay que abrir el permiso con `supabase/borrado-temporal.sql`. Sin él,
+ * el borrado "funciona" pero no se lleva ninguna fila, y lo avisamos.
+ *
+ * Después marca el momento en el equipo: cada móvil, al recibirlo, tira su
+ * copia local de lo borrado en vez de volver a subirla.
+ */
+export async function wipeMatches(): Promise<AuthResult> {
+  const resetAt = new Date().toISOString()
+
+  if (client) {
+    if (!snapshot.signedIn) return { ok: false, message: 'Hace falta la sesión de administradora.' }
+    // Lo que hubiera en cola de esas colecciones ya no tiene que subir.
+    for (const key of [...queue.keys()]) {
+      if (MATCH_COLLECTIONS.some((collection) => key.startsWith(`${collection}:`))) queue.delete(key)
+    }
+
+    const { data: before, error: countError } = await client
+      .from(TABLE)
+      .select('id')
+      .eq('team_code', teamCode)
+      .in('collection', [...MATCH_COLLECTIONS])
+    if (countError) return { ok: false, message: countError.message }
+
+    const { data: gone, error } = await client
+      .from(TABLE)
+      .delete()
+      .eq('team_code', teamCode)
+      .in('collection', [...MATCH_COLLECTIONS])
+      .select('id')
+    if (error) return { ok: false, message: error.message }
+    if ((before?.length ?? 0) > 0 && (gone?.length ?? 0) === 0) {
+      return {
+        ok: false,
+        message:
+          'La base de datos no ha dejado borrar nada. Ejecuta antes supabase/borrado-temporal.sql en el SQL Editor de Supabase.',
+      }
+    }
+  }
+
+  purgeMatchData(resetAt)
+  markReset(resetAt)
+  return { ok: true, message: '' }
 }
 
 // --- Sesión de administradora ----------------------------------------------

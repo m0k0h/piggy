@@ -274,8 +274,12 @@ export function removePayment(id: string) {
  */
 export function applyRemote(collection: Collection, rows: Syncable[]) {
   if (collection === 'team') {
-    const incoming = rows.find((row) => row.id === TEAM_ROW_ID)
-    if (incoming && incoming.updatedAt > state.team.updatedAt) write('team', [incoming], false)
+    const incoming = rows.find((row) => row.id === TEAM_ROW_ID) as Team | undefined
+    if (incoming && incoming.updatedAt > state.team.updatedAt) {
+      const resetAt = incoming.resetAt ?? ''
+      if (resetAt > (state.team.resetAt ?? '')) purgeMatchData(resetAt)
+      write('team', [incoming], false)
+    }
     return
   }
   const bucket = state[collection] as Record<string, Syncable>
@@ -284,6 +288,29 @@ export function applyRemote(collection: Collection, rows: Syncable[]) {
     return !mine || row.updatedAt > mine.updatedAt
   })
   write(collection, fresh, false)
+}
+
+/** Lo que se va con el borrado de partidos: el partido y todo lo anotado en él. */
+export const MATCH_COLLECTIONS = ['matches', 'lineups', 'serves'] as const
+
+/**
+ * Quita de la copia local los partidos, convocatorias y saques creados hasta
+ * `before`, sin publicarlo: en el servidor ya no existen. Las jugadoras, los
+ * cobros y los datos del equipo no se tocan.
+ */
+export function purgeMatchData(before: string) {
+  const next = { ...state }
+  for (const collection of MATCH_COLLECTIONS) {
+    next[collection] = Object.fromEntries(
+      Object.entries(state[collection]).filter(([, row]) => row.createdAt > before),
+    ) as never
+  }
+  commit(next)
+}
+
+/** Marca en el equipo el momento del borrado, para que lo apliquen el resto de móviles. */
+export function markReset(resetAt: string) {
+  write('team', [{ ...state.team, resetAt, updatedAt: now() }])
 }
 
 /** Todas las filas locales de una colección, para subirlas de golpe. */
