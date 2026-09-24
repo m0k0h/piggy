@@ -45,8 +45,8 @@ create index if not exists piggy_rows_team_idx on public.piggy_rows (team_code, 
 alter table public.piggy_rows enable row level security;
 
 -- El código del equipo es lo que separa a unos equipos de otros y lo que hace
--- falta para leer. Usa el botón "Generar código" de la app, que crea uno largo
--- y aleatorio: aquí solo exigimos que no sea trivialmente corto.
+-- falta para leer. Sale de VITE_TEAM_CODE (por defecto "equipo-principal"):
+-- aquí solo exigimos que no sea trivialmente corto.
 drop policy if exists "leer con el codigo del equipo" on public.piggy_rows;
 create policy "leer con el codigo del equipo"
   on public.piggy_rows for select
