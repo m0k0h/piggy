@@ -107,7 +107,41 @@ function load(): AppState {
   return empty()
 }
 
-let state: AppState = load()
+/** Lo que se va con el borrado de prueba: los partidos con todo lo anotado, y los cobros. */
+export const WIPE_COLLECTIONS: readonly Collection[] = ['matches', 'lineups', 'serves', 'payments']
+
+/**
+ * Una fila de lo borrado en la prueba: creada hasta `resetAt`. No se enseña,
+ * no se guarda y no se sube, venga de donde venga — de la copia local de un
+ * móvil que no llegó a purgar, o del servidor si alguno ya la volvió a subir.
+ */
+function wiped(collection: Collection, row: Syncable, resetAt: string) {
+  return resetAt !== '' && WIPE_COLLECTIONS.includes(collection) && row.createdAt <= resetAt
+}
+
+/**
+ * Quita de un estado lo creado hasta `team.resetAt` en partidos, convocatorias,
+ * saques y cobros. Las jugadoras y los datos del equipo no se tocan. Si no hay
+ * nada que quitar, devuelve el mismo estado.
+ */
+function withoutWiped(s: AppState): AppState {
+  const resetAt = s.team.resetAt ?? ''
+  if (!resetAt) return s
+  let changed = false
+  const next = { ...s }
+  for (const collection of WIPE_COLLECTIONS) {
+    const rows = Object.entries(s[collection as keyof AppState] as Record<string, Syncable>)
+    const kept = rows.filter(([, row]) => !wiped(collection, row, resetAt))
+    if (kept.length !== rows.length) {
+      changed = true
+      ;(next as Record<string, unknown>)[collection] = Object.fromEntries(kept)
+    }
+  }
+  return changed ? next : s
+}
+
+// Al arrancar ya se tira lo borrado que quedara en la copia local.
+let state: AppState = withoutWiped(load())
 const listeners = new Set<() => void>()
 
 function persist() {
@@ -303,40 +337,26 @@ export function removePayment(id: string) {
 export function applyRemote(collection: Collection, rows: Syncable[]) {
   if (collection === 'team') {
     const incoming = rows.find((row) => row.id === TEAM_ROW_ID) as Team | undefined
-    if (incoming && incoming.updatedAt > state.team.updatedAt) {
-      const resetAt = incoming.resetAt ?? ''
-      if (resetAt > (state.team.resetAt ?? '')) purgeMatchData(resetAt)
-      write('team', [incoming], false)
-    }
+    if (incoming && incoming.updatedAt > state.team.updatedAt) write('team', [incoming], false)
+    // La purga no depende de que el equipo llegue más nuevo: un móvil puede
+    // tener ya la marca guardada sin haber tirado su copia (la recibió con una
+    // versión anterior de la app). Quitar lo borrado es idempotente.
+    const clean = withoutWiped(state)
+    if (clean !== state) commit(clean)
     return
   }
   const bucket = state[collection] as Record<string, Syncable>
   const fresh = rows.filter((row) => {
+    if (wiped(collection, row, state.team.resetAt ?? '')) return false
     const mine = bucket[row.id]
     return !mine || row.updatedAt > mine.updatedAt
   })
   write(collection, fresh, false)
 }
 
-/** Lo que se va con el borrado de prueba: los partidos con todo lo anotado, y los cobros. */
-export const WIPE_COLLECTIONS = ['matches', 'lineups', 'serves', 'payments'] as const
-
-/**
- * Quita de la copia local los partidos, convocatorias, saques y cobros creados
- * hasta `before`, sin publicarlo: en el servidor ya no existen. Las jugadoras
- * y los datos del equipo no se tocan.
- */
-export function purgeMatchData(before: string) {
-  const next = { ...state }
-  for (const collection of WIPE_COLLECTIONS) {
-    next[collection] = Object.fromEntries(
-      Object.entries(state[collection]).filter(([, row]) => row.createdAt > before),
-    ) as never
-  }
-  commit(next)
-}
-
 /** Todas las filas locales de una colección, para subirlas de golpe. */
 export function rowsOf(collection: Collection): Syncable[] {
-  return collection === 'team' ? [state.team] : Object.values(state[collection])
+  if (collection === 'team') return [state.team]
+  const resetAt = state.team.resetAt ?? ''
+  return Object.values(state[collection] as Record<string, Syncable>).filter((row) => !wiped(collection, row, resetAt))
 }
