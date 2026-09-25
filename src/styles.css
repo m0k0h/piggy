@@ -873,6 +873,10 @@ main {
 
 .crest-big { width: 84px; height: 84px; border-radius: 20px; font-size: 22px; }
 
+/* Escudo del rival: siempre redondo, tenga imagen o solo iniciales, para que
+   no se mezclen cuadrados redondeados con escudos circulares. */
+.crest.round, .crest.round img { border-radius: 50%; }
+
 /* Cabecera del partido programado: compartir abajo a la derecha del bloque,
    con la fecha dejándole su hueco para no montarse encima. */
 .match-head { position: relative; }
@@ -882,6 +886,8 @@ main {
 .match-head .call-badge,
 .match-head .match-map { margin-right: 48px; }
 .match-head .match-map { align-self: flex-start; margin-top: -2px; }
+/* A la altura del icono de la fecha y del de convocadas, no a ras de la tarjeta. */
+.match-head .match-map { margin-left: 12px; }
 
 /* Hora de convocatoria: en su propia línea bajo la fecha, y por debajo de
    ella en importancia: badge rosa tenue, pequeño, sin relleno fuerte. */
