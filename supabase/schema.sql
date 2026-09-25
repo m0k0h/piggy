@@ -82,6 +82,43 @@ create policy "la admin corrige el equipo"
   using (length(team_code) >= 6)
   with check (length(team_code) >= 6);
 
+-- Visitas: qué pantallas abre el equipo, para el panel de administración.
+-- Tabla aparte porque no es dato del equipo: no viaja a los móviles ni entra
+-- en la réplica. Cada móvil lleva un identificador al azar (`visitor`), que
+-- sirve para contar personas distintas sin saber quién es quién.
+--
+-- Cualquiera apunta su visita; solo la administradora las lee. Como el resto,
+-- no se borra desde la app: si algún día quieres vaciarla, desde el panel de
+-- Supabase.
+create table if not exists public.piggy_views (
+  id          bigint      generated always as identity primary key,
+  team_code   text        not null,
+  view        text        not null,
+  visitor     text        not null,
+  standalone  boolean     not null default false,
+  created_at  timestamptz not null default now()
+);
+
+alter table public.piggy_views drop constraint if exists piggy_views_view_check;
+alter table public.piggy_views add constraint piggy_views_view_check
+  check (view in ('hucha', 'partidos', 'stats', 'partido'));
+
+create index if not exists piggy_views_team_idx on public.piggy_views (team_code, created_at);
+
+alter table public.piggy_views enable row level security;
+
+drop policy if exists "cualquiera apunta su visita" on public.piggy_views;
+create policy "cualquiera apunta su visita"
+  on public.piggy_views for insert
+  to anon, authenticated
+  with check (length(team_code) >= 6 and length(visitor) <= 64);
+
+drop policy if exists "la admin ve las visitas" on public.piggy_views;
+create policy "la admin ve las visitas"
+  on public.piggy_views for select
+  to authenticated
+  using (length(team_code) >= 6);
+
 -- Realtime: que cada saque anotado aparezca en el resto de móviles sin recargar.
 do $$
 begin

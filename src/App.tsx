@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { navigate, useRoute } from './lib/router'
 import { useAppState } from './lib/store'
 import { connect, retry, useSync } from './lib/sync'
+import { useTrackView, type View } from './lib/views'
 import { Admin } from './screens/Admin'
 import { Matches } from './screens/Matches'
 import { MatchScreen } from './screens/MatchScreen'
@@ -34,6 +35,9 @@ export function App() {
   }, [])
 
   const [head, param] = route
+  const tab = TABS.find((item) => item.key === head) ?? TABS[0]
+  // La administración no cuenta como visita: queremos saber qué usa el equipo.
+  useTrackView(head === 'admin' ? null : head === 'partido' && param ? 'partido' : (tab.key as View))
 
   if (head === 'admin') {
     return (
@@ -50,7 +54,6 @@ export function App() {
     )
   }
 
-  const tab = TABS.find((item) => item.key === head) ?? TABS[0]
   const Screen = tab.screen
 
   return (

@@ -93,6 +93,7 @@ h1, h2, h3 { margin: 0; line-height: 1.2; font-family: var(--display); }
 .pot .amount,
 .stat .v,
 .row .trail .big,
+.visits-picked strong,
 .attendee,
 .set-stepper .n {
   font-variant-numeric: tabular-nums;
@@ -722,6 +723,47 @@ main {
 /* ----------------------------------------------------------------- bars */
 .bar { height: 6px; border-radius: var(--radius-pill); background: var(--red); overflow: hidden; }
 .bar > i { display: block; height: 100%; background: var(--green); }
+/* Proporción sin bueno ni malo (visitas por pantalla): rosa sobre neutro. */
+.bar.share { margin-top: 6px; background: var(--surface-2); }
+.bar.share > i { background: var(--pink); }
+
+/* -------------------------------------------------------------- visitas */
+.visits-chart { display: flex; flex-direction: column; gap: 10px; }
+
+.visits-picked { display: flex; align-items: baseline; gap: 8px; font-size: 13px; }
+.visits-picked strong { font-family: var(--display); font-size: 19px; font-weight: 800; }
+
+.visits-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 120px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Cada día es un botón de toda la altura: fácil de tocar aunque la barra sea baja. */
+.visits-bars button {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.visits-bars i {
+  display: block;
+  width: 100%;
+  height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: var(--line-strong);
+}
+.visits-bars i[style] { background: color-mix(in srgb, var(--pink) 55%, var(--surface)); }
+.visits-bars button.on i { background: var(--pink); }
+
+.visits-axis { display: flex; justify-content: space-between; margin-top: -4px; }
 
 /* ---------------------------------------------------------------- roles */
 .role-pill {
