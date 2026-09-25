@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   defaultMatchDate,
   euros,
   matchDate,
   normalizeImageUrl,
+  percent,
   normalizeUrl,
   plural,
   relativeDay,
@@ -36,7 +37,8 @@ import {
   finishedMatches,
   type Balance,
 } from '../lib/stats'
-import { signIn, signOut, useRole, useSync } from '../lib/sync'
+import { fetchViews, signIn, signOut, useRole, useSync } from '../lib/sync'
+import { summarizeViews, type ViewRecord } from '../lib/views'
 import { POSITION_LABELS, type Match, type Player, type Position } from '../types'
 import { Sheet } from '../ui/Sheet'
 import {
@@ -44,6 +46,7 @@ import {
   Crest,
   Empty,
   Field,
+  Stat,
   OpponentCrest,
   PlayerName,
   ScreenHeader,
@@ -54,6 +57,7 @@ import {
   CalendarIcon,
   ChevronIcon,
   CoinsIcon,
+  EyeIcon,
   MegaphoneIcon,
   PartyIcon,
   PeopleIcon,
@@ -67,6 +71,7 @@ const SECTIONS = [
   { key: 'partidos', label: 'Partidos', icon: <CalendarIcon />, hint: 'Calendario de la temporada' },
   { key: 'cobros', label: 'Cobros', icon: <CoinsIcon />, hint: 'Registrar lo que paga cada una' },
   { key: 'comentar', label: 'Para comentar', icon: <MegaphoneIcon />, hint: 'La noticia de la portada' },
+  { key: 'visitas', label: 'Visitas', icon: <EyeIcon />, hint: 'Cuánta gente entra y a qué pantalla' },
 ]
 
 export function Admin({ section }: { section: string }) {
@@ -85,6 +90,8 @@ export function Admin({ section }: { section: string }) {
       return <PaymentsSection />
     case 'comentar':
       return <NoticeSection />
+    case 'visitas':
+      return <VisitsSection />
     default:
       return <AdminHome />
   }
@@ -940,6 +947,211 @@ function NoticeSection() {
         ) : null}
 
         {done ? <div className="banner good">{done}</div> : null}
+      </main>
+    </>
+  )
+}
+
+// ------------------------------------------------------------------- visitas
+
+const RANGES = [
+  { days: 7, label: '7 días' },
+  { days: 30, label: '30 días' },
+  { days: 90, label: '90 días' },
+]
+const MAX_DAYS = RANGES[RANGES.length - 1].days
+
+const decimal = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 1 })
+const shortDay = new Intl.DateTimeFormat('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })
+const dayLabel = (date: Date) => shortDay.format(date).replace('.', '')
+
+/**
+ * Cuánta gente abre la app del equipo y qué mira. Se baja entero el periodo
+ * más largo una vez y el selector solo recorta, así cambiar de rango no espera.
+ */
+function VisitsSection() {
+  const [rows, setRows] = useState<ViewRecord[] | null>(null)
+  const [error, setError] = useState('')
+  const [days, setDays] = useState(30)
+  const [picked, setPicked] = useState<number | null>(null)
+  const [reload, setReload] = useState(0)
+
+  useEffect(() => {
+    if (!teamConfig) return
+    let alive = true
+    const since = new Date()
+    since.setHours(0, 0, 0, 0)
+    since.setDate(since.getDate() - (MAX_DAYS - 1))
+    fetchViews(since).then(
+      (data) => {
+        if (!alive) return
+        setRows(data)
+        setError('')
+      },
+      (err: unknown) => {
+        if (!alive) return
+        const message = err instanceof Error ? err.message : String(err)
+        // La tabla es nueva: si el esquema no se ha vuelto a pasar, no existe.
+        setError(
+          message.includes('piggy_views')
+            ? 'Falta la tabla de visitas. Vuelve a pasar supabase/schema.sql en el SQL Editor de Supabase.'
+            : message,
+        )
+      },
+    )
+    return () => {
+      alive = false
+    }
+  }, [reload])
+
+  const header = (
+    <ScreenHeader
+      title="Visitas"
+      subtitle="App del equipo"
+      onBack={() => navigate('admin')}
+      actions={
+        teamConfig ? (
+          <button className="btn ghost small" onClick={() => setReload((n) => n + 1)}>
+            Actualizar
+          </button>
+        ) : null
+      }
+    />
+  )
+
+  if (!teamConfig) {
+    return (
+      <>
+        {header}
+        <main>
+          <div className="card">
+            <Empty icon={<EyeIcon />} title="Sin base de datos no hay visitas">
+              Las visitas se cuentan en la base de datos del equipo, y esta copia no tiene.
+            </Empty>
+          </div>
+        </main>
+      </>
+    )
+  }
+
+  if (!rows) {
+    return (
+      <>
+        {header}
+        <main>
+          {error ? (
+            <div className="banner bad">{error}</div>
+          ) : (
+            <p className="small muted center">Contando visitas…</p>
+          )}
+        </main>
+      </>
+    )
+  }
+
+  const summary = summarizeViews(rows, days)
+  const peak = Math.max(1, ...summary.perDay.map((day) => day.visitors))
+  const topViews = Math.max(1, ...summary.perView.map((item) => item.views))
+  const pickedIndex = picked !== null && picked < summary.perDay.length ? picked : summary.perDay.length - 1
+  const pickedDay = summary.perDay[pickedIndex]
+
+  return (
+    <>
+      {header}
+      <main>
+        {error ? <div className="banner bad">{error}</div> : null}
+
+        <div className="segmented">
+          {RANGES.map((option) => (
+            <button
+              key={option.days}
+              onClick={() => {
+                setDays(option.days)
+                setPicked(null)
+              }}
+              aria-pressed={days === option.days}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        {summary.views === 0 ? (
+          <div className="card">
+            <Empty icon={<EyeIcon />} title="Nadie ha entrado todavía">
+              En cuanto alguien del equipo abra la app, aparecerá aquí.
+            </Empty>
+          </div>
+        ) : (
+          <>
+            <div className="stat-row">
+              <Stat value={summary.visitors} label="Personas" />
+              <Stat value={summary.views} label="Visitas" />
+              <Stat value={summary.today} label="Hoy" />
+            </div>
+            <div className="stat-row">
+              <Stat value={decimal.format(summary.dailyAverage)} label="Al día" />
+              <Stat value={decimal.format(summary.views / summary.visitors)} label="Por persona" />
+              <Stat value={percent(summary.installed)} label="Instalada" />
+            </div>
+
+            <SectionTitle>Personas por día</SectionTitle>
+            <div className="card visits-chart">
+              <div className="visits-picked">
+                <strong>{plural(pickedDay.visitors, 'persona', 'personas')}</strong>
+                <span className="muted">
+                  {pickedIndex === summary.perDay.length - 1 ? 'hoy' : dayLabel(pickedDay.date)} ·{' '}
+                  {plural(pickedDay.views, 'visita', 'visitas')}
+                </span>
+              </div>
+              <div className="visits-bars" role="list" aria-label="Personas distintas cada día">
+                {summary.perDay.map((day, index) => (
+                  <button
+                    key={day.date.getTime()}
+                    role="listitem"
+                    className={index === pickedIndex ? 'on' : undefined}
+                    onClick={() => setPicked(index)}
+                    aria-label={`${dayLabel(day.date)}: ${plural(day.visitors, 'persona', 'personas')}`}
+                  >
+                    <i style={{ height: day.visitors ? `${(day.visitors / peak) * 100}%` : undefined }} />
+                  </button>
+                ))}
+              </div>
+              <div className="visits-axis small muted">
+                <span>{dayLabel(summary.perDay[0].date)}</span>
+                <span>máx. {peak}</span>
+                <span>hoy</span>
+              </div>
+            </div>
+
+            <SectionTitle>Por pantalla</SectionTitle>
+            <div className="card flush">
+              <div className="list">
+                {summary.perView.map((item) => (
+                  <div key={item.view} className="row">
+                    <span className="grow">
+                      <span className="title">{item.label}</span>
+                      <span className="meta">{plural(item.visitors, 'persona', 'personas')}</span>
+                      <div className="bar share" aria-hidden="true">
+                        <i style={{ width: `${(item.views / topViews) * 100}%` }} />
+                      </div>
+                    </span>
+                    <span className="trail">
+                      <span className="big">{item.views}</span>
+                      <span className="meta">{item.views === 1 ? 'visita' : 'visitas'}</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        <p className="small muted">
+          Cada móvil cuenta como una persona, sin saber quién es. Volver a la misma pantalla en
+          menos de media hora es la misma visita, y lo que miras con la sesión de administradora
+          abierta no cuenta. «Instalada» es la parte que entra desde la pantalla de inicio.
+        </p>
       </main>
     </>
   )

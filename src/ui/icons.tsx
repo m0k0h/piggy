@@ -157,6 +157,16 @@ export function PeopleIcon({ size = 24, ...props }: IconProps) {
   )
 }
 
+/** Un ojo: las visitas del panel de administración. */
+export function EyeIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M2.5 12c2.2-4.2 5.4-6.3 9.5-6.3s7.3 2.1 9.5 6.3c-2.2 4.2-5.4 6.3-9.5 6.3S4.7 16.2 2.5 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
 export function CoinsIcon({ size = 24, ...props }: IconProps) {
   return (
     <svg {...stroke(size, props)} aria-hidden="true" focusable="false">

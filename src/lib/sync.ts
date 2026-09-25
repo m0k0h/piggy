@@ -3,6 +3,7 @@ import type { RealtimeChannel, SupabaseClient } from '@supabase/supabase-js'
 import { COLLECTIONS, PLAYER_WRITABLE, type Collection, type Role, type Syncable } from '../types'
 import { teamConfig } from './config'
 import { applyRemote, rowsOf, setSyncPublisher } from './store'
+import type { View, ViewRecord } from './views'
 
 /**
  * Todo viaja en una sola tabla con el documento en JSON. Así el esquema no
@@ -202,6 +203,7 @@ export async function connect() {
     pushEverything()
     listenRealtime()
     setSnapshot({ status: 'online', message: '', lastSyncedAt: new Date().toISOString() })
+    void flushViews()
   } catch (err) {
     client = null
     setSnapshot({ status: 'error', message: err instanceof Error ? err.message : String(err) })
@@ -211,6 +213,72 @@ export async function connect() {
 /** Reintenta lo que quedó en la cola, por ejemplo al volver la conexión. */
 export function retry() {
   if (client) scheduleFlush(0)
+  void flushViews()
+}
+
+// --- Visitas -----------------------------------------------------------------
+
+/**
+ * Las visitas van en su propia tabla y no pasan por la réplica: no se bajan a
+ * ningún móvil ni tocan la cola de saques. Si una no llega a subir no pasa
+ * nada; se reintenta al volver la conexión y, si se cierra la app antes, se
+ * pierde, que para contar visitas da igual.
+ */
+const VIEWS_TABLE = 'piggy_views'
+const MAX_PENDING_VIEWS = 50
+let pendingViews: Omit<ViewRecord, 'team_code'>[] = []
+let flushingViews = false
+
+/** Apunta que alguien del equipo ha abierto una pantalla. */
+export function recordView(view: View, visitor: string, standalone: boolean) {
+  if (!teamConfig) return
+  pendingViews.push({ view, visitor, standalone, created_at: new Date().toISOString() })
+  if (pendingViews.length > MAX_PENDING_VIEWS) pendingViews = pendingViews.slice(-MAX_PENDING_VIEWS)
+  void flushViews()
+}
+
+async function flushViews() {
+  if (!client || flushingViews || pendingViews.length === 0) return
+  // Lo que mira la administradora no cuenta: queremos saber qué usa el equipo.
+  // Se decide aquí y no al apuntar porque la sesión se conoce después.
+  if (snapshot.signedIn) {
+    pendingViews = []
+    return
+  }
+  flushingViews = true
+  const batch = pendingViews
+  pendingViews = []
+  const { error } = await client
+    .from(VIEWS_TABLE)
+    .insert(batch.map((row) => ({ ...row, team_code: teamCode })))
+  flushingViews = false
+  if (error) pendingViews = [...batch, ...pendingViews].slice(-MAX_PENDING_VIEWS)
+  // Lo que se apuntó mientras subía el lote anterior.
+  else if (pendingViews.length > 0) void flushViews()
+}
+
+/**
+ * Las visitas desde `since`, para el panel. Solo la administradora puede
+ * leerlas. Supabase devuelve como mucho 1000 filas por consulta, así que se
+ * piden por páginas.
+ */
+export async function fetchViews(since: Date): Promise<ViewRecord[]> {
+  if (!client) throw new Error('Sin base de datos compartida no hay visitas que contar.')
+  const PAGE = 1000
+  const rows: ViewRecord[] = []
+  for (let page = 0; page < 50; page++) {
+    const { data, error } = await client
+      .from(VIEWS_TABLE)
+      .select('team_code,view,visitor,standalone,created_at')
+      .eq('team_code', teamCode)
+      .gte('created_at', since.toISOString())
+      .order('created_at', { ascending: true })
+      .range(page * PAGE, page * PAGE + PAGE - 1)
+    if (error) throw new Error(error.message)
+    rows.push(...((data ?? []) as ViewRecord[]))
+    if (!data || data.length < PAGE) break
+  }
+  return rows
 }
 
 // --- Sesión de administradora ----------------------------------------------

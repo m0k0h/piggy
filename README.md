@@ -76,7 +76,8 @@ recuerda la sesión; mientras la tengas abierta aparece un botón **Admin** en l
 cabecera para ir y volver.
 
 Desde ahí se gestiona el **equipo** (nombre, escudo, euros por fallo), las
-**jugadoras**, los **partidos**, los **cobros** y lo que hay **para comentar**. Los datos viven en la base de
+**jugadoras**, los **partidos**, los **cobros**, lo que hay **para comentar** y
+las **visitas**. Los datos viven en la base de
 datos del equipo; si algún día quieres una copia aparte, exporta la tabla
 `piggy_rows` desde el panel de Supabase.
 
@@ -87,6 +88,25 @@ cosas. Solo se ve la última; publicar otra la sustituye, y **Quitar de la
 portada** la retira (el bloque desaparece entero). La imagen se reduce en el
 móvil antes de guardarse, como el escudo. Va en la fila del equipo, así que
 solo la administradora puede cambiarla y no hace falta tocar la base de datos.
+
+### Visitas
+
+Cuánta gente abre la app del equipo y qué mira: personas distintas y visitas
+en los últimos 7, 30 o 90 días, las que han entrado hoy, un gráfico de personas
+por día (toca una barra para ver ese día), el reparto por pantalla y qué parte
+la usa instalada en la pantalla de inicio.
+
+- **Nada personal.** Cada móvil guarda un identificador al azar; se cuentan
+  móviles, no se sabe de quién es cada uno.
+- Volver a la misma pantalla en menos de media hora es la misma visita.
+- Lo que miras con la sesión de administradora abierta no cuenta.
+- Las visitas van en su propia tabla, `piggy_views`: no se bajan a los móviles
+  ni pasan por la cola de saques. El equipo solo puede apuntarlas; leerlas,
+  solo tú. **Si ya tenías la base de datos montada, vuelve a pasar
+  [`supabase/schema.sql`](supabase/schema.sql) en el SQL Editor** para crear
+  la tabla (se puede pasar las veces que haga falta).
+- Sin cobertura, la visita espera en memoria y sube al volver la conexión; si
+  se cierra la app antes, se pierde, que para contar visitas da igual.
 
 ### El rival
 
@@ -122,6 +142,7 @@ reduce igual que el escudo de tu equipo.
 | Anotar y corregir saques | Sí | Sí |
 | Hucha y estadísticas | Ver y cobrar | Solo ver |
 | Noticia de la portada | Publicar y quitar | Solo ver |
+| Visitas a la app | Ver | Solo se apuntan |
 
 La separación no es cosmética. Las reglas de
 [`supabase/schema.sql`](supabase/schema.sql) las aplica Postgres: sin sesión
@@ -171,6 +192,7 @@ hosting estático.
 | `src/lib/config.ts` | La conexión con la base de datos, leída del entorno. |
 | `src/screens/Admin.tsx` | La zona de administración, tras el login. |
 | `src/lib/summary.ts` | Los textos que se comparten por WhatsApp. |
+| `src/lib/views.ts` | Qué cuenta como visita y el resumen del panel de visitas. |
 | `src/screens/` | Las pantallas. |
 
 Los borrados son lógicos y cada fila lleva `updatedAt`: así dos móviles que
