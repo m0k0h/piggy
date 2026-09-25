@@ -81,11 +81,11 @@ las **visitas**. Los datos viven en la base de
 datos del equipo; si algún día quieres una copia aparte, exporta la tabla
 `piggy_rows` desde el panel de Supabase.
 
-### Para comentar
+### Mensaje de portada
 
 Una noticia para la portada de la app del equipo: texto, una imagen o las dos
-cosas. Solo se ve la última; publicar otra la sustituye, y **Quitar de la
-portada** la retira (el bloque desaparece entero). La imagen se reduce en el
+cosas. Solo se ve la última; publicar otra la sustituye, y **Quitar**
+la retira (el bloque desaparece entero). La imagen se reduce en el
 móvil antes de guardarse, como el escudo. Va en la fila del equipo, así que
 solo la administradora puede cambiarla y no hace falta tocar la base de datos.
 

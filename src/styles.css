@@ -237,6 +237,11 @@ main {
   background: var(--surface-2);
 }
 .notice-text { margin: 0; padding: 6px 11px 8px; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.5; }
+/* Admin: estado de la noticia publicada. Texto a la izquierda en dos líneas
+   cortas y un botón de una palabra a la derecha, para que nada salte de línea. */
+.notice-status .grow { flex: 1; min-width: 0; }
+.notice-status .label { font-size: 14.5px; font-weight: 600; }
+.notice-status .btn { flex-shrink: 0; white-space: nowrap; }
 
 /* ----------------------------------------------------------------- hero */
 .pot {

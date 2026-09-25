@@ -70,7 +70,7 @@ const SECTIONS = [
   { key: 'jugadoras', label: 'Jugadoras', icon: <PeopleIcon />, hint: 'Altas, dorsales y bajas' },
   { key: 'partidos', label: 'Partidos', icon: <CalendarIcon />, hint: 'Calendario de la temporada' },
   { key: 'cobros', label: 'Cobros', icon: <CoinsIcon />, hint: 'Registrar lo que paga cada una' },
-  { key: 'comentar', label: 'Para comentar', icon: <MegaphoneIcon />, hint: 'La noticia de la portada' },
+  { key: 'comentar', label: 'Mensaje de portada', icon: <MegaphoneIcon />, hint: 'La noticia de la portada' },
   { key: 'visitas', label: 'Visitas', icon: <EyeIcon />, hint: 'Cuánta gente entra y a qué pantalla' },
 ]
 
@@ -841,7 +841,7 @@ function PaymentSheet({ row, onClose }: { row: Balance; onClose: () => void }) {
   )
 }
 
-// -------------------------------------------------------------- para comentar
+// --------------------------------------------------------- mensaje de portada
 
 /**
  * La noticia de la portada. Solo hay una: publicar sustituye a la anterior y
@@ -880,13 +880,8 @@ function NoticeSection() {
 
   return (
     <>
-      <ScreenHeader title="Para comentar" onBack={() => navigate('admin')} />
+      <ScreenHeader title="Mensaje de portada" onBack={() => navigate('admin')} />
       <main>
-        <p className="small muted">
-          Sale en la portada de la app del equipo. Solo se ve la última: al publicar una nueva,
-          sustituye a la que hubiera.
-        </p>
-
         <div className="card form">
           <Field label="Texto (opcional si pones imagen)">
             <textarea
@@ -932,16 +927,19 @@ function NoticeSection() {
         </div>
 
         {current ? (
-          <div className="card spread">
-            <div className="small muted">Publicada el {matchDate(current.publishedAt)}</div>
+          <div className="card spread notice-status">
+            <div className="grow">
+              <div className="label">En portada</div>
+              <div className="small muted">Desde el {matchDate(current.publishedAt)}</div>
+            </div>
             <button
-              className="btn quiet small"
+              className="btn ghost small"
               onClick={() => {
                 removeNotice()
                 flash('Quitada de la portada')
               }}
             >
-              Quitar de la portada
+              Quitar
             </button>
           </div>
         ) : null}
