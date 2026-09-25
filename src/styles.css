@@ -822,18 +822,20 @@ main {
 /* Cabecera del partido programado: compartir abajo a la derecha del bloque,
    con la fecha dejándole su hueco para no montarse encima. */
 .match-head { position: relative; }
-.match-head .chip.date { margin-right: 48px; }
-.match-head .match-map { align-self: flex-start; margin-right: 48px; margin-top: -2px; }
+.match-head .chip.date,
+.match-head .call-badge,
+.match-head .match-map { margin-right: 48px; }
+.match-head .match-map { align-self: flex-start; margin-top: -2px; }
 
-/* Hora de convocatoria: badge rosa tenue, pequeño, con la hora resaltada.
-   Va en línea con el texto de la fecha y no se parte nunca. */
+/* Hora de convocatoria: en su propia línea bajo la fecha, y por debajo de
+   ella en importancia: badge rosa tenue, pequeño, sin relleno fuerte. */
 .call-badge {
   display: inline-flex;
-  vertical-align: middle;
-  margin-left: 6px;
+  align-self: flex-start;
   align-items: center;
-  gap: 5px;
-  padding: 3px 3px 3px 8px;
+  gap: 4px;
+  margin-top: -6px;
+  padding: 3px 9px;
   border-radius: var(--radius-pill);
   background: var(--pink-soft);
   color: var(--pink-text);
@@ -844,12 +846,7 @@ main {
   white-space: nowrap;
 }
 .call-badge strong {
-  padding: 1px 7px;
-  border-radius: var(--radius-pill);
-  background: var(--pink);
-  color: var(--on-accent);
-  font-family: var(--display);
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: normal;
   font-variant-numeric: tabular-nums;
 }
