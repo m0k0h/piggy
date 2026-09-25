@@ -216,7 +216,52 @@ export function clearSolidBackground(
     push(px, py - 1)
     push(px, py + 1)
   }
+  cleanEdge(data, w, h, seen, distance)
   context.putImageData(image, x, y)
+}
+
+/**
+ * Entre el escudo y el fondo borrado queda una fila de píxeles de mezcla (ni
+ * fondo ni escudo) que, sobre el fondo oscuro de la app, se ve como un halo
+ * claro y dentado. Se quita esa fila y la siguiente se deja a media opacidad,
+ * para que el borde quede limpio y suavizado.
+ */
+function cleanEdge(
+  data: Uint8ClampedArray,
+  w: number,
+  h: number,
+  seen: Uint8Array,
+  distance: (i: number) => number,
+) {
+  // Fondo borrado: lo que el relleno visitó y dejó transparente.
+  const gone = new Uint8Array(w * h)
+  for (let n = 0; n < w * h; n++) {
+    if (data[n * 4 + 3] === 0 || (seen[n] && distance(n * 4) <= BACKGROUND_TOLERANCE)) {
+      gone[n] = 1
+      // Del todo: el suavizado del borde se hace aquí abajo, no con restos del fondo.
+      data[n * 4 + 3] = 0
+    }
+  }
+  const touches = (mask: Uint8Array, n: number) => {
+    const px = n % w
+    return (
+      (px > 0 && mask[n - 1] === 1) ||
+      (px < w - 1 && mask[n + 1] === 1) ||
+      (n >= w && mask[n - w] === 1) ||
+      (n < w * (h - 1) && mask[n + w] === 1)
+    )
+  }
+  const ring = (mask: Uint8Array) => {
+    const out: number[] = []
+    for (let n = 0; n < w * h; n++) if (!mask[n] && data[n * 4 + 3] > 0 && touches(mask, n)) out.push(n)
+    return out
+  }
+  const halo = ring(gone)
+  for (const n of halo) {
+    data[n * 4 + 3] = 0
+    gone[n] = 1
+  }
+  for (const n of ring(gone)) data[n * 4 + 3] = Math.round(data[n * 4 + 3] / 2)
 }
 
 /** Lado largo máximo de una foto para la portada. */

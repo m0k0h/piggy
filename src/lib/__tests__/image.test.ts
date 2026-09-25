@@ -66,6 +66,20 @@ describe('clearSolidBackground', () => {
     expect(alpha(20, 20)).toBe(255)
   })
 
+  it('quita el halo de mezcla entre el escudo y el fondo', () => {
+    const MIX: Pixel = [150, 180, 235, 255]
+    const alpha = clean((x, y) => {
+      const d = Math.hypot(x - 20, y - 20)
+      if (d < 15) return BLUE
+      if (d < 16) return MIX
+      return WHITE
+    })
+    expect(alpha(20, 4)).toBe(0) // fondo
+    expect(alpha(20, 5)).toBe(0) // halo de mezcla
+    expect(alpha(20, 6)).toBe(128) // primera fila del escudo, a media opacidad
+    expect(alpha(20, 7)).toBe(255)
+  })
+
   it('no toca una imagen que ya trae transparencia', () => {
     const alpha = clean(crest(() => CLEAR))
     expect(alpha(8, 20)).toBe(255)
