@@ -134,7 +134,11 @@ async function pull() {
     bucket.push(record.payload)
     grouped.set(record.collection, bucket)
   }
-  for (const [collection, rows] of grouped) applyRemote(collection, rows)
+  // El equipo primero: trae la marca del borrado de prueba, y con ella se
+  // descarta lo que llegue de antes en el resto de colecciones.
+  const team = grouped.get('team')
+  if (team) applyRemote('team', team)
+  for (const [collection, rows] of grouped) if (collection !== 'team') applyRemote(collection, rows)
 }
 
 /**

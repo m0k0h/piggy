@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Team } from '../../types'
-import { addMatch, addPayment, addPlayer, addServe, applyRemote, getState, saveLineup } from '../store'
+import { addMatch, addPayment, addPlayer, addServe, applyRemote, getState, rowsOf, saveLineup } from '../store'
 
 const withReset = (resetAt: string): Team => ({ ...getState().team, resetAt, updatedAt: resetAt })
 const tick = () => new Promise((resolve) => setTimeout(resolve, 5))
@@ -39,5 +39,40 @@ describe('borrado de partidos de prueba', () => {
     expect(getState().team.resetAt).toBe(resetAt)
     expect(Object.keys(getState().matches)).toEqual([match.id])
     expect(Object.keys(getState().serves)).toHaveLength(1)
+  })
+
+  it('con la marca ya guardada pero sin purgar, el móvil tira lo borrado y no lo vuelve a subir', async () => {
+    const player = addPlayer('Irene', '4')
+    const match = addMatch({ date: '2026-09-03T18:00', opponent: 'Viejo' })
+    addServe(match.id, player.id, 'error', 1)
+    addPayment(player.id, 3)
+    await tick()
+    const resetAt = new Date().toISOString()
+    // Un móvil con una versión anterior guardó el equipo con la marca, pero no
+    // tiró su copia. El equipo que le llega ahora no es más nuevo que el suyo.
+    const team = withReset(resetAt)
+    applyRemote('team', [team])
+    const stale = { ...match, id: 'stale', createdAt: match.createdAt }
+    applyRemote('matches', [stale])
+    applyRemote('team', [team])
+
+    expect(getState().matches).toEqual({})
+    expect(rowsOf('serves')).toEqual([])
+    expect(rowsOf('payments')).toEqual([])
+  })
+
+  it('lo borrado que alguien volvió a subir al servidor no se enseña', async () => {
+    const player = addPlayer('Sara', '11')
+    const match = addMatch({ date: '2026-09-04T18:00', opponent: 'Rival' })
+    const payment = addPayment(player.id, 5)
+    await tick()
+    const resetAt = new Date().toISOString()
+    applyRemote('team', [withReset(resetAt)])
+
+    applyRemote('matches', [{ ...match, updatedAt: new Date().toISOString() }])
+    applyRemote('payments', [{ ...payment, updatedAt: new Date().toISOString() }])
+
+    expect(getState().matches).toEqual({})
+    expect(getState().payments).toEqual({})
   })
 })
