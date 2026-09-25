@@ -819,7 +819,10 @@ main {
 /* Con imagen, el escudo manda en su forma: sin cuadrado de fondo detrás, un
    escudo redondo con transparencia se ve redondo. El radio se queda para que
    una imagen cuadrada opaca siga saliendo con las esquinas suavizadas. */
-.crest.has-logo { background: transparent; }
+.crest.has-logo { background: transparent; overflow: visible; }
+/* Contorno fino que sigue la forma del propio escudo (no la caja): un escudo
+   oscuro no se funde con el fondo ciruela de la app. */
+.crest.has-logo img { filter: drop-shadow(0 0 0.6px rgb(255 255 255 / 55%)) drop-shadow(0 0 0.6px rgb(255 255 255 / 35%)); }
 
 .crest-big { width: 84px; height: 84px; border-radius: 20px; font-size: 22px; }
 
