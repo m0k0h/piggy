@@ -46,6 +46,7 @@ import {
   PartyIcon,
   PeopleIcon,
   PlusIcon,
+  PositionIcon,
   ShieldIcon,
 } from '../ui/icons'
 
@@ -314,7 +315,12 @@ function PlayersSection() {
                 <button key={player.id} className="row" onClick={() => setEditing(player)}>
                   <Avatar name={player.name} number={player.number} />
                   <span className="grow">
-                    <span className="title">{player.name}</span>
+                    <span className="title">
+                      {player.position ? (
+                        <PositionIcon position={player.position} className="position-mark" />
+                      ) : null}
+                      {player.name}
+                    </span>
                     <span className="meta">
                       {serveSummary(tally.errors, tally.attempts, tally.ratio)}
                     </span>

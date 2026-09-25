@@ -10,6 +10,7 @@
  * quien los usa; el resto se pinta con `aria-hidden`.
  */
 import type { SVGProps } from 'react'
+import { POSITION_LABELS, type Position } from '../types'
 
 interface IconProps extends SVGProps<SVGSVGElement> {
   size?: number
@@ -269,6 +270,29 @@ export function ShareIcon({ size = 24, ...props }: IconProps) {
       <path d="M12 14.5V3.5" />
       <path d="M7.5 8 12 3.5 16.5 8" />
       <path d="M8 11H6.5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H16" />
+    </svg>
+  )
+}
+
+/**
+ * Posición en el campo, como forma geométrica: triángulo la colocadora,
+ * cuadrado la punta, círculo la central. Rellenas (relleno y trazo en
+ * `currentColor`) para que se distingan a tamaño pequeño; el trazo redondea
+ * las esquinas como en el resto de iconos. Lleva su propio `aria-label`
+ * porque la forma sola es el dato.
+ */
+export function PositionIcon({ position, size = 12, ...props }: IconProps & { position: Position }) {
+  return (
+    <svg
+      {...stroke(size, props)}
+      fill="currentColor"
+      role="img"
+      aria-label={POSITION_LABELS[position]}
+      focusable="false"
+    >
+      {position === 'setter' ? <path d="M12 4 20.5 19h-17Z" /> : null}
+      {position === 'outside' ? <rect x="4.5" y="4.5" width="15" height="15" rx="1.5" /> : null}
+      {position === 'middle' ? <circle cx="12" cy="12" r="8" /> : null}
     </svg>
   )
 }
