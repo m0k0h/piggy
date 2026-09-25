@@ -10,6 +10,7 @@
  * quien los usa; el resto se pinta con `aria-hidden`.
  */
 import type { SVGProps } from 'react'
+import { POSITION_LABELS, type Position } from '../types'
 
 interface IconProps extends SVGProps<SVGSVGElement> {
   size?: number
@@ -302,6 +303,29 @@ export function MegaphoneIcon({ size = 24, ...props }: IconProps) {
       <path d="M4 10.2a1.7 1.7 0 0 1 1.7-1.7H9l8-4v15l-8-4H5.7A1.7 1.7 0 0 1 4 13.8Z" />
       <path d="M7.5 15.5 9 20" />
       <path d="M20 9.5a3 3 0 0 1 0 5" />
+    </svg>
+  )
+}
+
+/**
+ * Posición en el campo, como forma geométrica: triángulo la colocadora,
+ * cuadrado la punta, círculo la central. Rellenas (relleno y trazo en
+ * `currentColor`) para que se distingan a tamaño pequeño; el trazo redondea
+ * las esquinas como en el resto de iconos. Lleva su propio `aria-label`
+ * porque la forma sola es el dato.
+ */
+export function PositionIcon({ position, size = 12, ...props }: IconProps & { position: Position }) {
+  return (
+    <svg
+      {...stroke(size, props)}
+      fill="currentColor"
+      role="img"
+      aria-label={POSITION_LABELS[position]}
+      focusable="false"
+    >
+      {position === 'setter' ? <path d="M12 4 20.5 19h-17Z" /> : null}
+      {position === 'outside' ? <rect x="4.5" y="4.5" width="15" height="15" rx="1.5" /> : null}
+      {position === 'middle' ? <circle cx="12" cy="12" r="8" /> : null}
     </svg>
   )
 }

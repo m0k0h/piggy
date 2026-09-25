@@ -1,6 +1,20 @@
 import { useState, type ReactNode } from 'react'
 import { initials } from '../lib/format'
-import { ChevronIcon, ExternalLinkIcon } from './icons'
+import type { Player } from '../types'
+import { ChevronIcon, ExternalLinkIcon, PositionIcon } from './icons'
+
+/**
+ * El nombre de una jugadora con la forma de su posición delante (si tiene).
+ * Úsalo en cualquier sitio de la interfaz donde salga una jugadora.
+ */
+export function PlayerName({ player }: { player?: Pick<Player, 'name' | 'position'> }) {
+  return (
+    <span className="player-name">
+      {player?.position ? <PositionIcon position={player.position} className="position-mark" /> : null}
+      {player?.name ?? 'Jugadora'}
+    </span>
+  )
+}
 
 export function Avatar({
   name,

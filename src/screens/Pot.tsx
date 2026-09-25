@@ -6,7 +6,7 @@ import { useAppState } from '../lib/store'
 import { allPayments, allServes, balances, matchStatus, pot, tally, upcomingMatches } from '../lib/stats'
 import type { Balance } from '../lib/stats'
 import type { AppState, Payment } from '../types'
-import { Avatar, Empty, SectionTitle } from '../ui/bits'
+import { Avatar, Empty, PlayerName, SectionTitle } from '../ui/bits'
 import { CalendarIcon, HomeIcon, PigLineIcon, ShareIcon } from '../ui/icons'
 
 export function Pot() {
@@ -155,7 +155,7 @@ function DebtRow({ row }: { row: Balance }) {
     <div className="row">
       <Avatar name={row.player.name} number={row.player.number} />
       <span className="grow">
-        <span className="title">{row.player.name}</span>
+        <span className="title"><PlayerName player={row.player} /></span>
         <span className="meta">
           {serveSummary(row.tally.errors, row.tally.attempts, row.tally.ratio)}
           {row.paid > 0 ? ` · ${euros(row.paid)} pagados` : ''}
@@ -175,7 +175,7 @@ function PaymentRow({ payment, state }: { payment: Payment; state: AppState }) {
     <div className="row">
       <Avatar name={player?.name ?? 'Jugadora'} number={player?.number} />
       <span className="grow">
-        <span className="title">{player?.name ?? 'Jugadora'}</span>
+        <span className="title"><PlayerName player={player} /></span>
         <span className="meta">
           {payment.note ? `${payment.note} · ` : ''}
           {matchDate(payment.createdAt)}
