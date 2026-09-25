@@ -821,38 +821,34 @@ main {
 /* Cabecera del partido programado: compartir abajo a la derecha del bloque,
    con la fecha dejándole su hueco para no montarse encima. */
 .match-head { position: relative; }
-.match-head .chip.date,
-.match-head .match-extras { margin-right: 48px; }
-.match-head .match-extras {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 10px;
-  margin-top: -2px;
-}
+.match-head .chip.date { margin-right: 48px; }
+.match-head .match-map { align-self: flex-start; margin-right: 48px; margin-top: -2px; }
 
-/* Hora de convocatoria: badge rosa tenue con la hora en grande, que es lo que
-   se busca de un vistazo antes de salir de casa. */
+/* Hora de convocatoria: badge rosa tenue, pequeño, con la hora resaltada.
+   Va en línea con el texto de la fecha y no se parte nunca. */
 .call-badge {
   display: inline-flex;
+  vertical-align: middle;
+  margin-left: 6px;
   align-items: center;
-  gap: 7px;
-  padding: 6px 6px 6px 11px;
+  gap: 5px;
+  padding: 3px 3px 3px 8px;
   border-radius: var(--radius-pill);
   background: var(--pink-soft);
   color: var(--pink-text);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 .call-badge strong {
-  padding: 3px 9px;
+  padding: 1px 7px;
   border-radius: var(--radius-pill);
   background: var(--pink);
   color: var(--on-accent);
   font-family: var(--display);
-  font-size: 14px;
+  font-size: 12px;
   letter-spacing: normal;
   font-variant-numeric: tabular-nums;
 }
