@@ -35,7 +35,7 @@ import {
   type Balance,
 } from '../lib/stats'
 import { signIn, signOut, useRole, useSync } from '../lib/sync'
-import type { Match, Player } from '../types'
+import { POSITION_LABELS, type Match, type Player, type Position } from '../types'
 import { Sheet } from '../ui/Sheet'
 import { Avatar, Crest, Empty, Field, OpponentCrest, ScreenHeader, SectionTitle } from '../ui/bits'
 import {
@@ -349,13 +349,15 @@ function PlayersSection() {
 function PlayerSheet({ player, onClose }: { player: Player | null; onClose: () => void }) {
   const [name, setName] = useState(player?.name ?? '')
   const [number, setNumber] = useState(player?.number ?? '')
+  const [position, setPosition] = useState<Position | ''>(player?.position ?? '')
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const save = () => {
     const clean = name.trim()
     if (!clean) return
-    if (player) updatePlayer(player.id, { name: clean, number: number.trim() })
-    else addPlayer(clean, number)
+    const chosen = position || undefined
+    if (player) updatePlayer(player.id, { name: clean, number: number.trim(), position: chosen })
+    else addPlayer(clean, number, null, chosen)
     onClose()
   }
 
@@ -378,6 +380,19 @@ function PlayerSheet({ player, onClose }: { player: Player | null; onClose: () =
             placeholder="12"
             inputMode="numeric"
           />
+        </Field>
+        <Field label="Posición (opcional)">
+          <select
+            value={position}
+            onChange={(event) => setPosition(event.target.value as Position | '')}
+          >
+            <option value="">Sin indicar</option>
+            {(Object.keys(POSITION_LABELS) as Position[]).map((key) => (
+              <option key={key} value={key}>
+                {POSITION_LABELS[key]}
+              </option>
+            ))}
+          </select>
         </Field>
 
         <button className="btn block" onClick={save} disabled={!name.trim()}>

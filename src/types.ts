@@ -24,12 +24,23 @@ export interface Syncable {
   deletedAt: string | null
 }
 
+/** Posición en el campo. De momento solo se guarda; aún no se usa para nada. */
+export type Position = 'setter' | 'outside' | 'middle'
+
+export const POSITION_LABELS: Record<Position, string> = {
+  setter: 'Colocadora',
+  outside: 'Punta',
+  middle: 'Central',
+}
+
 export interface Player extends Syncable {
   name: string
   /** Dorsal. Texto porque en Sportagia a veces viene vacío o con formato raro. */
   number: string
   /** Id en Sportagia, si vino de allí. Sirve para no duplicar al reimportar. */
   externalId: string | null
+  /** Opcional de verdad: las jugadoras creadas antes de que esto existiera no la traen. */
+  position?: Position
 }
 
 /** El partido tal como lo deja preparado la administradora. Solo ella lo edita. */

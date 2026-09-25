@@ -8,6 +8,7 @@ import {
   type MatchStatus,
   type Payment,
   type Player,
+  type Position,
   type Serve,
   type ServeResult,
   type Syncable,
@@ -166,13 +167,23 @@ export function updateTeam(patch: Partial<Pick<Team, 'name' | 'fineAmount' | 'lo
 
 // --- Jugadoras -------------------------------------------------------------
 
-export function addPlayer(name: string, number = '', externalId: string | null = null): Player {
-  const player = born<Player>({ name: name.trim(), number: number.trim(), externalId })
+export function addPlayer(
+  name: string,
+  number = '',
+  externalId: string | null = null,
+  position?: Position,
+): Player {
+  const player = born<Player>({
+    name: name.trim(),
+    number: number.trim(),
+    externalId,
+    ...(position ? { position } : {}),
+  })
   write('players', [player])
   return player
 }
 
-export function updatePlayer(id: string, patch: Partial<Pick<Player, 'name' | 'number'>>) {
+export function updatePlayer(id: string, patch: Partial<Pick<Player, 'name' | 'number' | 'position'>>) {
   const current = state.players[id]
   if (!current) return
   write('players', [{ ...current, ...patch, updatedAt: now() }])
