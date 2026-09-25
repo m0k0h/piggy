@@ -844,6 +844,9 @@ main {
   align-items: center;
   gap: 4px;
   margin-top: -6px;
+  /* Unos píxeles hacia dentro: con el rosa, si empieza a ras de la fecha
+     parece que empieza antes que ella. */
+  margin-left: 6px;
   padding: 3px 9px;
   border-radius: var(--radius-pill);
   background: var(--pink-soft);
