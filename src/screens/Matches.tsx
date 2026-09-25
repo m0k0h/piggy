@@ -23,7 +23,7 @@ export function Matches() {
         </div>
       ) : (
         <div className="card flush">
-          <div className="list">
+          <div className="list match-list">
             {upcoming.map((match) => (
               <MatchRow key={match.id} match={match} state={state} />
             ))}
@@ -35,7 +35,7 @@ export function Matches() {
         <>
           <SectionTitle aside={<span>{played.length}</span>}>Jugados</SectionTitle>
           <div className="card flush">
-            <div className="list">
+            <div className="list match-list">
               {played.map((match) => (
                 <MatchRow key={match.id} match={match} state={state} />
               ))}

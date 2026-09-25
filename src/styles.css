@@ -405,6 +405,11 @@ main {
 /* En las filas, la liga va en su propia línea encima del rival: ni recorta
    su nombre ni parte la fecha en dos. */
 .row .grow > .league-tag { align-self: flex-start; margin-bottom: 4px; }
+/* En el listado de partidos el escudo del rival ocupa el alto de la fila
+   (liga, rival y fecha), en vez de quedarse en el tamaño de un avatar. */
+.match-list .row > .crest { width: 56px; height: 56px; font-size: 16px; }
+/* Portada: la liga del próximo partido, al lado de «Próximo partido». */
+.next-kind { display: flex; align-items: center; gap: 8px; }
 
 /* ---------------------------------------------------------------- liga */
 /* Etiqueta de liga: rosa la femenina (el color del equipo), ámbar la mixta. */
