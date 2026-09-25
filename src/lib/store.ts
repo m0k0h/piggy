@@ -23,13 +23,20 @@ const LEGACY_KEY = 'piggy.state.v1'
 const now = () => new Date().toISOString()
 export const newId = () => crypto.randomUUID()
 
+/**
+ * Fecha de un equipo que nadie ha tocado: más vieja que cualquiera. Un móvil
+ * recién estrenado tiene que aceptar el equipo del servidor, no pisarlo con
+ * el suyo de fábrica por tener la hora de ahora.
+ */
+const NEVER = new Date(0).toISOString()
+
 const defaultTeam = (): Team => ({
   id: TEAM_ROW_ID,
   name: 'Mi equipo',
   fineAmount: 1,
   logo: '',
-  createdAt: now(),
-  updatedAt: now(),
+  createdAt: NEVER,
+  updatedAt: NEVER,
   deletedAt: null,
 })
 
@@ -115,6 +122,16 @@ export const WIPE_COLLECTIONS: readonly Collection[] = ['matches', 'lineups', 's
  * no se guarda y no se sube, venga de donde venga — de la copia local de un
  * móvil que no llegó a purgar, o del servidor si alguno ya la volvió a subir.
  */
+/**
+ * El borrado de prueba se hizo la noche del 24 de septiembre de 2026, antes de
+ * esta hora. Es el suelo de `resetAt`: aunque algún móvil o el propio servidor
+ * hayan perdido la marca del equipo, lo de antes no vuelve.
+ */
+const WIPED_UNTIL = '2026-09-24T22:29:31.000Z'
+
+/** Hasta cuándo va lo borrado: la marca del equipo, y nunca antes del suelo. */
+const resetOf = (team: Team) => [team.resetAt ?? '', WIPED_UNTIL].sort().at(-1) ?? WIPED_UNTIL
+
 function wiped(collection: Collection, row: Syncable, resetAt: string) {
   return resetAt !== '' && WIPE_COLLECTIONS.includes(collection) && row.createdAt <= resetAt
 }
@@ -125,8 +142,7 @@ function wiped(collection: Collection, row: Syncable, resetAt: string) {
  * nada que quitar, devuelve el mismo estado.
  */
 function withoutWiped(s: AppState): AppState {
-  const resetAt = s.team.resetAt ?? ''
-  if (!resetAt) return s
+  const resetAt = resetOf(s.team)
   let changed = false
   const next = { ...s }
   for (const collection of WIPE_COLLECTIONS) {
@@ -337,7 +353,13 @@ export function removePayment(id: string) {
 export function applyRemote(collection: Collection, rows: Syncable[]) {
   if (collection === 'team') {
     const incoming = rows.find((row) => row.id === TEAM_ROW_ID) as Team | undefined
-    if (incoming && incoming.updatedAt > state.team.updatedAt) write('team', [incoming], false)
+    if (incoming) {
+      // La marca solo avanza: un equipo que llegue sin ella (subido desde un
+      // móvil que no la tenía) no la borra de los demás.
+      const resetAt = [incoming.resetAt ?? '', state.team.resetAt ?? ''].sort().at(-1) || undefined
+      if (incoming.updatedAt > state.team.updatedAt) write('team', [{ ...incoming, resetAt }], false)
+      else if (resetAt !== state.team.resetAt) write('team', [{ ...state.team, resetAt }], false)
+    }
     // La purga no depende de que el equipo llegue más nuevo: un móvil puede
     // tener ya la marca guardada sin haber tirado su copia (la recibió con una
     // versión anterior de la app). Quitar lo borrado es idempotente.
@@ -347,7 +369,7 @@ export function applyRemote(collection: Collection, rows: Syncable[]) {
   }
   const bucket = state[collection] as Record<string, Syncable>
   const fresh = rows.filter((row) => {
-    if (wiped(collection, row, state.team.resetAt ?? '')) return false
+    if (wiped(collection, row, resetOf(state.team))) return false
     const mine = bucket[row.id]
     return !mine || row.updatedAt > mine.updatedAt
   })
@@ -357,6 +379,6 @@ export function applyRemote(collection: Collection, rows: Syncable[]) {
 /** Todas las filas locales de una colección, para subirlas de golpe. */
 export function rowsOf(collection: Collection): Syncable[] {
   if (collection === 'team') return [state.team]
-  const resetAt = state.team.resetAt ?? ''
+  const resetAt = resetOf(state.team)
   return Object.values(state[collection] as Record<string, Syncable>).filter((row) => !wiped(collection, row, resetAt))
 }

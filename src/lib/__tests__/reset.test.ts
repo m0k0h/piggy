@@ -75,4 +75,26 @@ describe('borrado de partidos de prueba', () => {
     expect(getState().matches).toEqual({})
     expect(getState().payments).toEqual({})
   })
+
+  it('un equipo que llega sin la marca no se la quita a este móvil', async () => {
+    await tick()
+    const resetAt = new Date().toISOString()
+    applyRemote('team', [withReset(resetAt)])
+    await tick()
+    const { resetAt: _gone, ...bare } = getState().team
+    applyRemote('team', [{ ...bare, name: 'Otro nombre', updatedAt: new Date().toISOString() } as Team])
+
+    expect(getState().team.name).toBe('Otro nombre')
+    expect(getState().team.resetAt).toBe(resetAt)
+  })
+
+  it('lo de antes de la noche del borrado no vuelve aunque nadie tenga la marca', () => {
+    const old = '2026-09-20T18:00:00.000Z'
+    const player = addPlayer('Nerea', '2')
+    const payment = { ...addPayment(player.id, 4), id: 'viejo', createdAt: old, updatedAt: old }
+    applyRemote('payments', [payment])
+
+    expect(getState().payments.viejo).toBeUndefined()
+    expect(rowsOf('payments').some((row) => row.createdAt === old)).toBe(false)
+  })
 })
