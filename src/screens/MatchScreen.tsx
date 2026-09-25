@@ -141,19 +141,14 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
           </div>
           <span className="chip date">
             <CalendarIcon size={14} />
-            {/* La convocatoria va dentro del texto, al final: así ocupa el
-                hueco que deja la última línea de la fecha. */}
-            <span>
-              {matchDateLong(match.date) + (match.venue ? ` · ${match.venue}` : '')}
-              {call ? (
-                <span className="call-badge">
-                  <WhistleIcon size={12} />
-                  Convocadas
-                  <strong>{call}</strong>
-                </span>
-              ) : null}
-            </span>
+            {matchDateLong(match.date) + (match.venue ? ` · ${match.venue}` : '')}
           </span>
+          {call ? (
+            <span className="call-badge">
+              <WhistleIcon size={11} />
+              Convocadas <strong>{call}</strong>
+            </span>
+          ) : null}
           {mapsUrl ? (
             <a className="link match-map" href={mapsUrl} target="_blank" rel="noopener noreferrer">
               <MapPinIcon size={15} />
