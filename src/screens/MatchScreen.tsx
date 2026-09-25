@@ -22,6 +22,7 @@ import {
   Avatar,
   Empty,
   LeagueLink,
+  LeagueTag,
   OpponentCrest,
   PlayerName,
   RatioBar,
@@ -131,9 +132,12 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
           <div className="inline wide">
             <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} big />
             <div className="grow">
-              <div className="small muted">
-                {match.home ? <HomeIcon size={13} className="home-mark" /> : null}
-                {match.home ? 'En casa' : 'Fuera'}
+              <div className="small muted match-kind">
+                <span>
+                  {match.home ? <HomeIcon size={13} className="home-mark" /> : null}
+                  {match.home ? 'En casa' : 'Fuera'}
+                </span>
+                <LeagueTag league={match.league} long />
               </div>
               <h2>{match.opponent || 'Rival por definir'}</h2>
               <LeagueLink url={match.leagueUrl} />

@@ -1,4 +1,4 @@
-import { callTime, euros, joinNatural, matchDate, matchDateLong, percent, plural } from './format'
+import { callTime, euros, joinNatural, leagueName, matchDate, matchDateLong, percent, plural } from './format'
 import {
   allServes,
   balances,
@@ -55,6 +55,7 @@ export function matchDetails(state: AppState, match: Match): string {
   const lines: string[] = []
 
   lines.push(`🏐 ${teamName(state)} ${match.home ? 'vs' : '@'} ${match.opponent || 'Rival por definir'}`)
+  if (match.league) lines.push(`🏆 ${leagueName(match.league, true)}`)
   lines.push(`📅 ${matchDateLong(match.date)}`)
   const call = callTime(match.date)
   if (call) lines.push(`⏰ Convocadas a las ${call}`)

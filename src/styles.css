@@ -402,6 +402,33 @@ main {
 .row .grow { flex: 1; min-width: 0; }
 .row .title { font-size: 14.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .home-mark { vertical-align: -2px; margin-right: 3px; color: var(--pink-text); }
+/* Nombre del rival y la etiqueta de su liga en la misma línea: el nombre se
+   recorta con puntos suspensivos antes de empujar la etiqueta fuera. */
+.row .title-line { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.row .title-line .title { min-width: 0; }
+
+/* ---------------------------------------------------------------- liga */
+/* Etiqueta de liga: rosa la femenina (el color del equipo), ámbar la mixta. */
+.league-tag {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--pink-soft);
+  color: var(--pink-text);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.league-tag.mixta { background: var(--amber-soft); color: var(--amber); }
+/* En la ficha, junto a «En casa / Fuera». */
+.match-kind { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+/* Selector de liga en el formulario: cada opción se enciende en su color. */
+.segmented button.mixta[aria-pressed='true'] { color: var(--amber); }
 .position-mark { vertical-align: -1px; margin-right: 6px; color: var(--pink); }
 .row .meta { font-size: 12px; color: var(--muted); }
 .row .trail { text-align: right; flex-shrink: 0; gap: 2px; }

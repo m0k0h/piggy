@@ -142,6 +142,12 @@ describe('matchDetails', () => {
     expect(text).not.toContain('Ficha del rival')
   })
 
+  it('dice la liga si el partido la tiene, y nada si es de antes', () => {
+    const mixed = { ...match, league: 'mixta' as const }
+    expect(matchDetails(state({ matches: byId([mixed]) }), mixed)).toContain('🏆 Liga mixta\n📅')
+    expect(matchDetails(state({ matches: byId([match]) }), match)).not.toContain('🏆')
+  })
+
   it('en casa no pone mapa aunque el partido lo tenga guardado', () => {
     const home = { ...match, mapsUrl: 'https://maps.app.goo.gl/abc' }
     expect(matchDetails(state({ matches: byId([home]) }), home)).not.toContain('maps.app.goo.gl')

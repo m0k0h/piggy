@@ -3,6 +3,7 @@ import {
   TEAM_ROW_ID,
   type AppState,
   type Collection,
+  type League,
   type Lineup,
   type Match,
   type MatchStatus,
@@ -271,6 +272,7 @@ export interface MatchInput {
   leagueUrl?: string
   opponentLogo?: string
   mapsUrl?: string
+  league?: League
 }
 
 export function addMatch(input: MatchInput): Match {
@@ -283,6 +285,7 @@ export function addMatch(input: MatchInput): Match {
     leagueUrl: (input.leagueUrl ?? '').trim(),
     opponentLogo: (input.opponentLogo ?? '').trim(),
     mapsUrl: (input.mapsUrl ?? '').trim(),
+    ...(input.league ? { league: input.league } : {}),
   })
   write('matches', [match])
   return match
@@ -290,7 +293,7 @@ export function addMatch(input: MatchInput): Match {
 
 export function updateMatch(
   id: string,
-  patch: Partial<Pick<Match, 'date' | 'opponent' | 'venue' | 'home' | 'leagueUrl' | 'opponentLogo' | 'mapsUrl'>>,
+  patch: Partial<Pick<Match, 'date' | 'opponent' | 'venue' | 'home' | 'leagueUrl' | 'opponentLogo' | 'mapsUrl' | 'league'>>,
 ) {
   const current = state.matches[id]
   if (!current) return
