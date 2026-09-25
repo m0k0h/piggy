@@ -1,49 +1,94 @@
 import { describe, expect, it } from 'vitest'
 import { clearSolidBackground } from '../image'
 
+type Pixel = [number, number, number, number]
+
 /** Lienzo de mentira: solo lo que usa `clearSolidBackground`. */
-function fakeCanvas(w: number, h: number, paint: (x: number, y: number) => [number, number, number, number]) {
-  const data = new Uint8ClampedArray(w * h * 4)
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) data.set(paint(x, y), (y * w + x) * 4)
+function fakeCanvas(size: number, paint: (x: number, y: number) => Pixel) {
+  const data = new Uint8ClampedArray(size * size * 4)
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) data.set(paint(x, y), (y * size + x) * 4)
   }
-  const image = { data, width: w, height: h }
+  const image = { data, width: size, height: size }
   const context = {
     getImageData: () => image,
     putImageData: () => {},
   } as unknown as CanvasRenderingContext2D
-  const alpha = (x: number, y: number) => data[(y * w + x) * 4 + 3]
+  const alpha = (x: number, y: number) => data[(y * size + x) * 4 + 3]
   return { context, alpha }
 }
 
-const WHITE: [number, number, number, number] = [255, 255, 255, 255]
-const BLUE: [number, number, number, number] = [40, 120, 220, 255]
+const SIZE = 40
+const WHITE: Pixel = [255, 255, 255, 255]
+const GREY: Pixel = [217, 217, 217, 255]
+const BLACK: Pixel = [0, 0, 0, 255]
+const BLUE: Pixel = [40, 120, 220, 255]
+const CLEAR: Pixel = [0, 0, 0, 0]
 
-/** Escudo de 9×9: fondo blanco, anillo azul y el centro blanco otra vez. */
-const crest = (x: number, y: number) => {
-  const d = Math.max(Math.abs(x - 4), Math.abs(y - 4))
-  return d >= 1 && d <= 2 ? BLUE : WHITE
+/** Escudo redondo: anillo azul con el centro blanco, sobre el fondo que se pida. */
+const crest = (background: (x: number, y: number) => Pixel) => (x: number, y: number): Pixel => {
+  const d = Math.hypot(x - 20, y - 20)
+  if (d < 6) return WHITE
+  if (d < 16) return BLUE
+  return background(x, y)
+}
+
+/** El cuadriculado de "transparente", pintado dentro de la imagen. */
+const checker = (x: number, y: number) => ((Math.floor(x / 6) + Math.floor(y / 6)) % 2 ? GREY : WHITE)
+
+const clean = (paint: (x: number, y: number) => Pixel) => {
+  const canvas = fakeCanvas(SIZE, paint)
+  clearSolidBackground(canvas.context, 0, 0, SIZE, SIZE)
+  return canvas.alpha
 }
 
 describe('clearSolidBackground', () => {
-  it('borra el fondo liso conectado con el borde y deja el interior del escudo', () => {
-    const { context, alpha } = fakeCanvas(9, 9, crest)
-    clearSolidBackground(context, 0, 0, 9, 9)
+  it('borra un fondo blanco liso y deja el interior del escudo', () => {
+    const alpha = clean(crest(() => WHITE))
     expect(alpha(0, 0)).toBe(0)
-    expect(alpha(8, 4)).toBe(0)
-    expect(alpha(3, 4)).toBe(255) // anillo
-    expect(alpha(4, 4)).toBe(255) // blanco de dentro, no conectado con el borde
+    expect(alpha(39, 20)).toBe(0)
+    expect(alpha(8, 20)).toBe(255) // anillo
+    expect(alpha(20, 20)).toBe(255) // blanco de dentro, no conectado con el borde
+  })
+
+  it('borra el cuadriculado pintado y el marco negro de una captura', () => {
+    const alpha = clean((x, y) => {
+      if (x === 0) return CLEAR
+      if (y === 0 || y >= SIZE - 2) return BLACK
+      return crest(checker)(x, y)
+    })
+    expect(alpha(0, 20)).toBe(0)
+    expect(alpha(20, 0)).toBe(0) // el marco
+    expect(alpha(20, 39)).toBe(0)
+    expect(alpha(2, 2)).toBe(0) // cuadro blanco
+    expect(alpha(8, 2)).toBe(0) // cuadro gris
+    expect(alpha(8, 20)).toBe(255)
+    expect(alpha(20, 20)).toBe(255)
+  })
+
+  it('quita el halo de mezcla entre el escudo y el fondo', () => {
+    const MIX: Pixel = [150, 180, 235, 255]
+    const alpha = clean((x, y) => {
+      const d = Math.hypot(x - 20, y - 20)
+      if (d < 15) return BLUE
+      if (d < 16) return MIX
+      return WHITE
+    })
+    expect(alpha(20, 4)).toBe(0) // fondo
+    expect(alpha(20, 5)).toBe(0) // halo de mezcla
+    expect(alpha(20, 6)).toBe(128) // primera fila del escudo, a media opacidad
+    expect(alpha(20, 7)).toBe(255)
   })
 
   it('no toca una imagen que ya trae transparencia', () => {
-    const { context, alpha } = fakeCanvas(9, 9, (x, y) => (x === 0 && y === 0 ? [255, 255, 255, 0] : crest(x, y)))
-    clearSolidBackground(context, 0, 0, 9, 9)
-    expect(alpha(8, 8)).toBe(255)
+    const alpha = clean(crest(() => CLEAR))
+    expect(alpha(8, 20)).toBe(255)
+    expect(alpha(20, 20)).toBe(255)
   })
 
-  it('no toca una imagen sin fondo liso (esquinas de colores distintos)', () => {
-    const { context, alpha } = fakeCanvas(9, 9, (x, y) => (x === 8 && y === 8 ? BLUE : crest(x, y)))
-    clearSolidBackground(context, 0, 0, 9, 9)
-    expect(alpha(0, 0)).toBe(255)
+  it('no toca una imagen sin un fondo claro (borde de muchos colores)', () => {
+    const alpha = clean((x, y) => [(x * 37) % 256, (y * 53) % 256, ((x + y) * 71) % 256, 255])
+    expect(alpha(1, 1)).toBe(255)
+    expect(alpha(20, 5)).toBe(255)
   })
 })
