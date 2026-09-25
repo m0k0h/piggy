@@ -59,8 +59,8 @@ export function matchDetails(state: AppState, match: Match): string {
   const call = callTime(match.date)
   if (call) lines.push(`⏰ Convocadas a las ${call}`)
   lines.push(`📍 ${match.venue ? `${match.venue} · ` : ''}${match.home ? 'En casa' : 'Fuera'}`)
-  // En casa, el mapa de nuestro pabellón, para quien venga por primera vez.
-  const map = match.home ? state.team.venueUrl : ''
+  // Fuera, el mapa del pabellón del rival; en casa ya se sabe llegar.
+  const map = match.home ? '' : match.mapsUrl
   if (map) lines.push(map)
 
   if (match.leagueUrl) {

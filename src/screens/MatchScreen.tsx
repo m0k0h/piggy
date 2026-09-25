@@ -97,7 +97,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
   const [toast, setToast] = useState('')
   const attendees = rosterOf(state, match.id)
   const call = callTime(match.date)
-  const venueUrl = match.home ? state.team.venueUrl : ''
+  const mapsUrl = match.home ? '' : match.mapsUrl
 
   const onShare = async () => {
     const result = await share(matchDetails(state, match))
@@ -142,7 +142,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
             <CalendarIcon size={14} />
             {matchDateLong(match.date) + (match.venue ? ` · ${match.venue}` : '')}
           </span>
-          {call || venueUrl ? (
+          {call || mapsUrl ? (
             <div className="match-extras">
               {call ? (
                 <span className="call-badge">
@@ -151,8 +151,8 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
                   <strong>{call}</strong>
                 </span>
               ) : null}
-              {venueUrl ? (
-                <a className="link" href={venueUrl} target="_blank" rel="noopener noreferrer">
+              {mapsUrl ? (
+                <a className="link" href={mapsUrl} target="_blank" rel="noopener noreferrer">
                   <MapPinIcon size={15} />
                   Cómo llegar al pabellón
                 </a>

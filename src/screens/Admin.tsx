@@ -213,19 +213,6 @@ function TeamSection() {
     setFine(String(state.team.fineAmount))
   }
 
-  const [venueUrl, setVenueUrl] = useState(state.team.venueUrl ?? '')
-  const [lastVenueUrl, setLastVenueUrl] = useState(state.team.venueUrl ?? '')
-  if (lastVenueUrl !== (state.team.venueUrl ?? '')) {
-    setLastVenueUrl(state.team.venueUrl ?? '')
-    setVenueUrl(state.team.venueUrl ?? '')
-  }
-
-  const commitVenueUrl = () => {
-    const value = normalizeUrl(venueUrl)
-    setVenueUrl(value)
-    if (value !== (state.team.venueUrl ?? '')) updateTeam({ venueUrl: value })
-  }
-
   const commitFine = () => {
     const value = Number(fine.replace(',', '.'))
     if (Number.isFinite(value) && value >= 0) updateTeam({ fineAmount: value })
@@ -291,20 +278,6 @@ function TeamSection() {
               onChange={(event) => setFine(event.target.value)}
               onBlur={commitFine}
               inputMode="decimal"
-            />
-          </Field>
-          <Field
-            label="Nuestro pabellón (opcional)"
-            hint="Enlace de Google Maps. Sale en los partidos en casa y al compartirlos."
-          >
-            <input
-              value={venueUrl}
-              onChange={(event) => setVenueUrl(event.target.value)}
-              onBlur={commitVenueUrl}
-              placeholder="https://maps.app.goo.gl/..."
-              inputMode="url"
-              autoComplete="off"
-              spellCheck={false}
             />
           </Field>
         </div>
@@ -525,6 +498,7 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
   const [venue, setVenue] = useState(match?.venue ?? '')
   const [home, setHome] = useState(match?.home ?? true)
   const [leagueUrl, setLeagueUrl] = useState(match?.leagueUrl ?? '')
+  const [mapsUrl, setMapsUrl] = useState(match?.mapsUrl ?? '')
   const [logo, setLogo] = useState(match?.opponentLogo ?? '')
   const [logoError, setLogoError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -564,6 +538,8 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
       home,
       leagueUrl: normalizeUrl(leagueUrl),
       opponentLogo: normalizeImageUrl(logo),
+      // En casa no hace falta mapa: se guarda vacío aunque se hubiera escrito antes.
+      mapsUrl: home ? '' : normalizeUrl(mapsUrl),
     }
     if (match) updateMatch(match.id, fields)
     else addMatch(fields)
@@ -610,6 +586,21 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
           <span>Jugamos en casa</span>
           <input type="checkbox" checked={home} onChange={(event) => setHome(event.target.checked)} />
         </label>
+        {home ? null : (
+          <Field
+            label="Pabellón en Google Maps (opcional)"
+            hint="Sale como «Cómo llegar al pabellón» en el partido y al compartirlo."
+          >
+            <input
+              value={mapsUrl}
+              onChange={(event) => setMapsUrl(event.target.value)}
+              placeholder="https://maps.app.goo.gl/..."
+              inputMode="url"
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </Field>
+        )}
 
         <Field
           label="Ficha en la liga (opcional)"

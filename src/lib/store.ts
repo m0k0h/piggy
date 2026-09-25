@@ -160,7 +160,7 @@ function born<T extends Syncable>(fields: Omit<T, keyof Syncable>, id: string = 
 
 // --- Equipo ----------------------------------------------------------------
 
-export function updateTeam(patch: Partial<Pick<Team, 'name' | 'fineAmount' | 'logo' | 'venueUrl'>>) {
+export function updateTeam(patch: Partial<Pick<Team, 'name' | 'fineAmount' | 'logo'>>) {
   write('team', [{ ...state.team, ...patch, updatedAt: now() }])
 }
 
@@ -194,6 +194,7 @@ export interface MatchInput {
   externalId?: string | null
   leagueUrl?: string
   opponentLogo?: string
+  mapsUrl?: string
 }
 
 export function addMatch(input: MatchInput): Match {
@@ -205,6 +206,7 @@ export function addMatch(input: MatchInput): Match {
     externalId: input.externalId ?? null,
     leagueUrl: (input.leagueUrl ?? '').trim(),
     opponentLogo: (input.opponentLogo ?? '').trim(),
+    mapsUrl: (input.mapsUrl ?? '').trim(),
   })
   write('matches', [match])
   return match
@@ -212,7 +214,7 @@ export function addMatch(input: MatchInput): Match {
 
 export function updateMatch(
   id: string,
-  patch: Partial<Pick<Match, 'date' | 'opponent' | 'venue' | 'home' | 'leagueUrl' | 'opponentLogo'>>,
+  patch: Partial<Pick<Match, 'date' | 'opponent' | 'venue' | 'home' | 'leagueUrl' | 'opponentLogo' | 'mapsUrl'>>,
 ) {
   const current = state.matches[id]
   if (!current) return
