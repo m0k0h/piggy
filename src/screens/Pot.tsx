@@ -51,13 +51,10 @@ export function Pot() {
   // hay ninguna publicada, el bloque no sale.
   const notice = state.team.notice
   const noticeSection: ReactNode = notice ? (
-    <>
-      <SectionTitle aside={<span>{matchDate(notice.publishedAt)}</span>}>Para comentar</SectionTitle>
-      <div className="card notice">
-        {notice.image ? <img className="notice-image" src={notice.image} alt="" /> : null}
-        {notice.text ? <p className="notice-text">{notice.text}</p> : null}
-      </div>
-    </>
+    <div className="card notice">
+      {notice.image ? <img className="notice-image" src={notice.image} alt="" /> : null}
+      {notice.text ? <p className="notice-text">{notice.text}</p> : null}
+    </div>
   ) : null
 
   const lastPaymentsSection: ReactNode =

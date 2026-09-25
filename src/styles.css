@@ -225,16 +225,17 @@ main {
 /* --------------------------------------------------------------- notice */
 /* La noticia de la portada: foto a todo el ancho de la tarjeta y el texto
    debajo, respetando los saltos de línea que escribió la administradora. */
-.notice { display: flex; flex-direction: column; gap: 12px; }
+.notice { display: flex; flex-direction: column; gap: 8px; padding: 5px; }
 .notice-image {
   display: block;
   width: 100%;
   max-height: 420px;
   object-fit: contain;
-  border-radius: var(--radius-sm);
+  /* Radio de la tarjeta menos su padding, para que las curvas vayan paralelas. */
+  border-radius: calc(var(--radius) - 5px);
   background: var(--surface-2);
 }
-.notice-text { margin: 0; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.5; }
+.notice-text { margin: 0; padding: 6px 11px 8px; white-space: pre-line; overflow-wrap: anywhere; line-height: 1.5; }
 
 /* ----------------------------------------------------------------- hero */
 .pot {
