@@ -106,6 +106,21 @@ export interface Team extends Syncable {
    * que nadie lo vuelva a subir. Lo aplica `applyRemote` en `src/lib/store.ts`.
    */
   resetAt?: string
+  /**
+   * Lo que la administradora quiere comentar con el equipo: sale en la
+   * portada. Solo hay una a la vez; publicar otra la sustituye y `null` la
+   * quita. Vive en la fila del equipo para heredar sus permisos (solo la
+   * admin la escribe) sin tocar la base de datos.
+   */
+  notice?: Notice | null
+}
+
+/** Una noticia para la portada: texto, imagen o las dos cosas. */
+export interface Notice {
+  text: string
+  /** Foto ya reducida, como data URL. Vacía si no hay. */
+  image: string
+  publishedAt: string
 }
 
 export interface AppState {
