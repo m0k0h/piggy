@@ -43,6 +43,9 @@ export interface Player extends Syncable {
   position?: Position
 }
 
+/** En qué competición se juega el partido. */
+export type League = 'femenina' | 'mixta'
+
 /** El partido tal como lo deja preparado la administradora. Solo ella lo edita. */
 export interface Match extends Syncable {
   /** ISO 8601. Guardamos fecha y hora del partido. */
@@ -60,6 +63,8 @@ export interface Match extends Syncable {
   opponentLogo?: string
   /** Pabellón en Google Maps. Solo cuenta fuera de casa: al nuestro ya se sabe llegar. */
   mapsUrl?: string
+  /** Liga femenina o mixta. Los partidos de antes de que existiera no la traen. */
+  league?: League
 }
 
 /**

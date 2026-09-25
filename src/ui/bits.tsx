@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
-import { initials } from '../lib/format'
-import type { Player } from '../types'
+import { initials, leagueName } from '../lib/format'
+import type { League, Player } from '../types'
 import { ChevronIcon, ExternalLinkIcon, PositionIcon } from './icons'
 
 /**
@@ -154,6 +154,15 @@ export function Crest({
       {team.logo ? <img src={team.logo} alt="" /> : initials(team.name)}
     </span>
   )
+}
+
+/**
+ * La liga del partido como etiqueta de color: rosa la femenina, ámbar la
+ * mixta, para distinguirlas de un vistazo en la lista. Nada si no la tiene.
+ */
+export function LeagueTag({ league, long = false }: { league?: League; long?: boolean }) {
+  if (!league) return null
+  return <span className={`league-tag ${league}`}>{leagueName(league, long)}</span>
 }
 
 /**

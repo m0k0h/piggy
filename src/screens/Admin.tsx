@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
   defaultMatchDate,
   euros,
+  leagueName,
   matchDate,
   normalizeImageUrl,
   percent,
@@ -39,7 +40,7 @@ import {
 } from '../lib/stats'
 import { fetchViews, signIn, signOut, useRole, useSync } from '../lib/sync'
 import { summarizeViews, type ViewRecord } from '../lib/views'
-import { POSITION_LABELS, type Match, type Player, type Position } from '../types'
+import { POSITION_LABELS, type AppState, type League, type Match, type Player, type Position } from '../types'
 import { Sheet } from '../ui/Sheet'
 import {
   Avatar,
@@ -47,6 +48,7 @@ import {
   Empty,
   Field,
   Stat,
+  LeagueTag,
   OpponentCrest,
   PlayerName,
   ScreenHeader,
@@ -466,6 +468,7 @@ function MatchesSection() {
     <button key={match.id} className="row" onClick={() => setEditing(match)}>
       <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} />
       <span className="grow">
+        <LeagueTag league={match.league} />
         <span className="title">
           {match.home ? '' : '@ '}
           {match.opponent || 'Rival por definir'}
@@ -528,6 +531,18 @@ function MatchesSection() {
   )
 }
 
+const LEAGUES: League[] = ['femenina', 'mixta']
+
+/** La liga del último partido creado: lo normal es encadenar varios de la misma. */
+function lastLeague(state: AppState): League {
+  let latest: Match | null = null
+  for (const match of Object.values(state.matches)) {
+    if (match.deletedAt || !match.league) continue
+    if (!latest || match.createdAt > latest.createdAt) latest = match
+  }
+  return latest?.league ?? 'femenina'
+}
+
 function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => void }) {
   const state = useAppState()
   const [date, setDate] = useState(match ? toInputValue(match.date) : defaultMatchDate())
@@ -535,6 +550,9 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
   const [home, setHome] = useState(match?.home ?? true)
   const [leagueUrl, setLeagueUrl] = useState(match?.leagueUrl ?? '')
   const [mapsUrl, setMapsUrl] = useState(match?.mapsUrl ?? '')
+  const [league, setLeague] = useState<League | undefined>(
+    match ? match.league : lastLeague(state),
+  )
   const [logo, setLogo] = useState(match?.opponentLogo ?? '')
   const [logoError, setLogoError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -580,6 +598,7 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
       opponentLogo: normalizeImageUrl(logo),
       // En casa no hace falta mapa: se guarda vacío aunque se hubiera escrito antes.
       mapsUrl: home ? '' : normalizeUrl(mapsUrl),
+      league,
     }
     if (match) updateMatch(match.id, fields)
     else addMatch(fields)
@@ -607,6 +626,22 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
             autoComplete="off"
           />
         </Field>
+        <div className="field">
+          <span>Liga</span>
+          <div className="segmented" role="group" aria-label="Liga">
+            {LEAGUES.map((option) => (
+              <button
+                key={option}
+                type="button"
+                className={option}
+                onClick={() => setLeague(option)}
+                aria-pressed={league === option}
+              >
+                {leagueName(option)}
+              </button>
+            ))}
+          </div>
+        </div>
         <Field label="Día y hora">
           <input
             type="datetime-local"

@@ -3,7 +3,7 @@ import { navigate } from '../lib/router'
 import { useAppState } from '../lib/store'
 import { fineAmount, finishedMatches, matchStatus, servesOfMatch, tally, upcomingMatches } from '../lib/stats'
 import type { AppState, Match } from '../types'
-import { Empty, OpponentCrest, SectionTitle } from '../ui/bits'
+import { Empty, LeagueTag, OpponentCrest, SectionTitle } from '../ui/bits'
 import { CalendarIcon, ChevronIcon } from '../ui/icons'
 
 /** El calendario tal como lo ve el equipo: se consulta y se entra a anotar. */
@@ -56,6 +56,7 @@ function MatchRow({ match, state }: { match: Match; state: AppState }) {
     <button className="row" onClick={() => navigate(`partido/${match.id}`)}>
       <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} />
       <span className="grow">
+        <LeagueTag league={match.league} />
         <span className="title">
           {match.home ? '' : '@ '}
           {match.opponent || 'Rival por definir'}
