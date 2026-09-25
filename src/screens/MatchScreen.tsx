@@ -23,6 +23,7 @@ import {
   Empty,
   LeagueLink,
   OpponentCrest,
+  PlayerName,
   RatioBar,
   ScreenHeader,
   SectionTitle,
@@ -146,7 +147,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
               {attendees.map((player) => (
                 <span key={player.id} className="attendee">
                   <Avatar name={player.name} number={player.number} />
-                  {player.name}
+                  <PlayerName player={player} />
                 </span>
               ))}
             </div>
@@ -239,7 +240,7 @@ function CallUp({
                     >
                       <Avatar name={player.name} number={player.number} on={on} />
                       <span className="grow">
-                        <span className="title">{player.name}</span>
+                        <span className="title"><PlayerName player={player} /></span>
                         <span className="meta">{serveSummary(own.errors, own.attempts, own.ratio)}</span>
                       </span>
                       <span className="trail" aria-hidden="true">
@@ -359,7 +360,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
                 <button key={player.id} className="player-tile" onClick={() => setPicking(player)}>
                   <span className="head">
                     <Avatar name={player.name} number={player.number} />
-                    <span className="name">{player.name}</span>
+                    <span className="name"><PlayerName player={player} /></span>
                   </span>
                   {own.attempts > 0 ? (
                     <span className="line">
@@ -403,7 +404,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
                             )}
                           </span>
                           <Avatar name={player?.name ?? 'Jugadora'} number={player?.number} />
-                          <span className="grow">{player?.name ?? 'Jugadora'}</span>
+                          <span className="grow"><PlayerName player={player} /></span>
                           <button
                             className="undo"
                             onClick={() => removeServe(serve.id)}
@@ -487,7 +488,7 @@ function ResultSheet({
       <div className="sheet-player">
         <Avatar name={player.name} number={player.number} big />
         <div className="grow">
-          <div className="title">{player.name}</div>
+          <div className="title"><PlayerName player={player} /></div>
           <div className="meta">
             {own.attempts > 0 ? `${percent(own.ratio)} de acierto` : 'Todavía no ha sacado'}
           </div>
@@ -582,7 +583,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
                   <div key={player.id} className="row">
                     <Avatar name={player.name} number={player.number} />
                     <span className="grow">
-                      <span className="title">{player.name}</span>
+                      <span className="title"><PlayerName player={player} /></span>
                       <span className="meta">
                         {plural(own.attempts, 'saque', 'saques')} · {plural(own.aces, 'ace', 'aces')} ·{' '}
                         {percent(own.ratio)} dentro

@@ -37,7 +37,16 @@ import {
 import { signIn, signOut, useRole, useSync } from '../lib/sync'
 import { POSITION_LABELS, type Match, type Player, type Position } from '../types'
 import { Sheet } from '../ui/Sheet'
-import { Avatar, Crest, Empty, Field, OpponentCrest, ScreenHeader, SectionTitle } from '../ui/bits'
+import {
+  Avatar,
+  Crest,
+  Empty,
+  Field,
+  OpponentCrest,
+  PlayerName,
+  ScreenHeader,
+  SectionTitle,
+} from '../ui/bits'
 import {
   BallIcon,
   CalendarIcon,
@@ -46,7 +55,6 @@ import {
   PartyIcon,
   PeopleIcon,
   PlusIcon,
-  PositionIcon,
   ShieldIcon,
 } from '../ui/icons'
 
@@ -315,12 +323,7 @@ function PlayersSection() {
                 <button key={player.id} className="row" onClick={() => setEditing(player)}>
                   <Avatar name={player.name} number={player.number} />
                   <span className="grow">
-                    <span className="title">
-                      {player.position ? (
-                        <PositionIcon position={player.position} className="position-mark" />
-                      ) : null}
-                      {player.name}
-                    </span>
+                    <span className="title"><PlayerName player={player} /></span>
                     <span className="meta">
                       {serveSummary(tally.errors, tally.attempts, tally.ratio)}
                     </span>
@@ -715,7 +718,7 @@ function PaymentsSection() {
                 <button key={row.player.id} className="row" onClick={() => setPaying(row)}>
                   <Avatar name={row.player.name} number={row.player.number} />
                   <span className="grow">
-                    <span className="title">{row.player.name}</span>
+                    <span className="title"><PlayerName player={row.player} /></span>
                     <span className="meta">
                       {serveSummary(row.tally.errors, row.tally.attempts, row.tally.ratio)}
                       {row.paid > 0 ? ` · ${euros(row.paid)} pagados` : ''}

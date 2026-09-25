@@ -11,7 +11,7 @@ import {
   tally,
   tallyByPlayer,
 } from '../lib/stats'
-import { Avatar, Empty, RatioBar, SectionTitle, Stat } from '../ui/bits'
+import { Avatar, Empty, PlayerName, RatioBar, SectionTitle, Stat } from '../ui/bits'
 import { ChartIcon } from '../ui/icons'
 
 type Order = 'ratio' | 'errors' | 'attempts'
@@ -105,7 +105,7 @@ export function Stats() {
             <div key={player.id} className="row">
               <Avatar name={player.name} number={player.number} />
               <span className="grow">
-                <span className="title">{player.name}</span>
+                <span className="title"><PlayerName player={player} /></span>
                 <span className="meta">
                   {plural(own.attempts, 'saque', 'saques')} · {plural(own.errors, 'fallo', 'fallos')} ·{' '}
                   {plural(own.aces, 'ace', 'aces')}
