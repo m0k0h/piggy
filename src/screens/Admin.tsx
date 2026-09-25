@@ -519,21 +519,24 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
   const [venue, setVenue] = useState(match?.venue ?? '')
   const [home, setHome] = useState(match?.home ?? true)
   const [leagueUrl, setLeagueUrl] = useState(match?.leagueUrl ?? '')
+  const [mapsUrl, setMapsUrl] = useState(match?.mapsUrl ?? '')
   const [logo, setLogo] = useState(match?.opponentLogo ?? '')
   const [logoError, setLogoError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const logoFileRef = useRef<HTMLInputElement>(null)
 
   /**
-   * Al terminar de escribir el rival, recuperamos su enlace y su escudo de la
-   * última vez que lo jugamos. Solo rellena lo que esté vacío.
+   * Al terminar de escribir el rival, recuperamos su enlace, su escudo y el
+   * mapa de su pabellón de la última vez que lo jugamos. Solo rellena lo que
+   * esté vacío.
    */
   const recallOpponent = () => {
-    if (leagueUrl && logo) return
+    if (leagueUrl && logo && mapsUrl) return
     const known = knownOpponent(state, opponent, match?.id ?? '')
     if (!known) return
     if (!leagueUrl) setLeagueUrl(known.leagueUrl)
     if (!logo) setLogo(known.logo)
+    if (!mapsUrl) setMapsUrl(known.mapsUrl)
   }
 
   const uploadLogo = async (file: File) => {
@@ -558,6 +561,8 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
       home,
       leagueUrl: normalizeUrl(leagueUrl),
       opponentLogo: normalizeImageUrl(logo),
+      // En casa no hace falta mapa: se guarda vacío aunque se hubiera escrito antes.
+      mapsUrl: home ? '' : normalizeUrl(mapsUrl),
     }
     if (match) updateMatch(match.id, fields)
     else addMatch(fields)
@@ -570,7 +575,7 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
         <div className="inline">
           <OpponentCrest opponent={opponent} logo={normalizeImageUrl(logo)} big />
           <div className="grow small muted">
-            El escudo y el enlace se guardan con el partido, y se reaprovechan la
+            El escudo, el enlace y el mapa se guardan con el partido, y se reaprovechan la
             próxima vez que juguéis contra este mismo rival.
           </div>
         </div>
@@ -604,6 +609,21 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
           <span>Jugamos en casa</span>
           <input type="checkbox" checked={home} onChange={(event) => setHome(event.target.checked)} />
         </label>
+        {home ? null : (
+          <Field
+            label="Pabellón en Google Maps (opcional)"
+            hint="Sale como «Cómo llegar al pabellón» en el partido y al compartirlo."
+          >
+            <input
+              value={mapsUrl}
+              onChange={(event) => setMapsUrl(event.target.value)}
+              placeholder="https://maps.app.goo.gl/..."
+              inputMode="url"
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </Field>
+        )}
 
         <Field
           label="Ficha en la liga (opcional)"

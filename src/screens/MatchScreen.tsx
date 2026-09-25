@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { euros, matchDateLong, percent, plural, relativeDay, serveSummary } from '../lib/format'
+import { callTime, euros, matchDateLong, percent, plural, relativeDay, serveSummary } from '../lib/format'
 import { goBack, navigate } from '../lib/router'
-import { matchSummary, share } from '../lib/summary'
+import { matchDetails, matchSummary, share } from '../lib/summary'
 import { addServe, removeServe, saveLineup, useAppState } from '../lib/store'
 import {
   allPlayers,
@@ -34,12 +34,15 @@ import {
   CheckIcon,
   ClipboardIcon,
   HomeIcon,
+  MapPinIcon,
   MinusIcon,
   PeopleIcon,
   PlusIcon,
+  ShareIcon,
   ShrugIcon,
   StarIcon,
   UndoIcon,
+  WhistleIcon,
   XIcon,
 } from '../ui/icons'
 
@@ -91,7 +94,17 @@ function groupBySet(serves: Serve[]): { set: number; serves: Serve[] }[] {
  */
 function MatchPreview({ match, state }: { match: Match; state: AppState }) {
   const [callUp, setCallUp] = useState(false)
+  const [toast, setToast] = useState('')
   const attendees = rosterOf(state, match.id)
+  const call = callTime(match.date)
+  const mapsUrl = match.home ? '' : match.mapsUrl
+
+  const onShare = async () => {
+    const result = await share(matchDetails(state, match))
+    if (result === 'copied') setToast('Datos del partido copiados')
+    else if (result === 'failed') setToast('No se ha podido compartir')
+    setTimeout(() => setToast(''), 2500)
+  }
 
   if (callUp) {
     return (
@@ -113,7 +126,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
     <>
       <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={goBack} />
       <main>
-        <div className="card stack">
+        <div className="card stack match-head">
           <div className="inline wide">
             <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} big />
             <div className="grow">
@@ -129,7 +142,28 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
             <CalendarIcon size={14} />
             {matchDateLong(match.date) + (match.venue ? ` · ${match.venue}` : '')}
           </span>
+          {call || mapsUrl ? (
+            <div className="match-extras">
+              {call ? (
+                <span className="call-badge">
+                  <WhistleIcon size={15} />
+                  Convocadas
+                  <strong>{call}</strong>
+                </span>
+              ) : null}
+              {mapsUrl ? (
+                <a className="link" href={mapsUrl} target="_blank" rel="noopener noreferrer">
+                  <MapPinIcon size={15} />
+                  Cómo llegar al pabellón
+                </a>
+              ) : null}
+            </div>
+          ) : null}
+          <button className="icon-btn match-share" onClick={onShare} aria-label="Compartir datos del partido">
+            <ShareIcon size={17} />
+          </button>
         </div>
+        {toast ? <div className="banner good">{toast}</div> : null}
 
         <SectionTitle aside={attendees.length > 0 ? <span>{attendees.length}</span> : null}>
           Asistentes

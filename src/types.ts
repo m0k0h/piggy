@@ -58,6 +58,8 @@ export interface Match extends Syncable {
   leagueUrl?: string
   /** Escudo del rival: una dirección de imagen, o una subida desde el móvil. */
   opponentLogo?: string
+  /** Pabellón en Google Maps. Solo cuenta fuera de casa: al nuestro ya se sabe llegar. */
+  mapsUrl?: string
 }
 
 /**

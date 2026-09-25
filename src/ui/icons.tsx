@@ -262,6 +262,28 @@ export function HomeIcon({ size = 24, ...props }: IconProps) {
   )
 }
 
+/** Silbato: la hora a la que se convoca antes del partido. */
+export function WhistleIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <circle cx="9" cy="14" r="5.5" />
+      <path d="M12.5 9.8 20.5 7v4.5l-5.2.9" />
+      <path d="M4 6.5 5.5 8M8 4v2M2.5 10.5h2" />
+      <circle cx="9" cy="14" r="1.2" />
+    </svg>
+  )
+}
+
+/** Chincheta del mapa: el enlace a Google Maps del pabellón. */
+export function MapPinIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z" />
+      <circle cx="12" cy="10" r="2.4" />
+    </svg>
+  )
+}
+
 /** Compartir: la flecha que sale de la bandeja, para mandar la hucha por WhatsApp. */
 export function ShareIcon({ size = 24, ...props }: IconProps) {
   return (

@@ -76,7 +76,32 @@ describe('knownOpponent', () => {
     expect(knownOpponent(s, 'CV Barcelona')).toEqual({
       leagueUrl: 'https://liga.cat/nuevo',
       logo: 'https://liga.cat/nuevo.png',
+      mapsUrl: '',
     })
+  })
+
+  it('recupera el mapa de su pabellón del último partido en su casa, aunque sea otro', () => {
+    const s = state([
+      match('alla', '2025-10-01T18:00', 'CV Barcelona', { home: false, mapsUrl: 'https://maps.app.goo.gl/bcn' }),
+      match('aqui', '2025-12-01T18:00', 'CV Barcelona', { leagueUrl: 'https://liga.cat/bcn' }),
+    ])
+    expect(knownOpponent(s, 'CV Barcelona')).toEqual({
+      leagueUrl: 'https://liga.cat/bcn',
+      logo: '',
+      mapsUrl: 'https://maps.app.goo.gl/bcn',
+    })
+  })
+
+  it('con solo el mapa guardado, también lo recupera', () => {
+    const s = state([
+      match('alla', '2025-10-01T18:00', 'CV Barcelona', { home: false, mapsUrl: 'https://maps.app.goo.gl/bcn' }),
+    ])
+    expect(knownOpponent(s, 'CV Barcelona')?.mapsUrl).toBe('https://maps.app.goo.gl/bcn')
+  })
+
+  it('no toma el mapa de un partido en casa', () => {
+    const s = state([match('aqui', '2025-10-01T18:00', 'CV Barcelona', { mapsUrl: 'https://maps.app.goo.gl/x' })])
+    expect(knownOpponent(s, 'CV Barcelona')).toBeNull()
   })
 
   it('no le importan acentos ni mayúsculas', () => {
