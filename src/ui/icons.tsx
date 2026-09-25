@@ -294,3 +294,14 @@ export function ShareIcon({ size = 24, ...props }: IconProps) {
     </svg>
   )
 }
+
+/** Megáfono: lo que la administradora quiere comentar con el equipo. */
+export function MegaphoneIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M4 10.2a1.7 1.7 0 0 1 1.7-1.7H9l8-4v15l-8-4H5.7A1.7 1.7 0 0 1 4 13.8Z" />
+      <path d="M7.5 15.5 9 20" />
+      <path d="M20 9.5a3 3 0 0 1 0 5" />
+    </svg>
+  )
+}

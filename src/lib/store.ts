@@ -6,8 +6,10 @@ import {
   type Lineup,
   type Match,
   type MatchStatus,
+  type Notice,
   type Payment,
   type Player,
+  type Position,
   type Serve,
   type ServeResult,
   type Syncable,
@@ -164,15 +166,39 @@ export function updateTeam(patch: Partial<Pick<Team, 'name' | 'fineAmount' | 'lo
   write('team', [{ ...state.team, ...patch, updatedAt: now() }])
 }
 
+/** Publica en la portada lo que hay que comentar, sustituyendo lo anterior. */
+export function publishNotice(text: string, image: string): Notice | null {
+  const clean = text.trim()
+  if (!clean && !image) return null
+  const notice: Notice = { text: clean, image, publishedAt: now() }
+  write('team', [{ ...state.team, notice, updatedAt: now() }])
+  return notice
+}
+
+export function removeNotice() {
+  if (!state.team.notice) return
+  write('team', [{ ...state.team, notice: null, updatedAt: now() }])
+}
+
 // --- Jugadoras -------------------------------------------------------------
 
-export function addPlayer(name: string, number = '', externalId: string | null = null): Player {
-  const player = born<Player>({ name: name.trim(), number: number.trim(), externalId })
+export function addPlayer(
+  name: string,
+  number = '',
+  externalId: string | null = null,
+  position?: Position,
+): Player {
+  const player = born<Player>({
+    name: name.trim(),
+    number: number.trim(),
+    externalId,
+    ...(position ? { position } : {}),
+  })
   write('players', [player])
   return player
 }
 
-export function updatePlayer(id: string, patch: Partial<Pick<Player, 'name' | 'number'>>) {
+export function updatePlayer(id: string, patch: Partial<Pick<Player, 'name' | 'number' | 'position'>>) {
   const current = state.players[id]
   if (!current) return
   write('players', [{ ...current, ...patch, updatedAt: now() }])
