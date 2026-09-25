@@ -402,9 +402,9 @@ main {
 .row .grow { flex: 1; min-width: 0; }
 .row .title { font-size: 14.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .home-mark { vertical-align: -2px; margin-right: 3px; color: var(--pink-text); }
-/* En las filas, la liga va en su propia línea bajo la fecha: ni recorta el
-   nombre del rival ni parte la fecha en dos. */
-.row .grow > .league-tag { align-self: flex-start; margin-top: 5px; }
+/* En las filas, la liga va en su propia línea encima del rival: ni recorta
+   su nombre ni parte la fecha en dos. */
+.row .grow > .league-tag { align-self: flex-start; margin-bottom: 4px; }
 
 /* ---------------------------------------------------------------- liga */
 /* Etiqueta de liga: rosa la femenina (el color del equipo), ámbar la mixta. */

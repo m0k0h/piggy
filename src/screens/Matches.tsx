@@ -56,6 +56,7 @@ function MatchRow({ match, state }: { match: Match; state: AppState }) {
     <button className="row" onClick={() => navigate(`partido/${match.id}`)}>
       <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} />
       <span className="grow">
+        <LeagueTag league={match.league} />
         <span className="title">
           {match.home ? '' : '@ '}
           {match.opponent || 'Rival por definir'}
@@ -65,7 +66,6 @@ function MatchRow({ match, state }: { match: Match; state: AppState }) {
           {status === 'finished' ? '' : ` · ${relativeDay(match.date)}`}
           {match.venue ? ` · ${match.venue}` : ''}
         </span>
-        <LeagueTag league={match.league} />
       </span>
       <span className="trail">
         {status === 'live' ? (

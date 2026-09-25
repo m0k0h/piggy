@@ -468,6 +468,7 @@ function MatchesSection() {
     <button key={match.id} className="row" onClick={() => setEditing(match)}>
       <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} />
       <span className="grow">
+        <LeagueTag league={match.league} />
         <span className="title">
           {match.home ? '' : '@ '}
           {match.opponent || 'Rival por definir'}
@@ -477,7 +478,6 @@ function MatchesSection() {
           {matchStatus(state, match.id) === 'finished' ? '' : ` · ${relativeDay(match.date)}`}
           {match.venue ? ` · ${match.venue}` : ''}
         </span>
-        <LeagueTag league={match.league} />
       </span>
       <span className="trail">
         {matchStatus(state, match.id) === 'live' ? (
