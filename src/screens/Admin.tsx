@@ -532,7 +532,6 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
   const state = useAppState()
   const [date, setDate] = useState(match ? toInputValue(match.date) : defaultMatchDate())
   const [opponent, setOpponent] = useState(match?.opponent ?? '')
-  const [venue, setVenue] = useState(match?.venue ?? '')
   const [home, setHome] = useState(match?.home ?? true)
   const [leagueUrl, setLeagueUrl] = useState(match?.leagueUrl ?? '')
   const [mapsUrl, setMapsUrl] = useState(match?.mapsUrl ?? '')
@@ -573,7 +572,9 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
     const fields = {
       date,
       opponent: opponent.trim(),
-      venue: venue.trim(),
+      // Ya no se pide el pabellón como texto (el mapa lo sustituye); se conserva
+      // el que tuvieran los partidos antiguos.
+      venue: match?.venue ?? '',
       home,
       leagueUrl: normalizeUrl(leagueUrl),
       opponentLogo: normalizeImageUrl(logo),
@@ -611,14 +612,6 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
             type="datetime-local"
             value={date}
             onChange={(event) => setDate(event.target.value)}
-          />
-        </Field>
-        <Field label="Pabellón (opcional)">
-          <input
-            value={venue}
-            onChange={(event) => setVenue(event.target.value)}
-            placeholder="Municipal de..."
-            autoComplete="off"
           />
         </Field>
         <label className="switch">
