@@ -138,6 +138,9 @@ export function ScreenHeader({
   )
 }
 
+const crestClass = (big: boolean, hasLogo: boolean) =>
+  ['crest', big && 'crest-big', hasLogo && 'has-logo'].filter(Boolean).join(' ')
+
 /** Escudo del equipo, con las iniciales de reserva mientras no haya imagen. */
 export function Crest({
   team,
@@ -147,7 +150,7 @@ export function Crest({
   big?: boolean
 }) {
   return (
-    <span className={big ? 'crest crest-big' : 'crest'} aria-hidden="true">
+    <span className={crestClass(big, Boolean(team.logo))} aria-hidden="true">
       {team.logo ? <img src={team.logo} alt="" /> : initials(team.name)}
     </span>
   )
@@ -170,7 +173,7 @@ export function OpponentCrest({
   const usable = logo && failed !== logo
 
   return (
-    <span className={big ? 'crest crest-big' : 'crest'} aria-hidden="true">
+    <span className={crestClass(big, Boolean(usable))} aria-hidden="true">
       {usable ? (
         <img src={logo} alt="" loading="lazy" onError={() => setFailed(logo)} />
       ) : (

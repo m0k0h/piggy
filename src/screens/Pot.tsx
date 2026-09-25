@@ -47,6 +47,19 @@ export function Pot() {
       </>
     ) : null
 
+  // Lo que la administradora quiere comentar: solo la última noticia, y si no
+  // hay ninguna publicada, el bloque no sale.
+  const notice = state.team.notice
+  const noticeSection: ReactNode = notice ? (
+    <>
+      <SectionTitle aside={<span>{matchDate(notice.publishedAt)}</span>}>Para comentar</SectionTitle>
+      <div className="card notice">
+        {notice.image ? <img className="notice-image" src={notice.image} alt="" /> : null}
+        {notice.text ? <p className="notice-text">{notice.text}</p> : null}
+      </div>
+    </>
+  ) : null
+
   const lastPaymentsSection: ReactNode =
     lastPayments.length > 0 ? (
       <>
@@ -90,6 +103,8 @@ export function Pot() {
           ) : null}
         </div>
       </div>
+
+      {noticeSection}
 
       {next ? (
         <button className="card row" onClick={() => navigate(`partido/${next.id}`)}>

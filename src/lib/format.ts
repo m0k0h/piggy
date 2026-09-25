@@ -32,6 +32,17 @@ export function matchDateLong(value: string): string {
   return hasTime ? `${longFormatter.format(date)} a las ${timeFormatter.format(date)}` : longFormatter.format(date)
 }
 
+/** Minutos antes del partido a los que se cita a las jugadoras. */
+const CALL_MINUTES = 45
+
+/** Hora de la convocatoria ("17:45"), o null si el partido no tiene hora. */
+export function callTime(value: string): string | null {
+  const date = asDate(value)
+  if (!valid(date)) return null
+  if (date.getHours() === 0 && date.getMinutes() === 0) return null
+  return timeFormatter.format(new Date(date.getTime() - CALL_MINUTES * 60_000))
+}
+
 /** "hoy", "mañana" o los días que faltan; en pasado, cuánto hace. */
 export function relativeDay(value: string): string {
   const date = asDate(value)

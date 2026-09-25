@@ -28,7 +28,7 @@ Lo que hay que saber para aplicarlo sin releer todo el documento:
   redondeadas). `docs/ESTILO.md` solo da el SVG de 7 (pelota, barras,
   calendario, más, chevron, cerdita a color, cerdita de trazo); el resto
   (escudo, personas, monedas, check, aspa, estrella, fiesta,
-  encogimiento de hombros, portapapeles) están diseñados a mano siguiendo el
+  encogimiento de hombros, portapapeles, silbato, chincheta de mapa) están diseñados a mano siguiendo el
   mismo estilo porque la app usa más emojis de los que el documento cubre
   explícitamente. Si hace falta un icono que no está, créalo ahí con el
   mismo lenguaje en vez de meter un emoji o una librería nueva.

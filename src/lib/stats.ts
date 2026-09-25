@@ -62,6 +62,8 @@ export const playedMatches = (s: AppState): Match[] =>
 export interface OpponentInfo {
   leagueUrl: string
   logo: string
+  /** Su pabellón en Google Maps, de la última vez que fuimos a jugar allí. */
+  mapsUrl: string
 }
 
 const sameOpponent = (a: string, b: string) =>
@@ -69,18 +71,25 @@ const sameOpponent = (a: string, b: string) =>
   b.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 
 /**
- * Busca el enlace y el escudo que ya se pusieron a este rival en otro partido,
- * para no tener que pegarlos cada vez que le toca jugar.
+ * Busca el enlace, el escudo y el mapa de su pabellón que ya se pusieron a
+ * este rival en otro partido, para no tener que pegarlos cada vez que le toca
+ * jugar. Enlace y escudo salen juntos del mismo partido; el mapa, del último
+ * partido en su casa que lo tuviera, que puede ser otro.
  */
 export function knownOpponent(s: AppState, opponent: string, exceptId = ''): OpponentInfo | null {
   if (!opponent.trim()) return null
+  let info: Pick<OpponentInfo, 'leagueUrl' | 'logo'> | null = null
+  let mapsUrl = ''
   for (const match of allMatches(s)) {
     if (match.id === exceptId || !sameOpponent(match.opponent, opponent)) continue
-    if (match.leagueUrl || match.opponentLogo) {
-      return { leagueUrl: match.leagueUrl ?? '', logo: match.opponentLogo ?? '' }
+    if (!info && (match.leagueUrl || match.opponentLogo)) {
+      info = { leagueUrl: match.leagueUrl ?? '', logo: match.opponentLogo ?? '' }
     }
+    if (!mapsUrl && !match.home && match.mapsUrl) mapsUrl = match.mapsUrl
+    if (info && mapsUrl) break
   }
-  return null
+  if (!info && !mapsUrl) return null
+  return { leagueUrl: '', logo: '', ...info, mapsUrl }
 }
 
 export const servesOfMatch = (s: AppState, matchId: string): Serve[] =>

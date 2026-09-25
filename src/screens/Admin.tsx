@@ -11,13 +11,15 @@ import {
   toInputValue,
 } from '../lib/format'
 import { teamConfig } from '../lib/config'
-import { ImageTooBig, toLogo } from '../lib/image'
+import { ImageTooBig, toLogo, toPhoto } from '../lib/image'
 import { navigate } from '../lib/router'
 import {
   addMatch,
   addPayment,
   addPlayer,
+  publishNotice,
   removeMatch,
+  removeNotice,
   removePayment,
   removePlayer,
   updateMatch,
@@ -52,6 +54,7 @@ import {
   CalendarIcon,
   ChevronIcon,
   CoinsIcon,
+  MegaphoneIcon,
   PartyIcon,
   PeopleIcon,
   PlusIcon,
@@ -63,6 +66,7 @@ const SECTIONS = [
   { key: 'jugadoras', label: 'Jugadoras', icon: <PeopleIcon />, hint: 'Altas, dorsales y bajas' },
   { key: 'partidos', label: 'Partidos', icon: <CalendarIcon />, hint: 'Calendario de la temporada' },
   { key: 'cobros', label: 'Cobros', icon: <CoinsIcon />, hint: 'Registrar lo que paga cada una' },
+  { key: 'comentar', label: 'Para comentar', icon: <MegaphoneIcon />, hint: 'La noticia de la portada' },
 ]
 
 export function Admin({ section }: { section: string }) {
@@ -79,6 +83,8 @@ export function Admin({ section }: { section: string }) {
       return <MatchesSection />
     case 'cobros':
       return <PaymentsSection />
+    case 'comentar':
+      return <NoticeSection />
     default:
       return <AdminHome />
   }
@@ -522,21 +528,24 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
   const [venue, setVenue] = useState(match?.venue ?? '')
   const [home, setHome] = useState(match?.home ?? true)
   const [leagueUrl, setLeagueUrl] = useState(match?.leagueUrl ?? '')
+  const [mapsUrl, setMapsUrl] = useState(match?.mapsUrl ?? '')
   const [logo, setLogo] = useState(match?.opponentLogo ?? '')
   const [logoError, setLogoError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const logoFileRef = useRef<HTMLInputElement>(null)
 
   /**
-   * Al terminar de escribir el rival, recuperamos su enlace y su escudo de la
-   * última vez que lo jugamos. Solo rellena lo que esté vacío.
+   * Al terminar de escribir el rival, recuperamos su enlace, su escudo y el
+   * mapa de su pabellón de la última vez que lo jugamos. Solo rellena lo que
+   * esté vacío.
    */
   const recallOpponent = () => {
-    if (leagueUrl && logo) return
+    if (leagueUrl && logo && mapsUrl) return
     const known = knownOpponent(state, opponent, match?.id ?? '')
     if (!known) return
     if (!leagueUrl) setLeagueUrl(known.leagueUrl)
     if (!logo) setLogo(known.logo)
+    if (!mapsUrl) setMapsUrl(known.mapsUrl)
   }
 
   const uploadLogo = async (file: File) => {
@@ -561,6 +570,8 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
       home,
       leagueUrl: normalizeUrl(leagueUrl),
       opponentLogo: normalizeImageUrl(logo),
+      // En casa no hace falta mapa: se guarda vacío aunque se hubiera escrito antes.
+      mapsUrl: home ? '' : normalizeUrl(mapsUrl),
     }
     if (match) updateMatch(match.id, fields)
     else addMatch(fields)
@@ -573,7 +584,7 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
         <div className="inline">
           <OpponentCrest opponent={opponent} logo={normalizeImageUrl(logo)} big />
           <div className="grow small muted">
-            El escudo y el enlace se guardan con el partido, y se reaprovechan la
+            El escudo, el enlace y el mapa se guardan con el partido, y se reaprovechan la
             próxima vez que juguéis contra este mismo rival.
           </div>
         </div>
@@ -607,6 +618,21 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
           <span>Jugamos en casa</span>
           <input type="checkbox" checked={home} onChange={(event) => setHome(event.target.checked)} />
         </label>
+        {home ? null : (
+          <Field
+            label="Pabellón en Google Maps (opcional)"
+            hint="Sale como «Cómo llegar al pabellón» en el partido y al compartirlo."
+          >
+            <input
+              value={mapsUrl}
+              onChange={(event) => setMapsUrl(event.target.value)}
+              placeholder="https://maps.app.goo.gl/..."
+              inputMode="url"
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </Field>
+        )}
 
         <Field
           label="Ficha en la liga (opcional)"
@@ -805,5 +831,116 @@ function PaymentSheet({ row, onClose }: { row: Balance; onClose: () => void }) {
         ) : null}
       </div>
     </Sheet>
+  )
+}
+
+// -------------------------------------------------------------- para comentar
+
+/**
+ * La noticia de la portada. Solo hay una: publicar sustituye a la anterior y
+ * "Quitar de la portada" la retira. El borrador se queda en el formulario, así
+ * que se puede volver a publicar sin reescribirlo.
+ */
+function NoticeSection() {
+  const state = useAppState()
+  const current = state.team.notice ?? null
+  const [text, setText] = useState(current?.text ?? '')
+  const [image, setImage] = useState(current?.image ?? '')
+  const [error, setError] = useState('')
+  const [done, setDone] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  const hasContent = Boolean(text.trim() || image)
+  const unchanged = Boolean(current) && current?.text === text.trim() && current?.image === image
+
+  const pickImage = async (file: File) => {
+    setError('')
+    try {
+      setImage(await toPhoto(file))
+    } catch (err) {
+      setError(
+        err instanceof ImageTooBig
+          ? 'Esa imagen pesa demasiado. Prueba con otra.'
+          : 'No he podido leer esa imagen.',
+      )
+    }
+  }
+
+  const flash = (message: string) => {
+    setDone(message)
+    setTimeout(() => setDone(''), 2500)
+  }
+
+  return (
+    <>
+      <ScreenHeader title="Para comentar" onBack={() => navigate('admin')} />
+      <main>
+        <p className="small muted">
+          Sale en la portada de la app del equipo. Solo se ve la última: al publicar una nueva,
+          sustituye a la que hubiera.
+        </p>
+
+        <div className="card form">
+          <Field label="Texto (opcional si pones imagen)">
+            <textarea
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              placeholder="El sábado quedamos a las 17:30 en el pabellón..."
+            />
+          </Field>
+
+          {image ? <img className="notice-image" src={image} alt="Imagen de la noticia" /> : null}
+          <div className="btn-row">
+            <button className="btn ghost small" onClick={() => fileRef.current?.click()}>
+              {image ? 'Cambiar imagen' : 'Añadir imagen'}
+            </button>
+            {image ? (
+              <button className="btn quiet small" onClick={() => setImage('')}>
+                Quitar imagen
+              </button>
+            ) : null}
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              if (file) void pickImage(file)
+              event.target.value = ''
+            }}
+          />
+          {error ? <div className="banner bad">{error}</div> : null}
+
+          <button
+            className="btn block"
+            disabled={!hasContent || unchanged}
+            onClick={() => {
+              if (publishNotice(text, image)) flash('Publicada en la portada')
+            }}
+          >
+            {current ? 'Publicar y sustituir la actual' : 'Publicar en la portada'}
+          </button>
+        </div>
+
+        {current ? (
+          <div className="card spread">
+            <div className="small muted">Publicada el {matchDate(current.publishedAt)}</div>
+            <button
+              className="btn quiet small"
+              onClick={() => {
+                removeNotice()
+                flash('Quitada de la portada')
+              }}
+            >
+              Quitar de la portada
+            </button>
+          </div>
+        ) : null}
+
+        {done ? <div className="banner good">{done}</div> : null}
+      </main>
+    </>
   )
 }

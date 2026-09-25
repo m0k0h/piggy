@@ -263,6 +263,28 @@ export function HomeIcon({ size = 24, ...props }: IconProps) {
   )
 }
 
+/** Silbato: la hora a la que se convoca antes del partido. */
+export function WhistleIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <circle cx="9" cy="14" r="5.5" />
+      <path d="M12.5 9.8 20.5 7v4.5l-5.2.9" />
+      <path d="M4 6.5 5.5 8M8 4v2M2.5 10.5h2" />
+      <circle cx="9" cy="14" r="1.2" />
+    </svg>
+  )
+}
+
+/** Chincheta del mapa: el enlace a Google Maps del pabellón. */
+export function MapPinIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11Z" />
+      <circle cx="12" cy="10" r="2.4" />
+    </svg>
+  )
+}
+
 /** Compartir: la flecha que sale de la bandeja, para mandar la hucha por WhatsApp. */
 export function ShareIcon({ size = 24, ...props }: IconProps) {
   return (
@@ -270,6 +292,17 @@ export function ShareIcon({ size = 24, ...props }: IconProps) {
       <path d="M12 14.5V3.5" />
       <path d="M7.5 8 12 3.5 16.5 8" />
       <path d="M8 11H6.5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H16" />
+    </svg>
+  )
+}
+
+/** Megáfono: lo que la administradora quiere comentar con el equipo. */
+export function MegaphoneIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M4 10.2a1.7 1.7 0 0 1 1.7-1.7H9l8-4v15l-8-4H5.7A1.7 1.7 0 0 1 4 13.8Z" />
+      <path d="M7.5 15.5 9 20" />
+      <path d="M20 9.5a3 3 0 0 1 0 5" />
     </svg>
   )
 }
