@@ -386,6 +386,15 @@ main {
 }
 
 .list .row:last-child { border-bottom: 0; }
+/* Una fila suelta que hace de tarjeta (el próximo partido en la portada):
+   `.row` va después de `.card` y le quitaba el fondo y el borde, así que el
+   bloque parecía flotar y el hueco con el de arriba se veía más grande. */
+.card.row {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.card.row:active { background: var(--surface-2); }
 .row .grow, .row .trail { display: flex; flex-direction: column; justify-content: center; }
 .row .trail { align-items: flex-end; }
 .row:active { background: var(--surface-2); }
