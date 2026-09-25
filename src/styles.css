@@ -386,6 +386,10 @@ main {
 }
 
 .list .row:last-child { border-bottom: 0; }
+/* El próximo partido de la portada es una fila suelta sin fondo: su texto
+   empieza 12px por dentro de un borde que no se ve, así que pegado a la
+   noticia el hueco parecía mayor que entre tarjetas. Se recorta ese margen. */
+.card.notice + .card.row { margin-top: -10px; }
 .row .grow, .row .trail { display: flex; flex-direction: column; justify-content: center; }
 .row .trail { align-items: flex-end; }
 .row:active { background: var(--surface-2); }
