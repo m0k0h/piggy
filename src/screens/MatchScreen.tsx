@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CALL_MINUTES, callTime, euros, matchDateLong, percent, plural, relativeDay, serveSummary } from '../lib/format'
+import { callTime, euros, matchDateLong, percent, plural, relativeDay, serveSummary } from '../lib/format'
 import { goBack, navigate } from '../lib/router'
 import { matchDetails, matchSummary, share } from '../lib/summary'
 import { addServe, removeServe, saveLineup, useAppState } from '../lib/store'
@@ -34,6 +34,7 @@ import {
   CheckIcon,
   ClipboardIcon,
   HomeIcon,
+  MapPinIcon,
   MinusIcon,
   PeopleIcon,
   PlusIcon,
@@ -41,6 +42,7 @@ import {
   ShrugIcon,
   StarIcon,
   UndoIcon,
+  WhistleIcon,
   XIcon,
 } from '../ui/icons'
 
@@ -95,6 +97,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
   const [toast, setToast] = useState('')
   const attendees = rosterOf(state, match.id)
   const call = callTime(match.date)
+  const venueUrl = match.home ? state.team.venueUrl : ''
 
   const onShare = async () => {
     const result = await share(matchDetails(state, match))
@@ -139,10 +142,22 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
             <CalendarIcon size={14} />
             {matchDateLong(match.date) + (match.venue ? ` · ${match.venue}` : '')}
           </span>
-          {call ? (
-            <p className="small muted call-time">
-              Convocadas a las <strong>{call}</strong>, {CALL_MINUTES} min antes del partido.
-            </p>
+          {call || venueUrl ? (
+            <div className="match-extras">
+              {call ? (
+                <span className="call-badge">
+                  <WhistleIcon size={15} />
+                  Convocadas
+                  <strong>{call}</strong>
+                </span>
+              ) : null}
+              {venueUrl ? (
+                <a className="link" href={venueUrl} target="_blank" rel="noopener noreferrer">
+                  <MapPinIcon size={15} />
+                  Cómo llegar al pabellón
+                </a>
+              ) : null}
+            </div>
           ) : null}
           <button className="icon-btn match-share" onClick={onShare} aria-label="Compartir datos del partido">
             <ShareIcon size={17} />

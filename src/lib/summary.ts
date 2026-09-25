@@ -1,11 +1,10 @@
-import { CALL_MINUTES, callTime, euros, joinNatural, matchDate, matchDateLong, percent, plural } from './format'
+import { callTime, euros, joinNatural, matchDate, matchDateLong, percent, plural } from './format'
 import {
   allServes,
   balances,
   fineAmount,
   participants,
   pot,
-  rosterOf,
   servesOfMatch,
   tally,
   tallyByPlayer,
@@ -51,21 +50,18 @@ export function matchSummary(state: AppState, match: Match): string {
   return lines.join('\n')
 }
 
-/** Datos de un partido programado: cuándo, dónde y quién ha confirmado. */
+/** Datos de un partido programado: cuándo y dónde. */
 export function matchDetails(state: AppState, match: Match): string {
   const lines: string[] = []
 
   lines.push(`🏐 ${teamName(state)} ${match.home ? 'vs' : '@'} ${match.opponent || 'Rival por definir'}`)
   lines.push(`📅 ${matchDateLong(match.date)}`)
   const call = callTime(match.date)
-  if (call) lines.push(`⏰ Convocadas a las ${call} (${CALL_MINUTES} min antes)`)
+  if (call) lines.push(`⏰ Convocadas a las ${call}`)
   lines.push(`📍 ${match.venue ? `${match.venue} · ` : ''}${match.home ? 'En casa' : 'Fuera'}`)
-
-  const attendees = rosterOf(state, match.id)
-  if (attendees.length > 0) {
-    lines.push('')
-    lines.push(`Asistentes (${attendees.length}): ${joinNatural(attendees.map((player) => player.name))}.`)
-  }
+  // En casa, el mapa de nuestro pabellón, para quien venga por primera vez.
+  const map = match.home ? state.team.venueUrl : ''
+  if (map) lines.push(map)
 
   if (match.leagueUrl) {
     lines.push('')

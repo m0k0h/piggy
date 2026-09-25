@@ -160,7 +160,7 @@ function born<T extends Syncable>(fields: Omit<T, keyof Syncable>, id: string = 
 
 // --- Equipo ----------------------------------------------------------------
 
-export function updateTeam(patch: Partial<Pick<Team, 'name' | 'fineAmount' | 'logo'>>) {
+export function updateTeam(patch: Partial<Pick<Team, 'name' | 'fineAmount' | 'logo' | 'venueUrl'>>) {
   write('team', [{ ...state.team, ...patch, updatedAt: now() }])
 }
 

@@ -89,6 +89,8 @@ export interface Team extends Syncable {
   fineAmount: number
   /** Escudo del equipo, ya reducido, como data URL. Vacío si no hay. */
   logo: string
+  /** Nuestro pabellón, como enlace de Google Maps. Opcional: vacío si no se ha puesto. */
+  venueUrl?: string
   /**
    * Borrado de partidos de prueba: todo partido, convocatoria, saque o cobro creado
    * hasta este momento se quita también de la copia local de cada móvil, para

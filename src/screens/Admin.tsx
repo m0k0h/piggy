@@ -213,6 +213,19 @@ function TeamSection() {
     setFine(String(state.team.fineAmount))
   }
 
+  const [venueUrl, setVenueUrl] = useState(state.team.venueUrl ?? '')
+  const [lastVenueUrl, setLastVenueUrl] = useState(state.team.venueUrl ?? '')
+  if (lastVenueUrl !== (state.team.venueUrl ?? '')) {
+    setLastVenueUrl(state.team.venueUrl ?? '')
+    setVenueUrl(state.team.venueUrl ?? '')
+  }
+
+  const commitVenueUrl = () => {
+    const value = normalizeUrl(venueUrl)
+    setVenueUrl(value)
+    if (value !== (state.team.venueUrl ?? '')) updateTeam({ venueUrl: value })
+  }
+
   const commitFine = () => {
     const value = Number(fine.replace(',', '.'))
     if (Number.isFinite(value) && value >= 0) updateTeam({ fineAmount: value })
@@ -278,6 +291,20 @@ function TeamSection() {
               onChange={(event) => setFine(event.target.value)}
               onBlur={commitFine}
               inputMode="decimal"
+            />
+          </Field>
+          <Field
+            label="Nuestro pabellón (opcional)"
+            hint="Enlace de Google Maps. Sale en los partidos en casa y al compartirlos."
+          >
+            <input
+              value={venueUrl}
+              onChange={(event) => setVenueUrl(event.target.value)}
+              onBlur={commitVenueUrl}
+              placeholder="https://maps.app.goo.gl/..."
+              inputMode="url"
+              autoComplete="off"
+              spellCheck={false}
             />
           </Field>
         </div>

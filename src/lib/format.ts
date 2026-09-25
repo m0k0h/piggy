@@ -33,7 +33,7 @@ export function matchDateLong(value: string): string {
 }
 
 /** Minutos antes del partido a los que se cita a las jugadoras. */
-export const CALL_MINUTES = 45
+const CALL_MINUTES = 45
 
 /** Hora de la convocatoria ("17:45"), o null si el partido no tiene hora. */
 export function callTime(value: string): string | null {
