@@ -505,15 +505,17 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
   const logoFileRef = useRef<HTMLInputElement>(null)
 
   /**
-   * Al terminar de escribir el rival, recuperamos su enlace y su escudo de la
-   * última vez que lo jugamos. Solo rellena lo que esté vacío.
+   * Al terminar de escribir el rival, recuperamos su enlace, su escudo y el
+   * mapa de su pabellón de la última vez que lo jugamos. Solo rellena lo que
+   * esté vacío.
    */
   const recallOpponent = () => {
-    if (leagueUrl && logo) return
+    if (leagueUrl && logo && mapsUrl) return
     const known = knownOpponent(state, opponent, match?.id ?? '')
     if (!known) return
     if (!leagueUrl) setLeagueUrl(known.leagueUrl)
     if (!logo) setLogo(known.logo)
+    if (!mapsUrl) setMapsUrl(known.mapsUrl)
   }
 
   const uploadLogo = async (file: File) => {
@@ -552,7 +554,7 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
         <div className="inline">
           <OpponentCrest opponent={opponent} logo={normalizeImageUrl(logo)} big />
           <div className="grow small muted">
-            El escudo y el enlace se guardan con el partido, y se reaprovechan la
+            El escudo, el enlace y el mapa se guardan con el partido, y se reaprovechan la
             próxima vez que juguéis contra este mismo rival.
           </div>
         </div>
