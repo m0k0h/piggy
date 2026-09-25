@@ -1,10 +1,11 @@
-import { euros, joinNatural, matchDate, percent, plural } from './format'
+import { CALL_MINUTES, callTime, euros, joinNatural, matchDate, matchDateLong, percent, plural } from './format'
 import {
   allServes,
   balances,
   fineAmount,
   participants,
   pot,
+  rosterOf,
   servesOfMatch,
   tally,
   tallyByPlayer,
@@ -47,6 +48,31 @@ export function matchSummary(state: AppState, match: Match): string {
       )
     }
   }
+  return lines.join('\n')
+}
+
+/** Datos de un partido programado: cuándo, dónde y quién ha confirmado. */
+export function matchDetails(state: AppState, match: Match): string {
+  const lines: string[] = []
+
+  lines.push(`🏐 ${teamName(state)} ${match.home ? 'vs' : '@'} ${match.opponent || 'Rival por definir'}`)
+  lines.push(`📅 ${matchDateLong(match.date)}`)
+  const call = callTime(match.date)
+  if (call) lines.push(`⏰ Convocadas a las ${call} (${CALL_MINUTES} min antes)`)
+  lines.push(`📍 ${match.venue ? `${match.venue} · ` : ''}${match.home ? 'En casa' : 'Fuera'}`)
+
+  const attendees = rosterOf(state, match.id)
+  if (attendees.length > 0) {
+    lines.push('')
+    lines.push(`Asistentes (${attendees.length}): ${joinNatural(attendees.map((player) => player.name))}.`)
+  }
+
+  if (match.leagueUrl) {
+    lines.push('')
+    lines.push(`Ficha del rival: ${match.leagueUrl}`)
+  }
+  lines.push('')
+  lines.push(`https://m0k0h.github.io/piggy/#/partido/${match.id}`)
   return lines.join('\n')
 }
 

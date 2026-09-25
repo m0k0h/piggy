@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import type { AppState, Payment, Player, Serve } from '../../types'
+import type { AppState, Match, Payment, Player, Serve } from '../../types'
 import { euros } from '../format'
-import { potSummary } from '../summary'
+import { matchDetails, potSummary } from '../summary'
 
 const stamp = { createdAt: '2025-10-01T10:00', updatedAt: '2025-10-01T10:00', deletedAt: null }
 
@@ -102,5 +102,54 @@ describe('potSummary', () => {
     const ratioIndex = lines.findIndex((line) => line.startsWith('Porcentaje de acierto'))
     expect(ratioIndex).toBeGreaterThan(-1)
     expect(lines[ratioIndex + 1]).toBe('1/3 saques fallados')
+  })
+})
+
+describe('matchDetails', () => {
+  const match: Match = {
+    id: 'm1',
+    opponent: 'CV Norte',
+    date: '2025-10-04T18:30',
+    venue: 'Pabellón Sur',
+    home: true,
+    externalId: null,
+    leagueUrl: 'https://liga.example/cv-norte',
+    ...stamp,
+  }
+
+  it('lleva rival, fecha, lugar, asistentes y enlaces', () => {
+    const text = matchDetails(
+      state({
+        players: byId([player('p1', 'Ana'), player('p2', 'Bea')]),
+        matches: byId([match]),
+        lineups: { m1: { id: 'm1', matchId: 'm1', roster: ['p1', 'p2'], status: 'scheduled', ...stamp } },
+      }),
+      match,
+    )
+    expect(text).toContain('Volei Masters vs CV Norte')
+    expect(text).toContain('Convocadas a las 17:45 (45 min antes)')
+    expect(text).toContain('Pabellón Sur · En casa')
+    expect(text).toContain('Asistentes (2): Ana y Bea.')
+    expect(text).toContain('https://liga.example/cv-norte')
+    expect(text).toContain('#/partido/m1')
+  })
+
+  it('sin asistentes ni ficha, no pinta esas líneas', () => {
+    const away = { ...match, home: false, venue: '', leagueUrl: undefined }
+    const text = matchDetails(state({ matches: byId([away]) }), away)
+    expect(text).toContain('Volei Masters @ CV Norte')
+    expect(text).toContain('📍 Fuera')
+    expect(text).not.toContain('Asistentes')
+    expect(text).not.toContain('Ficha del rival')
+  })
+
+  it('sin hora de partido, no hay hora de convocatoria', () => {
+    const noTime = { ...match, date: '2025-10-04T00:00' }
+    expect(matchDetails(state({ matches: byId([noTime]) }), noTime)).not.toContain('Convocadas')
+  })
+
+  it('la convocatoria cruza la hora en punto', () => {
+    const early = { ...match, date: '2025-10-04T10:15' }
+    expect(matchDetails(state({ matches: byId([early]) }), early)).toContain('Convocadas a las 09:30')
   })
 })

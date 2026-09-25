@@ -795,7 +795,29 @@ main {
 
 .crest img { width: 100%; height: 100%; object-fit: contain; }
 
+/* Con imagen, el escudo manda en su forma: sin cuadrado de fondo detrás, un
+   escudo redondo con transparencia se ve redondo. El radio se queda para que
+   una imagen cuadrada opaca siga saliendo con las esquinas suavizadas. */
+.crest.has-logo { background: transparent; }
+
 .crest-big { width: 84px; height: 84px; border-radius: 20px; font-size: 22px; }
+
+/* Cabecera del partido programado: compartir abajo a la derecha del bloque,
+   con la fecha dejándole su hueco para no montarse encima. */
+.match-head { position: relative; }
+.match-head .chip.date,
+.match-head .call-time { margin-right: 48px; }
+.match-head .call-time { margin-top: -4px; }
+.match-head .call-time strong { color: var(--text); font-variant-numeric: tabular-nums; }
+.match-head .match-share {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 36px;
+  height: 36px;
+  color: var(--pink-text);
+  cursor: pointer;
+}
 
 /* --------------------------------------------------------- administración */
 .admin-menu { display: flex; flex-direction: column; }
