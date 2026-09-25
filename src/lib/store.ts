@@ -6,6 +6,7 @@ import {
   type Lineup,
   type Match,
   type MatchStatus,
+  type Notice,
   type Payment,
   type Player,
   type Position,
@@ -163,6 +164,20 @@ function born<T extends Syncable>(fields: Omit<T, keyof Syncable>, id: string = 
 
 export function updateTeam(patch: Partial<Pick<Team, 'name' | 'fineAmount' | 'logo'>>) {
   write('team', [{ ...state.team, ...patch, updatedAt: now() }])
+}
+
+/** Publica en la portada lo que hay que comentar, sustituyendo lo anterior. */
+export function publishNotice(text: string, image: string): Notice | null {
+  const clean = text.trim()
+  if (!clean && !image) return null
+  const notice: Notice = { text: clean, image, publishedAt: now() }
+  write('team', [{ ...state.team, notice, updatedAt: now() }])
+  return notice
+}
+
+export function removeNotice() {
+  if (!state.team.notice) return
+  write('team', [{ ...state.team, notice: null, updatedAt: now() }])
 }
 
 // --- Jugadoras -------------------------------------------------------------

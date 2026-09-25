@@ -76,9 +76,17 @@ recuerda la sesión; mientras la tengas abierta aparece un botón **Admin** en l
 cabecera para ir y volver.
 
 Desde ahí se gestiona el **equipo** (nombre, escudo, euros por fallo), las
-**jugadoras**, los **partidos** y los **cobros**. Los datos viven en la base de
+**jugadoras**, los **partidos**, los **cobros** y lo que hay **para comentar**. Los datos viven en la base de
 datos del equipo; si algún día quieres una copia aparte, exporta la tabla
 `piggy_rows` desde el panel de Supabase.
+
+### Para comentar
+
+Una noticia para la portada de la app del equipo: texto, una imagen o las dos
+cosas. Solo se ve la última; publicar otra la sustituye, y **Quitar de la
+portada** la retira (el bloque desaparece entero). La imagen se reduce en el
+móvil antes de guardarse, como el escudo. Va en la fila del equipo, así que
+solo la administradora puede cambiarla y no hace falta tocar la base de datos.
 
 ### El rival
 
@@ -113,6 +121,7 @@ reduce igual que el escudo de tu equipo.
 | Convocatoria e inicio del partido | Sí | Sí |
 | Anotar y corregir saques | Sí | Sí |
 | Hucha y estadísticas | Ver y cobrar | Solo ver |
+| Noticia de la portada | Publicar y quitar | Solo ver |
 
 La separación no es cosmética. Las reglas de
 [`supabase/schema.sql`](supabase/schema.sql) las aplica Postgres: sin sesión
