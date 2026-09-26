@@ -117,7 +117,7 @@ describe('matchDetails', () => {
     ...stamp,
   }
 
-  it('lleva rival, fecha, convocatoria, lugar y enlaces, pero no las asistentes', () => {
+  it('lleva rival, fecha, convocatoria, lugar y enlace, pero no las asistentes ni la ficha del rival', () => {
     const text = matchDetails(
       state({
         players: byId([player('p1', 'Ana'), player('p2', 'Bea')]),
@@ -130,11 +130,12 @@ describe('matchDetails', () => {
     expect(text).toContain('⏰ Convocadas a las 17:45\n')
     expect(text).toContain('Pabellón Sur · En casa')
     expect(text).not.toContain('Ana')
-    expect(text).toContain('https://liga.example/cv-norte')
+    expect(text).not.toContain('https://liga.example/cv-norte')
+    expect(text).not.toContain('Ficha del rival')
     expect(text).toContain('#/partido/m1')
   })
 
-  it('fuera, con el mapa del pabellón y sin ficha de la liga', () => {
+  it('fuera, con el mapa del pabellón', () => {
     const away = { ...match, home: false, venue: '', leagueUrl: undefined, mapsUrl: 'https://maps.app.goo.gl/abc' }
     const text = matchDetails(state({ matches: byId([away]) }), away)
     expect(text).toContain('Volei Masters @ CV Norte')

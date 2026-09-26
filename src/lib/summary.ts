@@ -64,10 +64,6 @@ export function matchDetails(state: AppState, match: Match): string {
   const map = match.home ? '' : match.mapsUrl
   if (map) lines.push(map)
 
-  if (match.leagueUrl) {
-    lines.push('')
-    lines.push(`Ficha del rival: ${match.leagueUrl}`)
-  }
   lines.push('')
   lines.push(`https://m0k0h.github.io/piggy/#/partido/${match.id}`)
   return lines.join('\n')
