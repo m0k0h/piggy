@@ -15,9 +15,11 @@
     --pig-eye: #3a2436;
     --pig-slot: #c4477e;
     --stripe: #b0206f;
-    --bg: #17121c;
+    --bg: #0b1711;
+    --verde: #22a45d;
+    --verde-vivo: #3ddc84;
     --text: #f7f2f6;
-    --muted: #a79bb0;
+    --muted: #9db8a8;
     --display: 'Outfit', system-ui, sans-serif;
     --body: 'Plus Jakarta Sans', system-ui, sans-serif;
   }
@@ -27,8 +29,8 @@
     position: relative; overflow: hidden;
     width: 18cm; height: 13cm;
     background:
-      radial-gradient(circle at 27% 52%, rgba(212, 42, 125, .55) 0%, rgba(165, 31, 121, .22) 28%, transparent 55%),
-      radial-gradient(circle at 100% 0%, rgba(165, 31, 121, .35) 0%, transparent 40%),
+      radial-gradient(circle at 27% 52%, rgba(34, 164, 93, .50) 0%, rgba(21, 122, 66, .20) 30%, transparent 56%),
+      radial-gradient(circle at 100% 0%, rgba(21, 122, 66, .35) 0%, transparent 42%),
       var(--bg);
     color: var(--text);
     font-family: var(--body);
@@ -36,25 +38,28 @@
   .rayas { position: absolute; inset: 0; width: 100%; height: 100%; }
   .cerdita { position: absolute; left: 0.5cm; top: 1.75cm; width: 9.2cm; height: 9.2cm;
              filter: drop-shadow(0 .25cm .45cm rgba(0,0,0,.45)); }
-  .texto { position: absolute; left: 9.7cm; right: 0.9cm; top: 2.15cm; }
-  .ante { font-weight: 800; font-size: 11pt; letter-spacing: .12em; white-space: nowrap; color: var(--pink-text); }
+  .texto { position: absolute; left: 9.7cm; right: 0.9cm; top: 1.6cm; }
+  .ante { display: flex; align-items: center; gap: .3cm; font-weight: 800; font-size: 11pt; letter-spacing: .12em; white-space: nowrap; color: #fff; }
+  .escudo { width: 1.5cm; height: 1.5cm; border-radius: 50%; overflow: hidden; flex: none;
+            background: #fff; box-shadow: 0 0 0 .08cm rgba(255,255,255,.9), 0 .12cm .3cm rgba(0,0,0,.4); }
+  .escudo img { width: 100%; height: 100%; display: block; transform: scale(1.02); }
   .ante small { display: block; font-size: 9pt; letter-spacing: .32em; color: var(--muted); margin-top: .12cm; }
   h1 { font-family: var(--display); font-weight: 900; font-size: 41pt; line-height: .9;
        letter-spacing: -.02em; margin: .35cm 0 0; text-transform: uppercase; }
-  h1 span { color: var(--pink); }
+  h1 span { color: var(--verde-vivo); }
   .hucha { font-family: var(--display); font-weight: 700; font-size: 21pt; margin-top: .3cm;
            color: var(--pig); letter-spacing: -.01em; }
   .regla { display: flex; align-items: center; gap: .3cm; margin-top: .75cm;
            padding: .28cm .42cm; border-radius: 999px; width: max-content;
-           background: linear-gradient(135deg, #d42a7d 0%, #a51f79 100%);
-           box-shadow: 0 .2cm .5cm rgba(165, 31, 121, .45); }
+           background: linear-gradient(135deg, #22a45d 0%, #137a40 100%);
+           box-shadow: 0 .2cm .5cm rgba(19, 122, 64, .45); }
   .regla svg { width: .75cm; height: .75cm; flex: none; }
   .regla b { font-family: var(--display); font-weight: 800; font-size: 17pt; font-variant-numeric: tabular-nums; }
   .regla .igual { margin: 0 .22cm 0 .08cm; }
   .regla em { font-style: normal; font-weight: 700; font-size: 11pt; }
   .pie { position: absolute; left: 9.7cm; bottom: 1.05cm; font-size: 8.5pt; font-weight: 700;
          letter-spacing: .28em; color: var(--muted); display: flex; align-items: center; gap: .25cm; }
-  .pie i { width: .9cm; height: 2px; background: var(--pink); border-radius: 2px; display: block; }
+  .pie i { width: .9cm; height: 2px; background: var(--verde-vivo); border-radius: 2px; display: block; }
 </style>
 </head>
 <body>
@@ -62,7 +67,7 @@
 
   <!-- Rayas de tigresa de fondo (tapered, desde los bordes hacia dentro) -->
   <svg class="rayas" viewBox="0 0 180 130" preserveAspectRatio="none" aria-hidden="true">
-    <g fill="#ff3d8a" opacity=".09">
+    <g fill="#3ddc84" opacity=".08">
       <!-- borde superior -->
       <path d="M96 0 C 98 7, 103 12, 111 15 C 105 10, 103 5, 104 0 Z"/>
       <path d="M118 0 C 118 9, 123 17, 133 21 C 127 14, 125 7, 127 0 Z"/>
@@ -129,7 +134,7 @@
   </svg>
 
   <div class="texto">
-    <div class="ante">CVLF LES FRANQUESES</div>
+    <div class="ante"><span class="escudo"><img src="escudo.jpg" alt=""></span>CVLF LES FRANQUESES</div>
     <h1>Tigre<span>sas</span></h1>
     <div class="hucha">Hucha de saques</div>
     <div class="regla">
