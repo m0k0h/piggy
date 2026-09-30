@@ -50,6 +50,7 @@
            box-shadow: 0 .2cm .5cm rgba(165, 31, 121, .45); }
   .regla svg { width: .75cm; height: .75cm; flex: none; }
   .regla b { font-family: var(--display); font-weight: 800; font-size: 17pt; font-variant-numeric: tabular-nums; }
+  .regla .igual { margin: 0 .22cm 0 .08cm; }
   .regla em { font-style: normal; font-weight: 700; font-size: 11pt; }
   .pie { position: absolute; left: 9.7cm; bottom: 1.05cm; font-size: 8.5pt; font-weight: 700;
          letter-spacing: .28em; color: var(--muted); display: flex; align-items: center; gap: .25cm; }
@@ -125,17 +126,10 @@
     <ellipse cx="32" cy="45" rx="11.5" ry="8.5" fill="var(--pig-snout)"/>
     <ellipse cx="28.2" cy="45" rx="2" ry="2.6" fill="var(--pig-dark)"/>
     <ellipse cx="35.8" cy="45" rx="2" ry="2.6" fill="var(--pig-dark)"/>
-    <!-- bigotes de tigresa -->
-    <g fill="none" stroke="var(--pig-eye)" stroke-width="0.9" stroke-linecap="round" opacity=".75">
-      <path d="M20 44.2 C 16.5 43.6, 13 43.8, 9.8 44.8"/>
-      <path d="M20.2 46.6 C 16.8 46.8, 13.6 47.8, 10.8 49.4"/>
-      <path d="M44 44.2 C 47.5 43.6, 51 43.8, 54.2 44.8"/>
-      <path d="M43.8 46.6 C 47.2 46.8, 50.4 47.8, 53.2 49.4"/>
-    </g>
   </svg>
 
   <div class="texto">
-    <div class="ante">CVLF LES FRANQUESES<small>VOLEIBOL</small></div>
+    <div class="ante">CVLF LES FRANQUESES</div>
     <h1>Tigre<span>sas</span></h1>
     <div class="hucha">Hucha de saques</div>
     <div class="regla">
@@ -145,7 +139,7 @@
         <path d="M5.6 5.6c3.5 2.9 4.5 9 2.5 13.1"/>
         <path d="M18.4 5.6c-3.5 2.9-4.5 9-2.5 13.1"/>
       </svg>
-      <em>Saque fallado</em><b>=&nbsp;1&nbsp;€</b>
+      <em>Saque fallado</em><b><span class="igual">=</span>1&nbsp;€</b>
     </div>
   </div>
 
