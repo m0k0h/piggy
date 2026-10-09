@@ -126,7 +126,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
 
   return (
     <>
-      <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={goBack} />
+      <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={() => goBack('partidos')} />
       <main>
         <div className="card stack match-head">
           <div className="inline wide">
