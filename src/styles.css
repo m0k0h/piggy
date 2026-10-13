@@ -913,36 +913,46 @@ main {
 .match-head { position: relative; }
 /* En la ficha del partido la fecha es lo principal: algo más grande. */
 .match-head .chip.date { font-size: 14px; padding: 6px 12px; }
-.match-head .chip.date,
-.match-head .call-badge,
-.match-head .match-map { margin-right: 48px; }
-.match-head .match-map { align-self: flex-start; margin-top: -2px; }
-/* A la altura del icono de la fecha y del de convocadas, no a ras de la tarjeta. */
-.match-head .match-map { margin-left: 12px; }
-
-/* Hora de convocatoria: en su propia línea bajo la fecha, y por debajo de
-   ella en importancia: badge rosa tenue, pequeño, sin relleno fuerte. */
-.call-badge {
+.match-head .chip.date { margin-right: 48px; }
+/* Pabellón: misma pastilla que la fecha, debajo de la convocatoria. Fuera de
+   casa la pastilla entera abre el mapa y lo dice en rosa al final; si no
+   hay nombre (solo el enlace de Maps), dice «Cómo llegar al pabellón». */
+.match-head .chip.venue { text-decoration: none; }
+.match-head a.chip.venue { gap: 6px; background: var(--pink-soft); color: var(--pink-text); }
+.venue-go {
   display: inline-flex;
-  align-self: flex-start;
   align-items: center;
-  gap: 4px;
-  margin-top: -6px;
-  /* Unos píxeles hacia dentro: con el rosa, si empieza a ras de la fecha
-     parece que empieza antes que ella. */
-  margin-left: 6px;
-  padding: 3px 9px;
-  border-radius: var(--radius-pill);
-  background: var(--pink-soft);
+  gap: 2px;
   color: var(--pink-text);
-  font-size: 10.5px;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
 }
-.call-badge strong {
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+/* Con el nombre del pabellón delante, algo más de aire entre los dos. */
+.venue > span + .venue-go { margin-left: 4px; }
+.match-head a.chip.venue:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
+
+/* Cuándo: fecha y convocatoria en un mismo bloque neutro, una debajo de la
+   otra, para que se lean juntas y no se confundan con el mapa. */
+.match-head .match-when {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-self: flex-start;
+  margin-right: 48px;
+  padding: 8px 14px 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
 }
+.match-when-date,
+.match-when-call {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.match-when-date { color: var(--text); font-size: 14px; font-weight: 600; }
+.match-when-call { color: var(--pink-text); font-size: 12.5px; font-weight: 600; }
+.match-when svg { flex-shrink: 0; }
+.match-when-call strong { font-weight: 700; font-variant-numeric: tabular-nums; }
 .match-head .match-share {
   position: absolute;
   right: 12px;

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { callTime, euros, matchDateLong, percent, plural, relativeDay, serveSummary } from '../lib/format'
+import { callTime, euros, matchDateLong, percent, placeFromMapsUrl, plural, relativeDay, serveSummary } from '../lib/format'
 import { goBack, navigate } from '../lib/router'
 import { matchDetails, matchSummary, share } from '../lib/summary'
 import { addServe, removeServe, saveLineup, useAppState } from '../lib/store'
@@ -35,6 +35,7 @@ import {
   BallIcon,
   CalendarIcon,
   CheckIcon,
+  ChevronIcon,
   ClipboardIcon,
   HomeIcon,
   MapPinIcon,
@@ -101,6 +102,8 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
   const attendees = rosterOf(state, match.id)
   const call = callTime(match.date)
   const mapsUrl = match.home ? '' : match.mapsUrl
+  // Lo normal es tener solo el enlace de Maps: el nombre sale de ahí si lo trae.
+  const place = match.venue || (mapsUrl ? placeFromMapsUrl(mapsUrl) : '')
 
   const onShare = async () => {
     const result = await share(matchDetails(state, match))
@@ -148,22 +151,42 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
               <LeagueLink url={match.leagueUrl} />
             </div>
           </div>
-          <span className="chip date">
-            <CalendarIcon size={14} />
-            {matchDateLong(match.date) + (match.venue ? ` · ${match.venue}` : '')}
-          </span>
-          {call ? (
-            <span className="call-badge">
-              <WhistleIcon size={11} />
-              Convocadas <strong>{call}</strong>
+          {mapsUrl ? (
+            <a
+              className="chip date venue"
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={place ? `Cómo llegar a ${place}` : undefined}
+            >
+              <MapPinIcon size={14} />
+              {place ? <span>{place}</span> : null}
+              <span className="venue-go">
+                {place ? 'Mapa' : 'Cómo llegar al pabellón'}
+                <ChevronIcon size={12} />
+              </span>
+            </a>
+          ) : match.venue ? (
+            <span className="chip date venue">
+              <MapPinIcon size={14} />
+              {match.venue}
             </span>
           ) : null}
-          {mapsUrl ? (
-            <a className="link match-map" href={mapsUrl} target="_blank" rel="noopener noreferrer">
-              <MapPinIcon size={15} />
-              Cómo llegar al pabellón
-            </a>
-          ) : null}
+          {/* Cuándo: la fecha y, pegada debajo, la hora a la que se convoca. */}
+          <div className="match-when">
+            <span className="match-when-date">
+              <CalendarIcon size={14} />
+              {matchDateLong(match.date)}
+            </span>
+            {call ? (
+              <span className="match-when-call">
+                <WhistleIcon size={14} />
+                <span>
+                  Convocadas a las <strong>{call}</strong>
+                </span>
+              </span>
+            ) : null}
+          </div>
           <button className="icon-btn match-share" onClick={onShare} aria-label="Compartir datos del partido">
             <ShareIcon size={17} />
           </button>
