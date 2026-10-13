@@ -31,6 +31,7 @@ import {
   Stat,
 } from '../ui/bits'
 import {
+  AwayIcon,
   BallIcon,
   CalendarIcon,
   CheckIcon,
@@ -134,7 +135,11 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
             <div className="grow">
               <div className="small muted match-kind">
                 <span>
-                  {match.home ? <HomeIcon size={13} className="home-mark" /> : null}
+                  {match.home ? (
+                    <HomeIcon size={13} className="home-mark" />
+                  ) : (
+                    <AwayIcon size={13} className="home-mark" />
+                  )}
                   {match.home ? 'En casa' : 'Fuera'}
                 </span>
                 <LeagueTag league={match.league} long />
