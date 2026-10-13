@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AppState, Match } from '../../types'
-import { hostOf, normalizeImageUrl, normalizeUrl } from '../format'
+import { hostOf, normalizeImageUrl, normalizeUrl, placeFromMapsUrl } from '../format'
 import { knownOpponent } from '../stats'
 
 const stamp = { createdAt: '2025-10-01T10:00', updatedAt: '2025-10-01T10:00', deletedAt: null }
@@ -123,5 +123,20 @@ describe('knownOpponent', () => {
 
   it('no devuelve nada sin rival', () => {
     expect(knownOpponent(state([]), '  ')).toBeNull()
+  })
+})
+
+describe('placeFromMapsUrl', () => {
+  it('saca el nombre de un enlace largo de Google Maps', () => {
+    expect(
+      placeFromMapsUrl('https://www.google.com/maps/place/Pabell%C3%B3n+Valvanera/@40.53,-3.63,17z/data=!3m1'),
+    ).toBe('Pabellón Valvanera')
+    expect(placeFromMapsUrl('https://maps.google.com/?q=Polideportivo+La+Chopera')).toBe('Polideportivo La Chopera')
+  })
+
+  it('no inventa nombre en enlaces cortos, coordenadas o direcciones rotas', () => {
+    expect(placeFromMapsUrl('https://maps.app.goo.gl/AbCdEf123')).toBe('')
+    expect(placeFromMapsUrl('https://maps.google.com/?q=40.4168,-3.7038')).toBe('')
+    expect(placeFromMapsUrl('no es una url')).toBe('')
   })
 })

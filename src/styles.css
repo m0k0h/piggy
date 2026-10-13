@@ -916,17 +916,19 @@ main {
 .match-head .chip.date,
 .match-head .call-badge { margin-right: 48px; }
 /* Pabellón: misma pastilla que la fecha, debajo de la convocatoria. Fuera de
-   casa la pastilla entera abre el mapa, y lo dice en rosa al final. */
+   casa la pastilla entera abre el mapa y lo dice en rosa al final; si no
+   hay nombre (solo el enlace de Maps), dice «Cómo llegar al pabellón». */
 .match-head .chip.venue { text-decoration: none; }
 .match-head a.chip.venue { gap: 6px; }
 .venue-go {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  margin-left: 4px;
   color: var(--pink-text);
   white-space: nowrap;
 }
+/* Con el nombre del pabellón delante, algo más de aire entre los dos. */
+.venue > span + .venue-go { margin-left: 4px; }
 .match-head a.chip.venue:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
 
 /* Hora de convocatoria: en su propia línea bajo la fecha, y por debajo de

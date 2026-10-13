@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { callTime, euros, matchDateLong, percent, plural, relativeDay, serveSummary } from '../lib/format'
+import { callTime, euros, matchDateLong, percent, placeFromMapsUrl, plural, relativeDay, serveSummary } from '../lib/format'
 import { goBack, navigate } from '../lib/router'
 import { matchDetails, matchSummary, share } from '../lib/summary'
 import { addServe, removeServe, saveLineup, useAppState } from '../lib/store'
@@ -102,6 +102,8 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
   const attendees = rosterOf(state, match.id)
   const call = callTime(match.date)
   const mapsUrl = match.home ? '' : match.mapsUrl
+  // Lo normal es tener solo el enlace de Maps: el nombre sale de ahí si lo trae.
+  const place = match.venue || (mapsUrl ? placeFromMapsUrl(mapsUrl) : '')
 
   const onShare = async () => {
     const result = await share(matchDetails(state, match))
@@ -165,12 +167,12 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label={`Cómo llegar a ${match.venue || 'el pabellón'}`}
+              aria-label={place ? `Cómo llegar a ${place}` : undefined}
             >
               <MapPinIcon size={14} />
-              <span>{match.venue || 'Pabellón'}</span>
+              {place ? <span>{place}</span> : null}
               <span className="venue-go">
-                Mapa
+                {place ? 'Mapa' : 'Cómo llegar al pabellón'}
                 <ChevronIcon size={12} />
               </span>
             </a>

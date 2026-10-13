@@ -96,6 +96,33 @@ export function normalizeImageUrl(value: string): string {
   return /^data:image\//i.test(trimmed) ? trimmed : normalizeUrl(trimmed)
 }
 
+/**
+ * El nombre del sitio, si el enlace de Google Maps lo trae: los largos lo
+ * llevan en `/maps/place/<nombre>/` o en `?q=<nombre>`. Los cortos
+ * (`maps.app.goo.gl/…`) y los que son solo coordenadas no: vacío.
+ */
+export function placeFromMapsUrl(url: string): string {
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    return ''
+  }
+  const fromPath = parsed.pathname.match(/\/maps\/place\/([^/]+)/)?.[1]
+  const raw = fromPath ? safeDecode(fromPath.replace(/\+/g, ' ')) : (parsed.searchParams.get('q') ?? '')
+  const name = raw.replace(/\s+/g, ' ').trim()
+  // «40.41,-3.70» o «@40.41,-3.70»: eso no es un nombre.
+  return /^@?-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(name) ? '' : name
+}
+
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
 /** El dominio, para enseñar un enlace largo sin que rompa la fila. */
 export function hostOf(url: string): string {
   try {
