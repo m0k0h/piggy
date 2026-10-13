@@ -66,8 +66,8 @@ export function PigLineIcon({ size = 22, ...props }: IconProps) {
       <path d="M10.8 15.3h.01" />
       <path d="M13.2 15.3h.01" />
       <path d="M8.2 11.7h.01" />
-      {/* Guiño, como en la cerdita a color: arco, no punto. */}
-      <path d="M14.5 11.1c.9-.8 2-.8 2.9 0" />
+      {/* Guiño, como en la cerdita a color: arco, no punto. Trazo más fino a propósito. */}
+      <path d="M14.5 11.1c.9-.8 2-.8 2.9 0" strokeWidth="1.3" />
     </svg>
   )
 }

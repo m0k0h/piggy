@@ -282,7 +282,7 @@ export function CerditaLinea({ size = 22, ...props }) {
       <path d="M12 6.4c5 0 9 3.2 9 7.2s-4 7.2-9 7.2-9-3.2-9-7.2 4-7.2 9-7.2Z" />
       <ellipse cx="12" cy="15.3" rx="3.5" ry="2.7" />
       <path d="M10.8 15.3h.01" /><path d="M13.2 15.3h.01" /><path d="M8.2 11.7h.01" />
-      <path d="M14.5 11.1c.9-.8 2-.8 2.9 0" /> {/* guiño */}
+      <path d="M14.5 11.1c.9-.8 2-.8 2.9 0" strokeWidth="1.3" /> {/* guiño */}
     </svg>
   );
 }
