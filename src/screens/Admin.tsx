@@ -55,11 +55,13 @@ import {
   SectionTitle,
 } from '../ui/bits'
 import {
+  AwayIcon,
   BallIcon,
   CalendarIcon,
   ChevronIcon,
   CoinsIcon,
   EyeIcon,
+  HomeIcon,
   MegaphoneIcon,
   PartyIcon,
   PeopleIcon,
@@ -470,7 +472,8 @@ function MatchesSection() {
       <span className="grow">
         <LeagueTag league={match.league} />
         <span className="title">
-          {match.home ? '' : '@ '}
+          {match.home ? <HomeIcon size={15} className="home-mark" /> : <AwayIcon size={15} className="home-mark" />}
+          <span className="sr-only">{match.home ? 'En casa · ' : 'Fuera · '}</span>
           {match.opponent || 'Rival por definir'}
         </span>
         <span className="meta">
