@@ -172,16 +172,21 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
               {match.venue}
             </span>
           ) : null}
-          <span className="chip date">
-            <CalendarIcon size={14} />
-            {matchDateLong(match.date)}
-          </span>
-          {call ? (
-            <span className="call-badge">
-              <WhistleIcon size={11} />
-              Convocadas <strong>{call}</strong>
+          {/* Cuándo: la fecha y, pegada debajo, la hora a la que se convoca. */}
+          <div className="match-when">
+            <span className="match-when-date">
+              <CalendarIcon size={14} />
+              {matchDateLong(match.date)}
             </span>
-          ) : null}
+            {call ? (
+              <span className="match-when-call">
+                <WhistleIcon size={14} />
+                <span>
+                  Convocadas a las <strong>{call}</strong>
+                </span>
+              </span>
+            ) : null}
+          </div>
           <button className="icon-btn match-share" onClick={onShare} aria-label="Compartir datos del partido">
             <ShareIcon size={17} />
           </button>
