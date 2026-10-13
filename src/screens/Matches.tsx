@@ -4,7 +4,7 @@ import { useAppState } from '../lib/store'
 import { fineAmount, finishedMatches, matchStatus, servesOfMatch, tally, upcomingMatches } from '../lib/stats'
 import type { AppState, Match } from '../types'
 import { Empty, LeagueTag, OpponentCrest, SectionTitle } from '../ui/bits'
-import { CalendarIcon, ChevronIcon } from '../ui/icons'
+import { AwayIcon, CalendarIcon, ChevronIcon, HomeIcon } from '../ui/icons'
 
 /** El calendario tal como lo ve el equipo: se consulta y se entra a anotar. */
 export function Matches() {
@@ -58,7 +58,8 @@ function MatchRow({ match, state }: { match: Match; state: AppState }) {
       <span className="grow">
         <LeagueTag league={match.league} />
         <span className="title">
-          {match.home ? '' : '@ '}
+          {match.home ? <HomeIcon size={15} className="home-mark" /> : <AwayIcon size={15} className="home-mark" />}
+          <span className="sr-only">{match.home ? 'En casa · ' : 'Fuera · '}</span>
           {match.opponent || 'Rival por definir'}
         </span>
         <span className="meta">

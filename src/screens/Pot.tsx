@@ -7,7 +7,7 @@ import { allPayments, allServes, balances, matchStatus, pot, tally, upcomingMatc
 import type { Balance } from '../lib/stats'
 import type { AppState, Payment } from '../types'
 import { Avatar, Empty, LeagueTag, PlayerName, SectionTitle } from '../ui/bits'
-import { CalendarIcon, HomeIcon, PigLineIcon, ShareIcon } from '../ui/icons'
+import { AwayIcon, CalendarIcon, HomeIcon, PigLineIcon, ShareIcon } from '../ui/icons'
 
 export function Pot() {
   const state = useAppState()
@@ -117,7 +117,10 @@ export function Pot() {
                   <span className="sr-only">En casa · </span>
                 </>
               ) : (
-                '@ '
+                <>
+                  <AwayIcon size={15} className="home-mark" />
+                  <span className="sr-only">Fuera · </span>
+                </>
               )}
               {next.opponent}
             </span>
