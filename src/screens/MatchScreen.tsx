@@ -151,16 +151,6 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
               <LeagueLink url={match.leagueUrl} />
             </div>
           </div>
-          <span className="chip date">
-            <CalendarIcon size={14} />
-            {matchDateLong(match.date)}
-          </span>
-          {call ? (
-            <span className="call-badge">
-              <WhistleIcon size={11} />
-              Convocadas <strong>{call}</strong>
-            </span>
-          ) : null}
           {mapsUrl ? (
             <a
               className="chip date venue"
@@ -180,6 +170,16 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
             <span className="chip date venue">
               <MapPinIcon size={14} />
               {match.venue}
+            </span>
+          ) : null}
+          <span className="chip date">
+            <CalendarIcon size={14} />
+            {matchDateLong(match.date)}
+          </span>
+          {call ? (
+            <span className="call-badge">
+              <WhistleIcon size={11} />
+              Convocadas <strong>{call}</strong>
             </span>
           ) : null}
           <button className="icon-btn match-share" onClick={onShare} aria-label="Compartir datos del partido">
