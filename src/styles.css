@@ -914,11 +914,20 @@ main {
 /* En la ficha del partido la fecha es lo principal: algo más grande. */
 .match-head .chip.date { font-size: 14px; padding: 6px 12px; }
 .match-head .chip.date,
-.match-head .call-badge,
-.match-head .match-map { margin-right: 48px; }
-.match-head .match-map { align-self: flex-start; margin-top: -2px; }
-/* A la altura del icono de la fecha y del de convocadas, no a ras de la tarjeta. */
-.match-head .match-map { margin-left: 12px; }
+.match-head .call-badge { margin-right: 48px; }
+/* Pabellón: misma pastilla que la fecha, debajo de la convocatoria. Fuera de
+   casa la pastilla entera abre el mapa, y lo dice en rosa al final. */
+.match-head .chip.venue { text-decoration: none; }
+.match-head a.chip.venue { gap: 6px; }
+.venue-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+  color: var(--pink-text);
+  white-space: nowrap;
+}
+.match-head a.chip.venue:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
 
 /* Hora de convocatoria: en su propia línea bajo la fecha, y por debajo de
    ella en importancia: badge rosa tenue, pequeño, sin relleno fuerte. */

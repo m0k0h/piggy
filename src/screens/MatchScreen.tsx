@@ -35,6 +35,7 @@ import {
   BallIcon,
   CalendarIcon,
   CheckIcon,
+  ChevronIcon,
   ClipboardIcon,
   HomeIcon,
   MapPinIcon,
@@ -150,7 +151,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
           </div>
           <span className="chip date">
             <CalendarIcon size={14} />
-            {matchDateLong(match.date) + (match.venue ? ` · ${match.venue}` : '')}
+            {matchDateLong(match.date)}
           </span>
           {call ? (
             <span className="call-badge">
@@ -159,10 +160,25 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
             </span>
           ) : null}
           {mapsUrl ? (
-            <a className="link match-map" href={mapsUrl} target="_blank" rel="noopener noreferrer">
-              <MapPinIcon size={15} />
-              Cómo llegar al pabellón
+            <a
+              className="chip date venue"
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Cómo llegar a ${match.venue || 'el pabellón'}`}
+            >
+              <MapPinIcon size={14} />
+              <span>{match.venue || 'Pabellón'}</span>
+              <span className="venue-go">
+                Mapa
+                <ChevronIcon size={12} />
+              </span>
             </a>
+          ) : match.venue ? (
+            <span className="chip date venue">
+              <MapPinIcon size={14} />
+              {match.venue}
+            </span>
           ) : null}
           <button className="icon-btn match-share" onClick={onShare} aria-label="Compartir datos del partido">
             <ShareIcon size={17} />
