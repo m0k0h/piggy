@@ -2,6 +2,8 @@
 export type ServeResult = 'error' | 'in' | 'ace'
 
 export type MatchStatus = 'scheduled' | 'live' | 'finished'
+/** Cómo acabó el partido. Se marca al finalizarlo; los de antes no lo traen. */
+export type MatchOutcome = 'won' | 'lost'
 
 /**
  * Quién está usando la app.
@@ -86,6 +88,7 @@ export interface Lineup extends Syncable {
   /** Ids de las jugadoras convocadas. */
   roster: string[]
   status: MatchStatus
+  outcome?: MatchOutcome
 }
 
 export interface Serve extends Syncable {

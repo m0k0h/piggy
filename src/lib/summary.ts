@@ -3,6 +3,7 @@ import {
   allServes,
   balances,
   fineAmount,
+  lineupOf,
   participants,
   pot,
   servesOfMatch,
@@ -21,6 +22,8 @@ export function matchSummary(state: AppState, match: Match): string {
 
   lines.push(`🏐 ${teamName(state)} ${match.home ? 'vs' : '@'} ${match.opponent}`)
   lines.push(matchDate(match.date))
+  const outcome = lineupOf(state, match.id)?.outcome
+  if (outcome) lines.push(outcome === 'won' ? '🏆 Ganado' : '😔 Perdido')
   lines.push('')
 
   if (total.attempts === 0) {

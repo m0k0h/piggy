@@ -311,7 +311,7 @@ export function removeMatch(id: string) {
 // --- Convocatoria y estado del acta ----------------------------------------
 
 /** Crea o actualiza la convocatoria de un partido. Su id es el del partido. */
-export function saveLineup(matchId: string, patch: Partial<Pick<Lineup, 'roster' | 'status'>>) {
+export function saveLineup(matchId: string, patch: Partial<Pick<Lineup, 'roster' | 'status' | 'outcome'>>) {
   const current = state.lineups[matchId]
   const next: Lineup = current
     ? { ...current, ...patch, deletedAt: null, updatedAt: now() }

@@ -536,6 +536,13 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
   color: var(--pink-text);
   box-shadow: var(--shadow);
 }
+/* Ganado / perdido al finalizar: cada opción se enciende en su color. */
+.segmented.outcome button.won[aria-pressed='true'] { color: var(--green); }
+.segmented.outcome button.lost[aria-pressed='true'] { color: var(--red); }
+/* La hucha del partido, destacada en el aviso de finalizar. */
+.sheet-money { font-family: var(--display); font-size: 15px; font-weight: 800; color: var(--pink-text); }
+/* Resultado en el acta cerrada, encima de las cifras. */
+.match-detail > .chip.outcome { align-self: flex-start; }
 
 /* -------------------------------------------------------------- buttons */
 .btn {
