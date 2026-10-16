@@ -1,9 +1,9 @@
 import { euros, matchDate, percent, relativeDay } from '../lib/format'
 import { navigate } from '../lib/router'
 import { useAppState } from '../lib/store'
-import { fineAmount, finishedMatches, matchStatus, servesOfMatch, tally, upcomingMatches } from '../lib/stats'
+import { fineAmount, finishedMatches, lineupOf, matchStatus, servesOfMatch, tally, upcomingMatches } from '../lib/stats'
 import type { AppState, Match } from '../types'
-import { Empty, LeagueTag, OpponentCrest, SectionTitle } from '../ui/bits'
+import { Empty, LeagueTag, OpponentCrest, OutcomeTag, SectionTitle } from '../ui/bits'
 import { AwayIcon, CalendarIcon, ChevronIcon, HomeIcon } from '../ui/icons'
 
 /** El calendario tal como lo ve el equipo: se consulta y se entra a anotar. */
@@ -56,7 +56,10 @@ function MatchRow({ match, state }: { match: Match; state: AppState }) {
     <button className="row" onClick={() => navigate(`partido/${match.id}`)}>
       <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} />
       <span className="grow">
-        <LeagueTag league={match.league} />
+        <span className="row-tags">
+          <LeagueTag league={match.league} />
+          {status === 'finished' ? <OutcomeTag outcome={lineupOf(state, match.id)?.outcome} /> : null}
+        </span>
         <span className="title">
           {match.home ? <HomeIcon size={15} className="home-mark" /> : <AwayIcon size={15} className="home-mark" />}
           <span className="sr-only">{match.home ? 'En casa · ' : 'Fuera · '}</span>

@@ -218,6 +218,18 @@ export function PartyIcon({ size = 24, ...props }: IconProps) {
   )
 }
 
+/** Cara triste: partido perdido. */
+export function SadIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9 10h.01" />
+      <path d="M15 10h.01" />
+      <path d="M8.5 16.5c1.8-1.8 5.2-1.8 7 0" />
+    </svg>
+  )
+}
+
 /** "No sé qué decirte": partido que ya no existe. */
 export function ShrugIcon({ size = 24, ...props }: IconProps) {
   return (

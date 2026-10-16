@@ -27,6 +27,7 @@ import {
   LeagueLink,
   LeagueTag,
   OpponentCrest,
+  OutcomeTag,
   PlayerName,
   RatioBar,
   ScreenHeader,
@@ -723,11 +724,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
         onBack={() => navigate('partidos')}
       />
       <main className="match-detail">
-        {outcome ? (
-          <span className={`chip outcome ${outcome === 'won' ? 'good' : 'bad'}`}>
-            {outcome === 'won' ? 'GANADO' : 'PERDIDO'}
-          </span>
-        ) : null}
+        <OutcomeTag outcome={outcome} long />
         <div className="stat-row">
           <Stat value={total.attempts} label="Saques" />
           <Stat value={percent(total.ratio)} label="Dentro" tone="good" />
