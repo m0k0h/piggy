@@ -42,7 +42,7 @@ export function Stat({
 }: {
   value: ReactNode
   label: string
-  tone?: 'good' | 'bad' | 'money'
+  tone?: 'good' | 'bad' | 'money' | 'ace'
 }) {
   return (
     <div className={tone ? `stat ${tone}` : 'stat'}>

@@ -30,6 +30,9 @@
   --red-soft: #3a1c1c;
   --amber: #f0b03c;
   --amber-soft: rgba(240, 176, 60, 0.18);
+  /* El ace: fuera de la escala rojo-ámbar-verde para que no se lea como "regular". */
+  --violet: #b48cff;
+  --violet-soft: rgba(180, 140, 255, 0.18);
 
   /* Estado pagado (fondo claro deliberado: destaca como una etiqueta "hecho") */
   --ok-bg: #dff3e6;
@@ -383,6 +386,7 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .stat.good .v { color: var(--green); }
 .stat.bad .v { color: var(--red); }
 .stat.money .v { color: var(--pink-text); }
+.stat.ace .v { color: var(--violet); }
 
 /* ----------------------------------------------------------------- list */
 .list { display: flex; flex-direction: column; }
@@ -649,10 +653,10 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 }
 
 .live-head .line { display: flex; gap: 6px; align-items: center; margin-top: 4px; flex-wrap: wrap; }
-/* "Partido" se mete lo mismo que el relleno de las pastillas de debajo: así
-   su texto queda alineado con el de ellas y no con su borde, que a la vista
-   parecía torcido. El total de saques va a su lado, en gris, para orientarse. */
-.live-head .label { display: flex; align-items: center; gap: 8px; min-height: 20px; padding-left: 9px; }
+/* "Partido" va 3px hacia dentro: alineado justo con el borde de la pastilla
+   de debajo parece torcido, porque su lado curvo empieza más adentro de lo
+   que marca la caja. El total de saques va a su lado, en gris, para orientarse. */
+.live-head .label { display: flex; align-items: center; gap: 8px; min-height: 20px; padding-left: 3px; }
 
 .set-stepper { display: flex; align-items: center; gap: 4px; margin-left: auto; }
 
@@ -707,6 +711,7 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .player-tile .stats { font-size: 12px; font-weight: 700; color: var(--muted); }
 .player-tile .stats.bad { color: var(--red); }
 .player-tile .stats.good { color: var(--green); }
+.player-tile .stats.even { color: var(--amber); }
 
 /* Barra de saques: mismos colores que los puntos de saque. */
 /* Al pie de la ficha: la barra y, a su altura, el porcentaje de acierto. */
@@ -723,6 +728,7 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 }
 .serve-meter .pct.bad { color: var(--red); }
 .serve-meter .pct.good { color: var(--green); }
+.serve-meter .pct.even { color: var(--amber); }
 
 .serve-bar {
   display: flex;
@@ -734,7 +740,7 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 }
 .serve-bar > span { height: 100%; transition: width 0.25s ease; }
 .serve-bar .in { background: var(--green); }
-.serve-bar .ace { background: var(--amber); }
+.serve-bar .ace { background: var(--violet); }
 .serve-bar .error { background: var(--red); }
 
 /* Cabecera de la hoja de resultado: avatar con el dorsal, acierto y últimos saques. */
@@ -757,7 +763,7 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 }
 .serve-dot.error { background: var(--red-soft); color: var(--red); }
 .serve-dot.in { background: var(--green-soft); color: var(--green); }
-.serve-dot.ace { background: var(--amber-soft); color: var(--amber); }
+.serve-dot.ace { background: var(--violet-soft); color: var(--violet); }
 
 .result-buttons { display: grid; gap: 10px; }
 
@@ -779,7 +785,7 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .result-buttons .note { margin-left: auto; font-size: 13px; font-weight: 600; opacity: 0.75; }
 .result-buttons button.err { background: var(--red-soft); color: var(--red); border-color: transparent; }
 .result-buttons button.ok { background: var(--green-soft); color: var(--green); border-color: transparent; }
-.result-buttons button.ace { background: var(--amber-soft); color: var(--amber); border-color: transparent; }
+.result-buttons button.ace { background: var(--violet-soft); color: var(--violet); border-color: transparent; }
 
 .log { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
 
