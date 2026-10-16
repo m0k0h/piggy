@@ -698,6 +698,8 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
 
   const rows = participants(state, match.id)
     .map((player) => ({ player, own: tallyByPlayer(serves, player.id) }))
+    // En el acta solo salen las que han sacado: convocada sin saques no aporta nada.
+    .filter(({ own }) => own.attempts > 0)
     .sort((a, b) => b.own.errors - a.own.errors || b.own.attempts - a.own.attempts)
 
   const onShare = async () => {
@@ -727,7 +729,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
         </div>
         <RatioBar tally={total} />
 
-        {rows.length === 0 || total.attempts === 0 ? (
+        {rows.length === 0 ? (
           <div className="card">
             <Empty icon={<ClipboardIcon />} title="No se anotó ningún saque" />
           </div>
