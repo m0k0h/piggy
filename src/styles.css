@@ -996,10 +996,10 @@ main {
 h2 + .link { margin-top: 2px; line-height: 1.15; }
 
 /* ------------------------------------------------------------- asistentes */
-.attendees { display: flex; flex-wrap: wrap; gap: 8px; }
+.attendees { display: flex; flex-direction: column; gap: 8px; }
 
 .attendee {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 8px;
   padding: 4px 12px 4px 4px;
