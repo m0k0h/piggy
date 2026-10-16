@@ -540,7 +540,18 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .segmented.outcome button.won[aria-pressed='true'] { color: var(--green); }
 .segmented.outcome button.lost[aria-pressed='true'] { color: var(--red); }
 /* La hucha del partido, destacada en el aviso de finalizar. */
-.sheet-money { font-family: var(--display); font-size: 15px; font-weight: 800; color: var(--pink-text); }
+/* Aviso de finalizar: mismo aire entre texto, selector y botonera. */
+.stack.end-match { gap: 20px; }
+.end-summary p { margin: 0; }
+/* Una línea en blanco entre el resumen y el dinero recaudado. */
+.end-summary .end-money {
+  margin-top: 18px;
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--pink-text);
+  font-variant-numeric: tabular-nums;
+}
 /* Resultado en el acta cerrada, encima de las cifras. */
 .match-detail > .chip.outcome { align-self: flex-start; }
 
