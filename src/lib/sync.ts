@@ -171,29 +171,71 @@ function listenRealtime() {
     .subscribe()
 }
 
-export function disconnect() {
+/** Suelta la conexión actual sin tocar lo que ve la interfaz. */
+function teardown() {
   if (channel) void client?.removeChannel(channel)
+  if (flushTimer) clearTimeout(flushTimer)
   channel = null
   client = null
+  flushTimer = null
   queue.clear()
   setSyncPublisher(null)
+}
+
+export function disconnect() {
+  teardown()
   setSnapshot(INITIAL)
 }
 
-/** Conecta con la base de datos del equipo. Sin configurar, se queda en local. */
-export async function connect() {
-  disconnect()
+/**
+ * Un solo cliente para toda la vida de la app, aunque se reconecte muchas
+ * veces: crear uno por intento llena la consola de avisos de sesión duplicada.
+ */
+let sdk: SupabaseClient | null = null
+const REQUEST_TIMEOUT_MS = 20_000
+
+const fetchWithTimeout: typeof fetch = (input, init) => {
+  const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS)
+  const signal = init?.signal ? AbortSignal.any([init.signal, timeout]) : timeout
+  return fetch(input, { ...init, signal })
+}
+
+/** El intento de conexión en marcha, para que dos avisos seguidos no se pisen. */
+let opening: Promise<void> | null = null
+
+/**
+ * Conecta con la base de datos del equipo. Sin configurar, se queda en local.
+ * Sirve también para reconectar: baja lo de las demás y sube todo lo de este
+ * móvil, igual que al abrir la app.
+ */
+export function connect(): Promise<void> {
+  opening ??= open().finally(() => {
+    opening = null
+  })
+  return opening
+}
+
+async function open() {
+  teardown()
   if (!teamConfig) return
 
   teamCode = teamConfig.code
+  // Sin volver a INITIAL: mientras reconecta, la jugadora sigue siendo
+  // jugadora y la admin sigue viendo su sesión.
   setSnapshot({ status: 'connecting', message: '' })
   try {
-    // Carga diferida: sin equipo compartido, la app arranca sin bajar el SDK.
-    const { createClient } = await import('@supabase/supabase-js')
-    client = createClient(teamConfig.url, teamConfig.anonKey, {
-      // La sesión persiste para que la admin no tenga que entrar cada vez.
-      auth: { persistSession: true, autoRefreshToken: true, storageKey: 'piggy.auth' },
-    })
+    if (!sdk) {
+      // Carga diferida: sin equipo compartido, la app arranca sin bajar el SDK.
+      const { createClient } = await import('@supabase/supabase-js')
+      sdk = createClient(teamConfig.url, teamConfig.anonKey, {
+        // La sesión persiste para que la admin no tenga que entrar cada vez.
+        auth: { persistSession: true, autoRefreshToken: true, storageKey: 'piggy.auth' },
+        // Con cobertura a medias una petición puede quedarse colgada sin fallar
+        // nunca, y la app se quedaría en "conectando" sin volver a intentarlo.
+        global: { fetch: fetchWithTimeout },
+      })
+    }
+    client = sdk
 
     const { data } = await client.auth.getSession()
     setSnapshot({ signedIn: Boolean(data.session), email: data.session?.user.email ?? '' })
@@ -210,9 +252,20 @@ export async function connect() {
   }
 }
 
-/** Reintenta lo que quedó en la cola, por ejemplo al volver la conexión. */
+/**
+ * Ha vuelto la red: reconecta del todo. Aunque la conexión pareciera viva,
+ * lo que anotaron las demás durante el corte no llegó por realtime.
+ */
+export function reconnect() {
+  if (teamConfig) void connect()
+}
+
+/**
+ * Reintenta solo si la conexión está caída: la app se abrió sin cobertura o
+ * falló la última subida. Con todo en verde no hace nada.
+ */
 export function retry() {
-  if (client) scheduleFlush(0)
+  if (snapshot.status === 'error') reconnect()
   void flushViews()
 }
 
