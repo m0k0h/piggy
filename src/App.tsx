@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { navigate, useRoute } from './lib/router'
 import { useAppState } from './lib/store'
-import { connect, retry, useSync } from './lib/sync'
+import { connect, reconnect, retry, useSync } from './lib/sync'
 import { useTrackView, type View } from './lib/views'
 import { Admin } from './screens/Admin'
 import { Matches } from './screens/Matches'
@@ -21,6 +21,9 @@ const TABS = [
   { key: 'stats', label: 'Stats', icon: <ChartIcon size={22} />, screen: Stats },
 ]
 
+/** Cada cuánto se reintenta conectar mientras no hay conexión. */
+const RETRY_EVERY_MS = 30_000
+
 export function App() {
   const route = useRoute()
 
@@ -29,9 +32,21 @@ export function App() {
   }, [])
 
   useEffect(() => {
-    // Al volver la cobertura en el pabellón, subimos lo que quedó pendiente.
-    window.addEventListener('online', retry)
-    return () => window.removeEventListener('online', retry)
+    // Al volver la cobertura en el pabellón, bajamos lo de las demás y subimos
+    // lo que quedó pendiente.
+    window.addEventListener('online', reconnect)
+    // Con cobertura a medias el móvil no avisa de nada, así que mientras esté
+    // caída lo seguimos intentando; y al volver a la app desde otra, también.
+    const timer = setInterval(retry, RETRY_EVERY_MS)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') retry()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.removeEventListener('online', reconnect)
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [])
 
   const [head, param] = route
