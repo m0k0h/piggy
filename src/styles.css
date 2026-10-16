@@ -589,6 +589,7 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .btn.ghost:hover { background: var(--surface); }
 .btn.quiet { background: transparent; color: var(--muted); min-height: 44px; padding: 0 8px; font-size: 13.5px; font-weight: 600; }
 .btn.danger { background: var(--red); color: var(--on-hero); }
+.btn.warn { background: var(--amber); color: var(--on-accent); }
 .btn.small { min-height: 38px; font-size: 13.5px; padding: 0 12px; }
 
 .btn-row { display: flex; gap: 10px; }

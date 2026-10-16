@@ -34,9 +34,7 @@ import {
   allPayments,
   balances,
   knownOpponent,
-  lineupOf,
   matchStatus,
-  servesOfMatch,
   upcomingMatches,
   finishedMatches,
   type Balance,
@@ -576,8 +574,8 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
   const [logoError, setLogoError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
-  // Solo hay algo que resetear si se pasó lista o se anotó algún saque.
-  const started = match ? lineupOf(state, match.id) !== null || servesOfMatch(state, match.id).length > 0 : false
+  // Resetear solo tiene sentido con el partido en juego.
+  const live = match ? matchStatus(state, match.id) === 'live' : false
   const logoFileRef = useRef<HTMLInputElement>(null)
 
   /**
@@ -745,7 +743,7 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
           {match ? 'Guardar' : 'Crear partido'}
         </button>
 
-        {match && started ? (
+        {match && live ? (
           confirmReset ? (
             <div className="stack">
               <p className="small muted center">
@@ -757,7 +755,7 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
                   Cancelar
                 </button>
                 <button
-                  className="btn danger"
+                  className="btn warn"
                   onClick={() => {
                     resetMatch(match.id)
                     onClose()
@@ -768,7 +766,7 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
               </div>
             </div>
           ) : (
-            <button className="btn quiet" onClick={() => setConfirmReset(true)}>
+            <button className="btn block warn" onClick={() => setConfirmReset(true)}>
               Resetear partido
             </button>
           )
