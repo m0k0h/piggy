@@ -81,10 +81,10 @@ export function Stats() {
       </div>
       <div className="stat-row">
         <Stat value={total.aces} label="Aces" tone="ace" />
-        <Stat value={total.in} label="En juego" />
+        <Stat value={total.in} label="Aciertos" />
         <Stat value={euros(total.errors * fine)} label="Hucha" tone="money" />
       </div>
-      <RatioBar ratio={total.ratio} />
+      <RatioBar tally={total} />
 
       <SectionTitle>Jugadoras</SectionTitle>
       <div className="segmented">
@@ -102,15 +102,15 @@ export function Stats() {
       <div className="card flush">
         <div className="list">
           {rows.map(({ player, own }) => (
-            <div key={player.id} className="row">
-              <Avatar name={player.name} number={player.number} />
+            <div key={player.id} className="row player-stat">
+              <Avatar name={player.name} number={player.number} big />
               <span className="grow">
                 <span className="title"><PlayerName player={player} /></span>
                 <span className="meta">
                   {plural(own.attempts, 'saque', 'saques')} · {plural(own.errors, 'fallo', 'fallos')} ·{' '}
                   {plural(own.aces, 'ace', 'aces')}
                 </span>
-                <RatioBar ratio={own.ratio} />
+                <RatioBar tally={own} />
               </span>
               <span className="trail">
                 <span className={own.ratio !== null && own.ratio > 0.5 ? 'big good' : 'big'}>

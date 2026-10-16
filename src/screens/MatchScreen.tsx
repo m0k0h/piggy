@@ -697,7 +697,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
           <Stat value={percent(total.ratio)} label="Dentro" tone="good" />
           <Stat value={euros(fines)} label="Hucha" tone="money" />
         </div>
-        <RatioBar ratio={total.ratio} />
+        <RatioBar tally={total} />
 
         {rows.length === 0 || total.attempts === 0 ? (
           <div className="card">
