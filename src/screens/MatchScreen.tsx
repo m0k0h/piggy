@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { callTime, euros, matchDateLong, percent, placeFromMapsUrl, plural, relativeDay, serveSummary } from '../lib/format'
+import { callTime, euros, isToday, matchDateLong, percent, placeFromMapsUrl, plural, relativeDay, serveSummary } from '../lib/format'
 import { goBack, navigate } from '../lib/router'
 import { matchDetails, matchSummary, share } from '../lib/summary'
 import { addServe, removeServe, saveLineup, useAppState } from '../lib/store'
+import { useRole } from '../lib/sync'
 import {
   allPlayers,
   allServes,
@@ -702,6 +703,8 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
   const fines = total.errors * fine
   const outcome = lineupOf(state, match.id)?.outcome
   const [toast, setToast] = useState('')
+  // El equipo solo puede reabrir el mismo día del partido; la admin, siempre.
+  const canReopen = useRole() === 'admin' || isToday(match.date)
 
   const rows = participants(state, match.id)
     .map((player) => ({ player, own: tallyByPlayer(serves, player.id) }))
@@ -776,9 +779,11 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
         </button>
         {toast ? <div className="banner good">{toast}</div> : null}
 
-        <button className="btn quiet" onClick={() => saveLineup(match.id, { status: 'live' })}>
-          Reabrir para seguir anotando
-        </button>
+        {canReopen ? (
+          <button className="btn quiet" onClick={() => saveLineup(match.id, { status: 'live' })}>
+            Reabrir para seguir anotando
+          </button>
+        ) : null}
       </main>
     </>
   )
