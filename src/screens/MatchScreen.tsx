@@ -574,13 +574,19 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
 
       {confirmEnd ? (
         <Sheet title="¿Finalizar el partido?" onClose={() => setConfirmEnd(false)}>
-          <div className="stack">
-            <p className="small muted">
-              Se cierra el acta con {plural(total.attempts, 'saque', 'saques')} y{' '}
-              <strong className="sheet-money">{euros(fines)}</strong> para la hucha.
-              <br />
-              Podrás reabrirlo si falta algo.
-            </p>
+          <div className="stack end-match">
+            <div className="end-summary">
+              <p className="small muted">
+                {total.attempts === 0
+                  ? 'Se cierra el acta sin ningún saque anotado.'
+                  : `Se cierra el acta con ${plural(total.attempts, 'saque realizado', 'saques realizados')} y un porcentaje de acierto del ${percent(total.ratio)}.`}
+                <br />
+                Podrás reabrirlo si falta algo.
+              </p>
+              <p className="end-money">
+                Dinero recaudado: {euros(fines)}
+              </p>
+            </div>
             <div className="segmented outcome" role="group" aria-label="Resultado">
               {OUTCOMES.map((option) => (
                 <button
