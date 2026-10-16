@@ -137,8 +137,14 @@ export function tally(serves: Serve[]): Tally {
   }
 }
 
-/** El nombre de las fichas de saque: el corto si lo tiene, si no el de siempre. */
-export const tileName = (player: Pick<Player, 'name' | 'shortName'>) => player.shortName?.trim() || player.name
+/**
+ * El nombre de las fichas de saque: el corto si lo tiene y, si no, solo el
+ * primer nombre ("María José Pérez" sale "María"). Una palabra cabe siempre
+ * en una línea y todas las fichas quedan iguales; para distinguir a dos
+ * Marías está el nombre corto.
+ */
+export const tileName = (player: Pick<Player, 'name' | 'shortName'>) =>
+  player.shortName?.trim() || player.name.trim().split(/\s+/)[0] || player.name
 
 export const tallyByPlayer = (serves: Serve[], playerId: string): Tally =>
   tally(serves.filter((serve) => serve.playerId === playerId))

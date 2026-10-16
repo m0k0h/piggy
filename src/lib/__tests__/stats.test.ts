@@ -211,8 +211,10 @@ describe('nombre en las fichas de saque', () => {
     expect(tileName({ ...player('p1', 'María José Pérez'), shortName: 'Majo' })).toBe('Majo')
   })
 
-  it('sin nombre corto, o con uno en blanco, sale el nombre de siempre', () => {
-    expect(tileName(player('p1', 'Lucía García'))).toBe('Lucía García')
-    expect(tileName({ ...player('p1', 'Lucía García'), shortName: '  ' })).toBe('Lucía García')
+  it('sin nombre corto, o con uno en blanco, sale solo el primer nombre', () => {
+    expect(tileName(player('p1', 'Lucía García'))).toBe('Lucía')
+    expect(tileName(player('p1', 'María José Pérez'))).toBe('María')
+    expect(tileName({ ...player('p1', '  Ana  López '), shortName: '  ' })).toBe('Ana')
+    expect(tileName(player('p1', 'Irene'))).toBe('Irene')
   })
 })
