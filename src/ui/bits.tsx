@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from 'react'
 import { initials, leagueName } from '../lib/format'
 import type { Tally } from '../lib/stats'
-import type { League, Player } from '../types'
-import { ChevronIcon, ExternalLinkIcon, PositionIcon } from './icons'
+import type { League, MatchOutcome, Player } from '../types'
+import { ChevronIcon, ExternalLinkIcon, PartyIcon, PositionIcon, SadIcon } from './icons'
 
 /**
  * El nombre de una jugadora con la forma de su posición delante (si tiene).
@@ -167,6 +167,20 @@ export function Crest({
 export function LeagueTag({ league, long = false }: { league?: League; long?: boolean }) {
   if (!league) return null
   return <span className={`league-tag ${league}`}>{leagueName(league, long)}</span>
+}
+
+/** Ganado (fiesta, en verde) o perdido (cara triste, en rojo). `long` añade «Partido». */
+export function OutcomeTag({ outcome, long = false }: { outcome?: MatchOutcome; long?: boolean }) {
+  if (!outcome) return null
+  const won = outcome === 'won'
+  const Icon = won ? PartyIcon : SadIcon
+  return (
+    <span className={`outcome-tag ${outcome}`}>
+      <Icon size={long ? 15 : 12} />
+      {long ? 'Partido ' : ''}
+      {won ? 'ganado' : 'perdido'}
+    </span>
+  )
 }
 
 /**

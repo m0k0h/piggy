@@ -419,6 +419,9 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 /* En las filas, la liga va en su propia línea encima del rival: ni recorta
    su nombre ni parte la fecha en dos. */
 .row .grow > .league-tag { align-self: flex-start; margin-bottom: 4px; }
+/* Listado de partidos: liga y resultado juntos en esa misma línea. */
+.row .grow > .row-tags { display: flex; gap: 6px; margin-bottom: 4px; }
+.row .grow > .row-tags:empty { display: none; }
 /* En el listado de partidos el escudo del rival ocupa el alto de la fila
    (liga, rival y fecha), en vez de quedarse en el tamaño de un avatar. */
 .match-list .row > .crest { width: 56px; height: 56px; font-size: 16px; }
@@ -426,8 +429,9 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .next-kind { display: flex; align-items: center; gap: 8px; }
 
 /* ---------------------------------------------------------------- liga */
-/* Etiqueta de liga: rosa la femenina (el color del equipo), ámbar la mixta. */
-.league-tag {
+/* Etiqueta de liga: rosa la femenina (el color del equipo), ámbar la mixta.
+   La del resultado (ganado / perdido) comparte la misma forma. */
+.league-tag, .outcome-tag {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
@@ -443,6 +447,11 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
   white-space: nowrap;
 }
 .league-tag.mixta { background: var(--amber-soft); color: var(--amber); }
+.outcome-tag { gap: 4px; }
+.outcome-tag.won { background: var(--green-soft); color: var(--green); }
+.outcome-tag.lost { background: var(--red-soft); color: var(--red); }
+/* En el acta cerrada, más grande y suelta encima de las cifras. */
+.match-detail > .outcome-tag { align-self: flex-start; gap: 6px; padding: 5px 11px; font-size: 12px; }
 /* En la ficha, junto a «En casa / Fuera». */
 .match-kind { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 /* Selector de liga en el formulario: cada opción se enciende en su color. */
@@ -552,8 +561,6 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
   color: var(--pink-text);
   font-variant-numeric: tabular-nums;
 }
-/* Resultado en el acta cerrada, encima de las cifras. */
-.match-detail > .chip.outcome { align-self: flex-start; }
 
 /* -------------------------------------------------------------- buttons */
 .btn {
