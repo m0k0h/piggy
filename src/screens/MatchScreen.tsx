@@ -238,7 +238,13 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
 }
 
 /**
- * Los saques de una jugadora en una barra: verde dentro, ámbar ace, rojo
+ * Color de los saques de una jugadora: rojo si ha fallado más de los que ha
+ * metido, verde si menos y naranja si van empatados (justo el 50%).
+ */
+const serveTone = (ratio: number) => (ratio < 0.5 ? 'bad' : ratio > 0.5 ? 'good' : 'even')
+
+/**
+ * Los saques de una jugadora en una barra: verde dentro, violeta ace, rojo
  * fallo, en proporción. Vacía mientras no haya sacado. Es solo para el ojo:
  * las cifras ya van escritas encima.
  */
@@ -485,7 +491,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
                         <PlayerName player={{ ...player, name: tileName(player) }} />
                       </span>
                       {own.attempts > 0 ? (
-                        <span className={own.errors > 0 ? 'stats bad' : 'stats good'}>
+                        <span className={`stats ${serveTone(own.ratio ?? 0)}`}>
                           {own.errors}/{own.attempts} fallados
                         </span>
                       ) : (
@@ -495,7 +501,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
                   </span>
                   <span className="serve-meter">
                     <ServeBar tally={own} />
-                    <span className={own.ratio === null ? 'pct' : own.ratio < 0.5 ? 'pct bad' : 'pct good'}>
+                    <span className={own.ratio === null ? 'pct' : `pct ${serveTone(own.ratio)}`}>
                       {own.ratio === null ? '0%' : percent(own.ratio)}
                     </span>
                   </span>

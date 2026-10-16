@@ -80,7 +80,7 @@ export function Stats() {
         <Stat value={total.errors} label="Fallos" tone="bad" />
       </div>
       <div className="stat-row">
-        <Stat value={total.aces} label="Aces" />
+        <Stat value={total.aces} label="Aces" tone="ace" />
         <Stat value={total.in} label="En juego" />
         <Stat value={euros(total.errors * fine)} label="Hucha" tone="money" />
       </div>
