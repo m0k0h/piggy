@@ -156,6 +156,10 @@ main {
 }
 
 .app.has-tabs main { padding-bottom: calc(90px + var(--safe-b)); }
+/* Partido en juego: sin barra de pestañas, pero con la plantilla llena las
+   últimas fichas quedaban pegadas al borde. Aire, y la zona de la barra de
+   inicio del iPhone aparte. */
+main.live { padding-bottom: calc(40px + var(--safe-b)); }
 
 /* ------------------------------------------------------------- tab bar */
 .tabbar {
@@ -673,9 +677,7 @@ main {
 }
 
 .player-tile:active { transform: scale(0.98); }
-/* El hueco del nombre es siempre de dos líneas, quepa en una o no: así todas
-   las fichas miden lo mismo, tengan nombre corto, nombre largo o solo uno. */
-.player-tile .head { display: flex; align-items: center; gap: 10px; min-height: 56px; }
+.player-tile .head { display: flex; align-items: center; gap: 10px; }
 .player-tile .head .avatar {
   width: 48px;
   height: 48px;
@@ -684,15 +686,16 @@ main {
   font-weight: 800;
 }
 .player-tile .grow { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+/* Una sola línea: sale el primer nombre o el nombre corto. Si alguno no cabe,
+   se corta con "…" en vez de saltar de línea y descuadrar la ficha. */
 .player-tile .name {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   overflow: hidden;
   font-family: var(--display);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .player-tile .stats { font-size: 12px; font-weight: 700; color: var(--muted); }
 .player-tile .stats.bad { color: var(--red); }

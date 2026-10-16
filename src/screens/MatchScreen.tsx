@@ -418,7 +418,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
           </button>
         }
       />
-      <main>
+      <main className="live">
         <div className="live-head">
           <div>
             <div className="small muted">Partido</div>
