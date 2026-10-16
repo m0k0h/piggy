@@ -18,7 +18,7 @@ import {
   tileName,
   type Tally,
 } from '../lib/stats'
-import type { AppState, Match, Player, Serve, ServeResult } from '../types'
+import { POSITION_LABELS, type AppState, type Match, type Player, type Position, type Serve, type ServeResult } from '../types'
 import { Sheet } from '../ui/Sheet'
 import {
   Avatar,
@@ -44,6 +44,7 @@ import {
   MinusIcon,
   PeopleIcon,
   PlusIcon,
+  PositionIcon,
   ShareIcon,
   ShrugIcon,
   StarIcon,
@@ -207,6 +208,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
             </p>
           ) : (
             <div className="attendees">
+              <PositionSummary players={attendees} />
               {attendees.map((player) => (
                 <span key={player.id} className="attendee">
                   <Avatar name={player.name} number={player.number} />
@@ -252,6 +254,36 @@ function ServeBar({ tally: own }: { tally: Tally }) {
         </>
       ) : null}
     </span>
+  )
+}
+
+const POSITION_PLURALS: Record<Position, string> = {
+  setter: 'Colocadoras',
+  outside: 'Puntas',
+  middle: 'Centrales',
+}
+
+/**
+ * Cuántas asistentes hay de cada posición, para ver de un vistazo si falta
+ * alguna. Las tres salen siempre: un cero (en apagado) es justo el aviso.
+ */
+function PositionSummary({ players }: { players: Player[] }) {
+  const positions = Object.keys(POSITION_LABELS) as Position[]
+  const unknown = players.filter((player) => !player.position).length
+  return (
+    <div className="position-summary">
+      {positions.map((position) => {
+        const count = players.filter((player) => player.position === position).length
+        return (
+          <span key={position} className={count === 0 ? 'position-chip none' : 'position-chip'}>
+            <PositionIcon position={position} size={10} />
+            <strong>{count}</strong>
+            {count === 1 ? POSITION_LABELS[position] : POSITION_PLURALS[position]}
+          </span>
+        )
+      })}
+      {unknown > 0 ? <span className="position-unknown">{unknown} sin posición asignada</span> : null}
+    </div>
   )
 }
 
