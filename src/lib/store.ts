@@ -321,6 +321,22 @@ export function saveLineup(matchId: string, patch: Partial<Pick<Lineup, 'roster'
 
 export const setMatchStatus = (matchId: string, status: MatchStatus) => saveLineup(matchId, { status })
 
+/**
+ * Deja el partido como recién creado: sin convocatoria, sin saques y sin
+ * resultado. La convocatoria se borra ya vacía, así que si luego se vuelve a
+ * iniciar no arrastra a las convocadas ni el resultado de antes.
+ */
+export function resetMatch(matchId: string) {
+  const ts = now()
+  const current = state.lineups[matchId]
+  if (current && current.deletedAt === null) {
+    const { outcome: _outcome, ...rest } = current
+    write('lineups', [{ ...rest, roster: [], status: 'scheduled', deletedAt: ts, updatedAt: ts }])
+  }
+  const serves = Object.values(state.serves).filter((serve) => serve.matchId === matchId && serve.deletedAt === null)
+  write('serves', serves.map((serve) => ({ ...serve, deletedAt: ts, updatedAt: ts })))
+}
+
 // --- Saques ----------------------------------------------------------------
 
 export function addServe(matchId: string, playerId: string, result: ServeResult, set: number): Serve {

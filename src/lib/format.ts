@@ -44,11 +44,19 @@ export function callTime(value: string): string | null {
 }
 
 /** "hoy", "mañana" o los días que faltan; en pasado, cuánto hace. */
-export function relativeDay(value: string): string {
+/** Días naturales de hoy a la fecha (negativo si ya pasó); `null` si no es una fecha. */
+function daysFromToday(value: string, today = new Date()): number | null {
   const date = asDate(value)
-  if (!valid(date)) return ''
+  if (!valid(date)) return null
   const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-  const days = Math.round((startOf(date) - startOf(new Date())) / 86_400_000)
+  return Math.round((startOf(date) - startOf(today)) / 86_400_000)
+}
+
+export const isToday = (value: string, today = new Date()): boolean => daysFromToday(value, today) === 0
+
+export function relativeDay(value: string): string {
+  const days = daysFromToday(value)
+  if (days === null) return ''
   if (days === 0) return 'hoy'
   if (days === 1) return 'mañana'
   if (days === -1) return 'ayer'

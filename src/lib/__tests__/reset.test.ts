@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Team } from '../../types'
-import { addMatch, addPayment, addPlayer, addServe, applyRemote, getState, rowsOf, saveLineup } from '../store'
+import { addMatch, addPayment, addPlayer, addServe, applyRemote, getState, resetMatch, rowsOf, saveLineup } from '../store'
+import { matchStatus, rosterIds, servesOfMatch } from '../stats'
 
 const withReset = (resetAt: string): Team => ({ ...getState().team, resetAt, updatedAt: resetAt })
 const tick = () => new Promise((resolve) => setTimeout(resolve, 5))
@@ -96,5 +97,41 @@ describe('borrado de partidos de prueba', () => {
 
     expect(getState().payments.viejo).toBeUndefined()
     expect(rowsOf('payments').some((row) => row.createdAt === old)).toBe(false)
+  })
+})
+
+describe('resetear un partido', () => {
+  it('lo deja sin empezar: sin asistencia, sin saques y sin resultado', () => {
+    const player = addPlayer('Laura', '4')
+    const match = addMatch({ date: '2026-10-01T18:00', opponent: 'Rival' })
+    const other = addMatch({ date: '2026-10-08T18:00', opponent: 'Otro' })
+    saveLineup(match.id, { roster: [player.id], status: 'live' })
+    addServe(match.id, player.id, 'error', 1)
+    addServe(other.id, player.id, 'in', 1)
+    saveLineup(match.id, { status: 'finished', outcome: 'won' })
+    addPayment(player.id, 1)
+
+    resetMatch(match.id)
+
+    const state = getState()
+    expect(matchStatus(state, match.id)).toBe('scheduled')
+    expect(rosterIds(state, match.id)).toEqual([])
+    expect(servesOfMatch(state, match.id)).toEqual([])
+    expect(servesOfMatch(state, other.id)).toHaveLength(1)
+    expect(Object.values(state.payments).some((p) => p.playerId === player.id && !p.deletedAt)).toBe(true)
+  })
+
+  it('al volver a pasar lista no arrastra a las de antes ni el resultado', () => {
+    const [a, b] = [addPlayer('Ana', '1'), addPlayer('Bea', '2')]
+    const match = addMatch({ date: '2026-10-02T18:00', opponent: 'Rival' })
+    saveLineup(match.id, { roster: [a.id], status: 'finished', outcome: 'lost' })
+
+    resetMatch(match.id)
+    saveLineup(match.id, { roster: [b.id], status: 'scheduled' })
+
+    const lineup = getState().lineups[match.id]
+    expect(lineup.roster).toEqual([b.id])
+    expect(lineup.status).toBe('scheduled')
+    expect(lineup.outcome).toBeUndefined()
   })
 })

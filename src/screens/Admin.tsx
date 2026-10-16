@@ -24,6 +24,7 @@ import {
   removeNotice,
   removePayment,
   removePlayer,
+  resetMatch,
   updateMatch,
   updatePlayer,
   updateTeam,
@@ -33,7 +34,9 @@ import {
   allPayments,
   balances,
   knownOpponent,
+  lineupOf,
   matchStatus,
+  servesOfMatch,
   upcomingMatches,
   finishedMatches,
   type Balance,
@@ -572,6 +575,9 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
   const [logo, setLogo] = useState(match?.opponentLogo ?? '')
   const [logoError, setLogoError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmReset, setConfirmReset] = useState(false)
+  // Solo hay algo que resetear si se pasó lista o se anotó algún saque.
+  const started = match ? lineupOf(state, match.id) !== null || servesOfMatch(state, match.id).length > 0 : false
   const logoFileRef = useRef<HTMLInputElement>(null)
 
   /**
@@ -738,6 +744,35 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
         <button className="btn block" onClick={save} disabled={!opponent.trim() || !date}>
           {match ? 'Guardar' : 'Crear partido'}
         </button>
+
+        {match && started ? (
+          confirmReset ? (
+            <div className="stack">
+              <p className="small muted center">
+                El partido vuelve a quedar sin empezar: se borran la asistencia, los saques anotados y el
+                resultado. Lo que ya se pagó a la hucha no se toca.
+              </p>
+              <div className="btn-row">
+                <button className="btn ghost" onClick={() => setConfirmReset(false)}>
+                  Cancelar
+                </button>
+                <button
+                  className="btn danger"
+                  onClick={() => {
+                    resetMatch(match.id)
+                    onClose()
+                  }}
+                >
+                  Resetear
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button className="btn quiet" onClick={() => setConfirmReset(true)}>
+              Resetear partido
+            </button>
+          )
+        ) : null}
 
         {match ? (
           confirmDelete ? (
