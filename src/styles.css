@@ -95,6 +95,7 @@ h1, h2, h3 { margin: 0; line-height: 1.2; font-family: var(--display); }
 .row .trail .big,
 .visits-picked strong,
 .attendee,
+.position-chip strong,
 .set-stepper .n {
   font-variant-numeric: tabular-nums;
 }
@@ -1010,3 +1011,31 @@ h2 + .link { margin-top: 2px; line-height: 1.15; }
 }
 
 .attendee .avatar { width: 28px; height: 28px; font-size: 11px; }
+
+/* Resumen por posición encima de la lista: una pastilla por posición,
+   en el rosa tenue de los distintivos; la que está a cero, apagada. */
+/* Reparten el ancho entre todas: en una fila llenan la tarjeta, y si no
+   caben (un móvil muy estrecho, o con «sin posición») la fila de abajo
+   también queda llena en vez de con una pastilla suelta a la izquierda. */
+.position-summary { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 4px; }
+.position-chip {
+  flex: 1 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--pink-soft);
+  color: var(--pink-text);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.position-chip svg { color: var(--pink); }
+.position-chip strong { font-family: var(--display); font-weight: 800; color: var(--text); }
+.position-chip.none { background: var(--surface-2); color: var(--muted); }
+.position-chip.none strong,
+.position-chip.none svg { color: var(--dim); }
+/* Las que no tienen posición no son un hueco del equipo: una nota debajo. */
+.position-unknown { flex-basis: 100%; text-align: center; font-size: 12px; color: var(--muted); }
