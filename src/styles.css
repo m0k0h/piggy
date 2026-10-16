@@ -95,6 +95,8 @@ h1, h2, h3 { margin: 0; line-height: 1.2; font-family: var(--display); }
 .row .trail .big,
 .visits-picked strong,
 .attendee,
+.player-tile .stats,
+.serve-meter,
 .position-chip strong,
 .set-stepper .n {
   font-variant-numeric: tabular-nums;
@@ -662,8 +664,7 @@ main {
 .player-tile {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-height: 92px;
+  gap: 10px;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -672,10 +673,59 @@ main {
 }
 
 .player-tile:active { transform: scale(0.98); }
-.player-tile .head { display: flex; align-items: center; gap: 8px; }
-.player-tile .head .avatar { width: 30px; height: 30px; font-size: 11px; }
-.player-tile .name { font-family: var(--display); font-weight: 700; font-size: 15px; line-height: 1.2; }
-.player-tile .line { display: flex; gap: 6px; align-items: center; margin-top: auto; flex-wrap: wrap; }
+/* El hueco del nombre es siempre de dos líneas, quepa en una o no: así todas
+   las fichas miden lo mismo, tengan nombre corto, nombre largo o solo uno. */
+.player-tile .head { display: flex; align-items: center; gap: 10px; min-height: 56px; }
+.player-tile .head .avatar {
+  width: 48px;
+  height: 48px;
+  font-family: var(--display);
+  font-size: 20px;
+  font-weight: 800;
+}
+.player-tile .grow { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.player-tile .name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.2;
+}
+.player-tile .stats { font-size: 12px; font-weight: 700; color: var(--muted); }
+.player-tile .stats.bad { color: var(--red); }
+.player-tile .stats.good { color: var(--green); }
+
+/* Barra de saques: mismos colores que los puntos de saque. */
+/* Al pie de la ficha: la barra y, a su altura, el porcentaje de acierto. */
+.serve-meter { display: flex; align-items: center; gap: 8px; margin-top: auto; }
+/* Hueco fijo: así todas las barras miden lo mismo, de "0%" a "100%". Sin
+   saques, "0%" en gris: no es un mal dato, es que aún no hay. */
+.serve-meter .pct {
+  min-width: 4.5ch;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: right;
+}
+.serve-meter .pct.bad { color: var(--red); }
+.serve-meter .pct.good { color: var(--green); }
+
+.serve-bar {
+  display: flex;
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.serve-bar > span { height: 100%; transition: width 0.25s ease; }
+.serve-bar .in { background: var(--green); }
+.serve-bar .ace { background: var(--amber); }
+.serve-bar .error { background: var(--red); }
 
 /* Cabecera de la hoja de resultado: avatar con el dorsal, acierto y últimos saques. */
 .sheet-player { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }

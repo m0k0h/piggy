@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AppState, Lineup, Match, Payment, Player, Serve } from '../../types'
-import { allPlayers, balances, currentSet, matchStatus, participants, pot, tally, upcomingMatches } from '../stats'
+import { allPlayers, balances, currentSet, matchStatus, participants, pot, tally, tileName, upcomingMatches } from '../stats'
 
 const stamp = { createdAt: '2025-10-01T10:00', updatedAt: '2025-10-01T10:00', deletedAt: null }
 
@@ -203,5 +203,16 @@ describe('participants', () => {
       serves: byId([serve('s1', 'p2', 'error')]),
     })
     expect(participants(s, 'm1').map((p) => p.name)).toEqual(['Anna', 'Marta'])
+  })
+})
+
+describe('nombre en las fichas de saque', () => {
+  it('sale el nombre corto si lo tiene', () => {
+    expect(tileName({ ...player('p1', 'María José Pérez'), shortName: 'Majo' })).toBe('Majo')
+  })
+
+  it('sin nombre corto, o con uno en blanco, sale el nombre de siempre', () => {
+    expect(tileName(player('p1', 'Lucía García'))).toBe('Lucía García')
+    expect(tileName({ ...player('p1', 'Lucía García'), shortName: '  ' })).toBe('Lucía García')
   })
 })

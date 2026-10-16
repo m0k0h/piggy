@@ -238,18 +238,20 @@ export function addPlayer(
   number = '',
   externalId: string | null = null,
   position?: Position,
+  shortName = '',
 ): Player {
   const player = born<Player>({
     name: name.trim(),
     number: number.trim(),
     externalId,
     ...(position ? { position } : {}),
+    ...(shortName.trim() ? { shortName: shortName.trim() } : {}),
   })
   write('players', [player])
   return player
 }
 
-export function updatePlayer(id: string, patch: Partial<Pick<Player, 'name' | 'number' | 'position'>>) {
+export function updatePlayer(id: string, patch: Partial<Pick<Player, 'name' | 'number' | 'position' | 'shortName'>>) {
   const current = state.players[id]
   if (!current) return
   write('players', [{ ...current, ...patch, updatedAt: now() }])

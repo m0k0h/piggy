@@ -41,6 +41,11 @@ export interface Player extends Syncable {
   externalId: string | null
   /** Opcional de verdad: las jugadoras creadas antes de que esto existiera no la traen. */
   position?: Position
+  /**
+   * Cómo sale en las fichas de saque del partido en juego, donde el nombre
+   * completo no cabe igual para todas. Vacío o ausente: sale el nombre.
+   */
+  shortName?: string
 }
 
 /** En qué competición se juega el partido. */
