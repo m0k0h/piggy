@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { initials, leagueName } from '../lib/format'
+import type { Tally } from '../lib/stats'
 import type { League, Player } from '../types'
 import { ChevronIcon, ExternalLinkIcon, PositionIcon } from './icons'
 
@@ -104,11 +105,14 @@ export function SectionTitle({ children, aside }: { children: ReactNode; aside?:
 }
 
 /** Barra verde/roja con la proporción de saques que entraron. */
-export function RatioBar({ ratio }: { ratio: number | null }) {
-  if (ratio === null) return null
+/** Barra de saques: dentro en verde, aces en violeta y, de fondo, fallos en rojo. */
+export function RatioBar({ tally }: { tally: Pick<Tally, 'attempts' | 'in' | 'aces'> }) {
+  if (tally.attempts === 0) return null
+  const width = (count: number) => `${(count / tally.attempts) * 100}%`
   return (
     <div className="bar" aria-hidden="true">
-      <i style={{ width: `${Math.round(ratio * 100)}%` }} />
+      <i style={{ width: width(tally.in) }} />
+      <i className="ace" style={{ width: width(tally.aces) }} />
     </div>
   )
 }
