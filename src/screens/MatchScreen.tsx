@@ -15,6 +15,8 @@ import {
   servesOfMatch,
   tally,
   tallyByPlayer,
+  tileName,
+  type Tally,
 } from '../lib/stats'
 import type { AppState, Match, Player, Serve, ServeResult } from '../types'
 import { Sheet } from '../ui/Sheet'
@@ -233,6 +235,26 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
   )
 }
 
+/**
+ * Los saques de una jugadora en una barra: verde dentro, ámbar ace, rojo
+ * fallo, en proporción. Vacía mientras no haya sacado. Es solo para el ojo:
+ * las cifras ya van escritas encima.
+ */
+function ServeBar({ tally: own }: { tally: Tally }) {
+  const share = (n: number) => `${(n / own.attempts) * 100}%`
+  return (
+    <span className="serve-bar" aria-hidden="true">
+      {own.attempts > 0 ? (
+        <>
+          <span className="in" style={{ width: share(own.in) }} />
+          <span className="ace" style={{ width: share(own.aces) }} />
+          <span className="error" style={{ width: share(own.errors) }} />
+        </>
+      ) : null}
+    </span>
+  )
+}
+
 // -------------------------------------------------------------- convocatoria
 
 function CallUp({
@@ -421,22 +443,25 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
                 <button key={player.id} className="player-tile" onClick={() => setPicking(player)}>
                   <span className="head">
                     <Avatar name={player.name} number={player.number} />
-                    <span className="name"><PlayerName player={player} /></span>
+                    <span className="grow">
+                      <span className="name">
+                        <PlayerName player={{ ...player, name: tileName(player) }} />
+                      </span>
+                      {own.attempts > 0 ? (
+                        <span className={own.errors > 0 ? 'stats bad' : 'stats good'}>
+                          {own.errors}/{own.attempts} fallados
+                        </span>
+                      ) : (
+                        <span className="stats">No ha sacado</span>
+                      )}
+                    </span>
                   </span>
-                  {own.attempts > 0 ? (
-                    <span className="line">
-                      <span className={own.errors > 0 ? 'chip bad' : 'chip'}>
-                        {plural(own.errors, 'fallo', 'fallos')}
-                      </span>
-                      <span className={own.ratio !== null && own.ratio < 0.5 ? 'chip bad' : 'chip good'}>
-                        {percent(own.ratio)}
-                      </span>
+                  <span className="serve-meter">
+                    <ServeBar tally={own} />
+                    <span className={own.ratio === null ? 'pct' : own.ratio < 0.5 ? 'pct bad' : 'pct good'}>
+                      {own.ratio === null ? '0%' : percent(own.ratio)}
                     </span>
-                  ) : (
-                    <span className="line">
-                      <span className="chip">No ha sacado</span>
-                    </span>
-                  )}
+                  </span>
                 </button>
               )
             })}

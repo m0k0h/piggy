@@ -374,6 +374,7 @@ function PlayersSection() {
 
 function PlayerSheet({ player, onClose }: { player: Player | null; onClose: () => void }) {
   const [name, setName] = useState(player?.name ?? '')
+  const [shortName, setShortName] = useState(player?.shortName ?? '')
   const [number, setNumber] = useState(player?.number ?? '')
   const [position, setPosition] = useState<Position | ''>(player?.position ?? '')
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -382,8 +383,9 @@ function PlayerSheet({ player, onClose }: { player: Player | null; onClose: () =
     const clean = name.trim()
     if (!clean) return
     const chosen = position || undefined
-    if (player) updatePlayer(player.id, { name: clean, number: number.trim(), position: chosen })
-    else addPlayer(clean, number, null, chosen)
+    const short = shortName.trim() || undefined
+    if (player) updatePlayer(player.id, { name: clean, number: number.trim(), position: chosen, shortName: short })
+    else addPlayer(clean, number, null, chosen, short)
     onClose()
   }
 
@@ -396,6 +398,17 @@ function PlayerSheet({ player, onClose }: { player: Player | null; onClose: () =
             onChange={(event) => setName(event.target.value)}
             placeholder="Anna Núñez"
             autoFocus={!player}
+            autoComplete="off"
+          />
+        </Field>
+        <Field
+          label="Nombre corto (opcional)"
+          hint="Solo para las fichas de saque durante el partido. Si lo dejas vacío, sale el nombre."
+        >
+          <input
+            value={shortName}
+            onChange={(event) => setShortName(event.target.value)}
+            placeholder="Majo"
             autoComplete="off"
           />
         </Field>
