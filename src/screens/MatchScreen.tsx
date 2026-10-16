@@ -8,6 +8,7 @@ import {
   allServes,
   currentSet,
   fineAmount,
+  lineupOf,
   matchStatus,
   participants,
   rosterIds,
@@ -18,7 +19,7 @@ import {
   tileName,
   type Tally,
 } from '../lib/stats'
-import { POSITION_LABELS, type AppState, type Match, type Player, type Position, type Serve, type ServeResult } from '../types'
+import { POSITION_LABELS, type AppState, type Match, type MatchOutcome, type Player, type Position, type Serve, type ServeResult } from '../types'
 import { Sheet } from '../ui/Sheet'
 import {
   Avatar,
@@ -385,6 +386,11 @@ function CallUp({
 
 // -------------------------------------------------------------------- en vivo
 
+const OUTCOMES: { key: MatchOutcome; label: string }[] = [
+  { key: 'won', label: 'Hemos ganado' },
+  { key: 'lost', label: 'Hemos perdido' },
+]
+
 function LiveMatch({ match, state }: { match: Match; state: AppState }) {
   const serves = servesOfMatch(state, match.id)
   const roster = rosterOf(state, match.id)
@@ -392,6 +398,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
   const [picking, setPicking] = useState<Player | null>(null)
   const [editingRoster, setEditingRoster] = useState(false)
   const [confirmEnd, setConfirmEnd] = useState(false)
+  const [outcome, setOutcome] = useState<MatchOutcome | undefined>(lineupOf(state, match.id)?.outcome)
 
   const total = tally(serves)
   const fines = total.errors * fineAmount(state)
@@ -569,17 +576,32 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
         <Sheet title="¿Finalizar el partido?" onClose={() => setConfirmEnd(false)}>
           <div className="stack">
             <p className="small muted">
-              Se cierra el acta con {plural(total.attempts, 'saque', 'saques')} y {euros(fines)} para
-              la hucha. Podrás reabrirlo si falta algo.
+              Se cierra el acta con {plural(total.attempts, 'saque', 'saques')} y{' '}
+              <strong className="sheet-money">{euros(fines)}</strong> para la hucha.
+              <br />
+              Podrás reabrirlo si falta algo.
             </p>
+            <div className="segmented outcome" role="group" aria-label="Resultado">
+              {OUTCOMES.map((option) => (
+                <button
+                  key={option.key}
+                  className={option.key}
+                  onClick={() => setOutcome(option.key)}
+                  aria-pressed={outcome === option.key}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
             <div className="btn-row">
               <button className="btn ghost" onClick={() => setConfirmEnd(false)}>
                 Seguir
               </button>
               <button
                 className="btn"
+                disabled={!outcome}
                 onClick={() => {
-                  saveLineup(match.id, { status: 'finished' })
+                  saveLineup(match.id, { status: 'finished', outcome })
                   setConfirmEnd(false)
                 }}
               >
@@ -671,6 +693,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
   const total = tally(serves)
   const fine = fineAmount(state)
   const fines = total.errors * fine
+  const outcome = lineupOf(state, match.id)?.outcome
   const [toast, setToast] = useState('')
 
   const rows = participants(state, match.id)
@@ -692,6 +715,11 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
         onBack={() => navigate('partidos')}
       />
       <main className="match-detail">
+        {outcome ? (
+          <span className={`chip outcome ${outcome === 'won' ? 'good' : 'bad'}`}>
+            {outcome === 'won' ? 'GANADO' : 'PERDIDO'}
+          </span>
+        ) : null}
         <div className="stat-row">
           <Stat value={total.attempts} label="Saques" />
           <Stat value={percent(total.ratio)} label="Dentro" tone="good" />
