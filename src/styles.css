@@ -97,6 +97,7 @@ h1, h2, h3 { margin: 0; line-height: 1.2; font-family: var(--display); }
 .attendee,
 .player-tile .stats,
 .serve-meter,
+.live-head .chip,
 .position-chip strong,
 .set-stepper .n {
   font-variant-numeric: tabular-nums;
@@ -155,11 +156,13 @@ main {
   gap: 18px;
 }
 
-.app.has-tabs main { padding-bottom: calc(90px + var(--safe-b)); }
-/* Partido en juego: sin barra de pestañas, pero con la plantilla llena las
-   últimas fichas quedaban pegadas al borde. Aire, y la zona de la barra de
-   inicio del iPhone aparte. */
-main.live { padding-bottom: calc(40px + var(--safe-b)); }
+/* La barra de pestañas mide 85px: los 15px que sobran son el aire entre el
+   último bloque y la barra al llegar al final del scroll. */
+.app.has-tabs main { padding-bottom: calc(100px + var(--safe-b)); }
+/* Detalle de partido: sin barra de pestañas, el final quedaba pegado al
+   borde. Los mismos 15px de aire que en las pestañas, y la zona de la barra
+   de inicio del iPhone aparte. */
+main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 
 /* ------------------------------------------------------------- tab bar */
 .tabbar {
@@ -646,6 +649,10 @@ main.live { padding-bottom: calc(40px + var(--safe-b)); }
 }
 
 .live-head .line { display: flex; gap: 6px; align-items: center; margin-top: 4px; flex-wrap: wrap; }
+/* "Partido" se mete lo mismo que el relleno de las pastillas de debajo: así
+   su texto queda alineado con el de ellas y no con su borde, que a la vista
+   parecía torcido. El total de saques va a su lado, en gris, para orientarse. */
+.live-head .label { display: flex; align-items: center; gap: 8px; min-height: 20px; padding-left: 9px; }
 
 .set-stepper { display: flex; align-items: center; gap: 4px; margin-left: auto; }
 

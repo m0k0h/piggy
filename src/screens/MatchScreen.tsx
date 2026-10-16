@@ -134,7 +134,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
   return (
     <>
       <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={() => goBack('partidos')} />
-      <main>
+      <main className="match-detail">
         <div className="card stack match-head">
           <div className="inline wide">
             <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} big />
@@ -318,7 +318,7 @@ function CallUp({
         subtitle={plural(selected.length, 'apuntada', 'apuntadas')}
         onBack={onCancel}
       />
-      <main>
+      <main className="match-detail">
         {players.length === 0 ? (
           <div className="card">
             <Empty icon={<BallIcon />} title="No hay jugadoras en la plantilla">
@@ -418,10 +418,15 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
           </button>
         }
       />
-      <main className="live">
+      <main className="match-detail">
         <div className="live-head">
           <div>
-            <div className="small muted">Partido</div>
+            <div className="label">
+              <span className="small muted">Partido</span>
+              {total.attempts > 0 ? (
+                <span className="chip">{plural(total.attempts, 'saque', 'saques')}</span>
+              ) : null}
+            </div>
             {total.attempts > 0 ? (
               <span className="line">
                 <span className={total.errors > 0 ? 'chip bad' : 'chip'}>
@@ -680,7 +685,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
         subtitle={matchDateLong(match.date)}
         onBack={() => navigate('partidos')}
       />
-      <main>
+      <main className="match-detail">
         <div className="stat-row">
           <Stat value={total.attempts} label="Saques" />
           <Stat value={percent(total.ratio)} label="Dentro" tone="good" />
