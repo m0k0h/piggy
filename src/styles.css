@@ -547,8 +547,8 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .end-summary .end-money {
   margin-top: 18px;
   font-family: var(--display);
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--pink-text);
   font-variant-numeric: tabular-nums;
 }
