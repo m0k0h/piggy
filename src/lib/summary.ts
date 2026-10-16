@@ -1,4 +1,4 @@
-import { callTime, euros, joinNatural, leagueName, matchDate, matchDateLong, percent, plural } from './format'
+import { callTime, euros, joinNatural, leagueName, matchDate, matchDateLong, percent } from './format'
 import {
   allServes,
   balances,
@@ -10,6 +10,7 @@ import {
   tally,
   tallyByPlayer,
   teamName,
+  tileName,
 } from './stats'
 import type { AppState, Match } from '../types'
 
@@ -44,10 +45,8 @@ export function matchSummary(state: AppState, match: Match): string {
   if (roster.length > 0) {
     lines.push('')
     for (const { player, own } of roster) {
-      const money = own.errors > 0 ? ` — ${euros(own.errors * fine)}` : ''
-      lines.push(
-        `• ${player.name}: ${plural(own.attempts, 'saque', 'saques')}, ${plural(own.errors, 'fallo', 'fallos')} (${percent(own.ratio)} dentro)${money}`,
-      )
+      // Entre asteriscos, WhatsApp pone el nombre en negrita.
+      lines.push(`• *${tileName(player)}*: ${percent(own.ratio)} de acierto — ${euros(own.errors * fine)}`)
     }
   }
   return lines.join('\n')
