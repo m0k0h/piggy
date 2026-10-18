@@ -810,8 +810,13 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
 function PaymentsSection() {
   const state = useAppState()
   const rows = balances(state)
-  const [paying, setPaying] = useState<Balance | null>(null)
+  // Se guarda la jugadora, no su fila: al registrar o deshacer un pago la hoja
+  // tiene que ver las cuentas nuevas, no las de cuando se abrió.
+  const [payingId, setPayingId] = useState<string | null>(null)
+  const paying = rows.find((row) => row.player.id === payingId) ?? null
   const withDebt = rows.filter((row) => row.pending > 0)
+  // Las que ya han puesto algo y no deben nada: ahí se corrige un pago mal metido.
+  const settled = rows.filter((row) => row.pending <= 0 && row.paid > 0)
 
   return (
     <>
@@ -825,7 +830,7 @@ function PaymentsSection() {
           <div className="card flush">
             <div className="list">
               {withDebt.map((row) => (
-                <button key={row.player.id} className="row" onClick={() => setPaying(row)}>
+                <button key={row.player.id} className="row" onClick={() => setPayingId(row.player.id)}>
                   <Avatar name={row.player.name} number={row.player.number} />
                   <span className="grow">
                     <span className="title"><PlayerName player={row.player} /></span>
@@ -846,17 +851,57 @@ function PaymentsSection() {
             </div>
           </div>
         )}
+
+        {settled.length > 0 ? (
+          <>
+            <SectionTitle aside={<span>{settled.length}</span>}>Al día</SectionTitle>
+            <div className="card flush">
+              <div className="list">
+                {settled.map((row) => (
+                  <button key={row.player.id} className="row" onClick={() => setPayingId(row.player.id)}>
+                    <Avatar name={row.player.name} number={row.player.number} />
+                    <span className="grow">
+                      <span className="title"><PlayerName player={row.player} /></span>
+                      <span className="meta">
+                        {serveSummary(row.tally.errors, row.tally.attempts, row.tally.ratio)} ·{' '}
+                        {euros(row.paid)} pagados
+                      </span>
+                    </span>
+                    <span className="trail">
+                      {row.pending < 0 ? (
+                        <>
+                          <span className="big">{euros(-row.pending)}</span>
+                          <span className="meta inline">
+                            de más
+                            <ChevronIcon size={11} />
+                          </span>
+                        </>
+                      ) : (
+                        <span className="meta inline">
+                          pagos
+                          <ChevronIcon size={11} />
+                        </span>
+                      )}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : null}
       </main>
 
-      {paying ? <PaymentSheet row={paying} onClose={() => setPaying(null)} /> : null}
+      {paying ? <PaymentSheet row={paying} onClose={() => setPayingId(null)} /> : null}
     </>
   )
 }
 
 function PaymentSheet({ row, onClose }: { row: Balance; onClose: () => void }) {
   const state = useAppState()
-  const [amount, setAmount] = useState(String(row.pending))
+  const [amount, setAmount] = useState(row.pending > 0 ? String(row.pending) : '')
   const [note, setNote] = useState('')
+  // El pago que se está a punto de deshacer: borrar dinero de la hucha se confirma.
+  const [undoingId, setUndoingId] = useState<string | null>(null)
   const value = Number(amount.replace(',', '.'))
   const history = allPayments(state)
     .filter((payment) => payment.playerId === row.player.id)
@@ -866,14 +911,18 @@ function PaymentSheet({ row, onClose }: { row: Balance; onClose: () => void }) {
     <Sheet title={`Pago de ${row.player.name}`} onClose={onClose}>
       <div className="form">
         <p className="small muted">
-          Debe {euros(row.pending)} por {plural(row.tally.errors, 'saque fallado', 'saques fallados')}.
+          {row.pending > 0
+            ? `Debe ${euros(row.pending)} por ${plural(row.tally.errors, 'saque fallado', 'saques fallados')}.`
+            : row.pending < 0
+              ? `Ha pagado ${euros(-row.pending)} de más: lleva ${euros(row.paid)} y le tocaban ${euros(row.owed)}.`
+              : `Está al día: ha pagado los ${euros(row.paid)} que le tocaban.`}
         </p>
         <Field label="Cuánto pone">
           <input
             value={amount}
             onChange={(event) => setAmount(event.target.value)}
             inputMode="decimal"
-            autoFocus
+            autoFocus={row.pending > 0}
           />
         </Field>
         <Field label="Nota (opcional)">
@@ -899,17 +948,40 @@ function PaymentSheet({ row, onClose }: { row: Balance; onClose: () => void }) {
           <div className="stack">
             <SectionTitle>Pagos anteriores</SectionTitle>
             <div className="log">
-              {history.map((payment) => (
-                <div key={payment.id} className="log-item">
-                  <span className="grow">
-                    {euros(payment.amount)}
-                    {payment.note ? ` · ${payment.note}` : ''}
-                  </span>
-                  <button className="undo" onClick={() => removePayment(payment.id)}>
-                    Deshacer
-                  </button>
-                </div>
-              ))}
+              {history.map((payment) =>
+                undoingId === payment.id ? (
+                  <div key={payment.id} className="log-item log-confirm">
+                    <p className="small muted center">
+                      ¿Deshacer el pago de {euros(payment.amount)}
+                      {payment.note ? ` (${payment.note})` : ''}? Se quita de la hucha.
+                    </p>
+                    <div className="btn-row">
+                      <button className="btn ghost" onClick={() => setUndoingId(null)}>
+                        Cancelar
+                      </button>
+                      <button
+                        className="btn danger"
+                        onClick={() => {
+                          removePayment(payment.id)
+                          setUndoingId(null)
+                        }}
+                      >
+                        Deshacer pago
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div key={payment.id} className="log-item">
+                    <span className="grow">
+                      {euros(payment.amount)}
+                      {payment.note ? ` · ${payment.note}` : ''}
+                    </span>
+                    <button className="undo" onClick={() => setUndoingId(payment.id)}>
+                      Deshacer
+                    </button>
+                  </div>
+                ),
+              )}
             </div>
           </div>
         ) : null}
