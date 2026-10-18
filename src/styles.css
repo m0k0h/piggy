@@ -827,6 +827,9 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 }
 
 .log-item:last-child { border-bottom: 0; }
+/* Confirmación de deshacer un pago: el aviso encima y los dos botones debajo. */
+.log-item.log-confirm { flex-direction: column; align-items: stretch; padding: 12px 4px; }
+.log-confirm .btn-row { width: 100%; }
 .log-item .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 
 .log-item .undo {
