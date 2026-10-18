@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { AppState, Match, Payment, Player, Serve } from '../../types'
 import { euros } from '../format'
-import { matchDetails, potSummary } from '../summary'
+import { matchDetails, potSummary, seasonSummary } from '../summary'
 
 const stamp = { createdAt: '2025-10-01T10:00', updatedAt: '2025-10-01T10:00', deletedAt: null }
 
@@ -162,5 +162,33 @@ describe('matchDetails', () => {
   it('la convocatoria cruza la hora en punto', () => {
     const early = { ...match, date: '2025-10-04T10:15' }
     expect(matchDetails(state({ matches: byId([early]) }), early)).toContain('Convocadas a las 09:30')
+  })
+})
+
+describe('seasonSummary', () => {
+  it('da el balance de la temporada, el podio de porcentaje y el enlace a la app', () => {
+    const text = seasonSummary(
+      state({
+        players: byId([player('a', 'Ana'), player('b', 'Bea')]),
+        serves: byId([
+          serve('s1', 'a', 'in'),
+          serve('s2', 'a', 'ace'),
+          serve('s3', 'b', 'error'),
+          serve('s4', 'b', 'in'),
+        ]),
+      }),
+    )
+    expect(text).toContain('toda la temporada')
+    expect(text).toContain('Saques: 4')
+    expect(text).toContain(`Hucha: ${euros(1)}`)
+    expect(text.indexOf('*Ana*')).toBeLessThan(text.indexOf('*Bea*'))
+    expect(text).toContain('Más aces: *Ana* (1)')
+    expect(text.trimEnd().endsWith('Consulta más datos en la app:\nhttps://m0k0h.github.io/piggy/#/stats')).toBe(true)
+  })
+
+  it('sin saques también invita a la app', () => {
+    const text = seasonSummary(state({}))
+    expect(text).toContain('Todavía no hay saques anotados.')
+    expect(text).toContain('Consulta más datos en la app:')
   })
 })

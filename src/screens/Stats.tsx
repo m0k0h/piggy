@@ -12,7 +12,8 @@ import {
   tallyByPlayer,
 } from '../lib/stats'
 import { Avatar, Empty, PlayerName, RatioBar, SectionTitle, Stat } from '../ui/bits'
-import { ChartIcon } from '../ui/icons'
+import { seasonSummary, share } from '../lib/summary'
+import { ChartIcon, ShareIcon } from '../ui/icons'
 
 type Order = 'ratio' | 'errors' | 'attempts'
 
@@ -27,6 +28,7 @@ export function Stats() {
   const matches = playedMatches(state)
   const [scope, setScope] = useState('all')
   const [order, setOrder] = useState<Order>('ratio')
+  const [toast, setToast] = useState('')
 
   const serves = scope === 'all' ? allServes(state) : servesOfMatch(state, scope)
   const total = tally(serves)
@@ -40,6 +42,22 @@ export function Stats() {
       if (order === 'attempts') return b.own.attempts - a.own.attempts
       return (b.own.ratio ?? 0) - (a.own.ratio ?? 0) || b.own.attempts - a.own.attempts
     })
+
+  const onShare = async () => {
+    const result = await share(seasonSummary(state))
+    if (result === 'copied') setToast('Resumen de la temporada copiado')
+    else if (result === 'failed') setToast('No se ha podido compartir')
+    setTimeout(() => setToast(''), 2500)
+  }
+
+  // Solo se comparte el balance de toda la temporada: el de un partido ya se
+  // comparte desde su propia ficha.
+  const shareButton =
+    scope === 'all' ? (
+      <button className="icon-btn stats-share" onClick={onShare} aria-label="Compartir estadísticas de la temporada">
+        <ShareIcon size={17} />
+      </button>
+    ) : null
 
   if (total.attempts === 0) {
     return (
@@ -62,17 +80,23 @@ export function Stats() {
       <SectionTitle>Estadísticas</SectionTitle>
 
       {matches.length > 0 ? (
-        <div className="field">
-          <select value={scope} onChange={(event) => setScope(event.target.value)}>
-            <option value="all">Toda la temporada</option>
-            {matches.map((match) => (
-              <option key={match.id} value={match.id}>
-                {match.home ? 'vs' : '@'} {match.opponent} · {matchDate(match.date)}
-              </option>
-            ))}
-          </select>
+        <div className="stats-scope">
+          <div className="field">
+            <select value={scope} onChange={(event) => setScope(event.target.value)}>
+              <option value="all">Toda la temporada</option>
+              {matches.map((match) => (
+                <option key={match.id} value={match.id}>
+                  {match.home ? 'vs' : '@'} {match.opponent} · {matchDate(match.date)}
+                </option>
+              ))}
+            </select>
+          </div>
+          {shareButton}
         </div>
-      ) : null}
+      ) : (
+        <div className="stats-scope end">{shareButton}</div>
+      )}
+      {toast ? <div className="banner good">{toast}</div> : null}
 
       <div className="stat-row">
         <Stat value={total.attempts} label="Saques" />
