@@ -518,6 +518,12 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 }
 .chip.date svg { flex-shrink: 0; }
 
+/* Selector de temporada o partido, con compartir al lado solo en «Toda la temporada». */
+.stats-scope { display: flex; align-items: center; gap: 10px; }
+.stats-scope > .field { flex: 1; min-width: 0; }
+.stats-scope.end { justify-content: flex-end; }
+.stats-share { width: 44px; height: 44px; color: var(--pink-text); cursor: pointer; }
+
 /* ---------------------------------------------------------- segmented */
 .segmented {
   display: grid;
