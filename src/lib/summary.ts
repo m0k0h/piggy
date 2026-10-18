@@ -1,6 +1,5 @@
 import { callTime, euros, joinNatural, leagueName, matchDate, matchDateLong, percent, plural } from './format'
 import {
-  allPlayers,
   allServes,
   balances,
   fineAmount,
@@ -104,11 +103,12 @@ export function potSummary(state: AppState): string {
   return lines.join('\n')
 }
 
-/** Balance de toda la temporada, lo mismo que enseña Stats con «Toda la temporada». */
+/**
+ * Balance de toda la temporada: solo lo gordo (saques, dentro y aces), una
+ * cifra por línea. El resto se consulta en la app, y el mensaje lo dice.
+ */
 export function seasonSummary(state: AppState): string {
-  const serves = allServes(state)
-  const total = tally(serves)
-  const fine = fineAmount(state)
+  const total = tally(allServes(state))
   const played = playedMatches(state).length
   const lines: string[] = []
 
@@ -119,28 +119,10 @@ export function seasonSummary(state: AppState): string {
   if (total.attempts === 0) {
     lines.push('Todavía no hay saques anotados.')
   } else {
-    lines.push(
-      `Saques: ${total.attempts} · dentro ${total.in + total.aces} (${percent(total.ratio)}) · aces ${total.aces} · fallos ${total.errors}`,
-    )
-    lines.push(`🐷 Hucha: ${euros(total.errors * fine)}`)
-
-    const rows = allPlayers(state)
-      .map((player) => ({ player, own: tallyByPlayer(serves, player.id) }))
-      .filter((row) => row.own.attempts > 0)
-    // El mismo orden que «Mejor %» en la app: a igual porcentaje, quien más ha sacado.
-    const best = [...rows]
-      .sort((a, b) => (b.own.ratio ?? 0) - (a.own.ratio ?? 0) || b.own.attempts - a.own.attempts)
-      .slice(0, 3)
-    if (best.length > 0) {
-      lines.push('')
-      lines.push('🎯 Mejor porcentaje')
-      for (const { player, own } of best) {
-        // Entre asteriscos, WhatsApp pone el nombre en negrita.
-        lines.push(`• *${tileName(player)}*: ${percent(own.ratio)} (${plural(own.attempts, 'saque', 'saques')})`)
-      }
-    }
-    const aces = rows.filter((row) => row.own.aces > 0).sort((a, b) => b.own.aces - a.own.aces)[0]
-    if (aces) lines.push(`⚡ Más aces: *${tileName(aces.player)}* (${aces.own.aces})`)
+    // Entre asteriscos, WhatsApp lo pone en negrita: es la cifra que manda.
+    lines.push(`🏐 *${plural(total.attempts, 'saque', 'saques')}*`)
+    lines.push(`✅ ${total.in + total.aces} dentro (${percent(total.ratio)})`)
+    lines.push(`⚡ ${plural(total.aces, 'ace', 'aces')}`)
   }
 
   lines.push('')

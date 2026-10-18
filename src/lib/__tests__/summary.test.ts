@@ -166,7 +166,7 @@ describe('matchDetails', () => {
 })
 
 describe('seasonSummary', () => {
-  it('da el balance de la temporada, el podio de porcentaje y el enlace a la app', () => {
+  it('saques en negrita y dentro y aces en su propia línea; nada más', () => {
     const text = seasonSummary(
       state({
         players: byId([player('a', 'Ana'), player('b', 'Bea')]),
@@ -178,11 +178,13 @@ describe('seasonSummary', () => {
         ]),
       }),
     )
+    const lines = text.split('\n')
     expect(text).toContain('toda la temporada')
-    expect(text).toContain('Saques: 4')
-    expect(text).toContain(`Hucha: ${euros(1)}`)
-    expect(text.indexOf('*Ana*')).toBeLessThan(text.indexOf('*Bea*'))
-    expect(text).toContain('Más aces: *Ana* (1)')
+    expect(lines).toContain('🏐 *4 saques*')
+    expect(lines).toContain('✅ 3 dentro (75%)')
+    expect(lines).toContain('⚡ 1 ace')
+    // Ni hucha, ni fallos, ni jugadoras: eso se mira en la app.
+    expect(text).not.toMatch(/Hucha|fallo|Ana|Bea/)
     expect(text.trimEnd().endsWith('Consulta más datos en la app:\nhttps://m0k0h.github.io/piggy/#/stats')).toBe(true)
   })
 
