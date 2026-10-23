@@ -54,7 +54,7 @@ export function matchSummary(state: AppState, match: Match): string {
   }
 
   lines.push('')
-  lines.push('Consulta todos los datos en la app:')
+  lines.push('Consulta más datos en la app:')
   lines.push('https://m0k0h.github.io/piggy/#/partidos')
   return lines.join('\n')
 }
@@ -106,6 +106,7 @@ export function potSummary(state: AppState): string {
     lines.push(`${globalTally.errors}/${globalTally.attempts} saques fallados`)
   }
   lines.push('')
+  lines.push('Consulta más datos en la app:')
   lines.push('https://m0k0h.github.io/piggy/#/hucha')
   return lines.join('\n')
 }

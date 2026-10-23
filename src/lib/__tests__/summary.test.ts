@@ -103,6 +103,11 @@ describe('potSummary', () => {
     expect(ratioIndex).toBeGreaterThan(-1)
     expect(lines[ratioIndex + 1]).toBe('1/3 saques fallados')
   })
+
+  it('acaba invitando a la app, como el resto de textos', () => {
+    const text = potSummary(state({}))
+    expect(text.endsWith('\n\nConsulta más datos en la app:\nhttps://m0k0h.github.io/piggy/#/hucha')).toBe(true)
+  })
 })
 
 describe('matchSummary', () => {
@@ -147,7 +152,7 @@ describe('matchSummary', () => {
     ])
     expect(text).toContain(`\n\n*Ana*\n75% de acierto - ${euros(1)}\n`)
     expect(text).toContain(`\n\n*Bea*\n100% de acierto - ${euros(0)}\n`)
-    expect(text.endsWith('\n\nConsulta todos los datos en la app:\nhttps://m0k0h.github.io/piggy/#/partidos')).toBe(true)
+    expect(text.endsWith('\n\nConsulta más datos en la app:\nhttps://m0k0h.github.io/piggy/#/partidos')).toBe(true)
   })
 
   it('con la hucha a cero, confeti al final de la línea', () => {
