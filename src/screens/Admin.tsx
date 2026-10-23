@@ -8,7 +8,6 @@ import {
   percent,
   normalizeUrl,
   plural,
-  relativeDay,
   serveSummary,
   toInputValue,
 } from '../lib/format'
@@ -35,6 +34,7 @@ import {
   allPayments,
   balances,
   knownOpponent,
+  lineupOf,
   matchStatus,
   upcomingMatches,
   finishedMatches,
@@ -42,28 +42,26 @@ import {
 } from '../lib/stats'
 import { fetchViews, signIn, signOut, useRole, useSync } from '../lib/sync'
 import { summarizeViews, type ViewRecord } from '../lib/views'
-import { POSITION_LABELS, type AppState, type League, type Match, type Player, type Position } from '../types'
+import { POSITION_LABELS, type AppState, type League, type Match, type MatchOutcome, type Player, type Position } from '../types'
 import { Sheet } from '../ui/Sheet'
+import { MatchRow } from './Matches'
 import {
   Avatar,
   Crest,
   Empty,
   Field,
   Stat,
-  LeagueTag,
   OpponentCrest,
   PlayerName,
   ScreenHeader,
   SectionTitle,
 } from '../ui/bits'
 import {
-  AwayIcon,
   BallIcon,
   CalendarIcon,
   ChevronIcon,
   CoinsIcon,
   EyeIcon,
-  HomeIcon,
   MegaphoneIcon,
   PartyIcon,
   PeopleIcon,
@@ -463,7 +461,7 @@ function PlayerSheet({ player, onClose }: { player: Player | null; onClose: () =
               </div>
             </div>
           ) : (
-            <button className="btn quiet" onClick={() => setConfirmDelete(true)}>
+            <button className="btn block danger-soft" onClick={() => setConfirmDelete(true)}>
               Quitar de la plantilla
             </button>
           )
@@ -481,33 +479,9 @@ function MatchesSection() {
   const played = finishedMatches(state)
   const [editing, setEditing] = useState<Match | 'new' | null>(null)
 
+  // La misma fila que ve el equipo; aquí abre la edición.
   const row = (match: Match) => (
-    <button key={match.id} className="row" onClick={() => setEditing(match)}>
-      <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} />
-      <span className="grow">
-        <LeagueTag league={match.league} />
-        <span className="title">
-          {match.home ? <HomeIcon size={15} className="home-mark" /> : <AwayIcon size={15} className="home-mark" />}
-          <span className="sr-only">{match.home ? 'En casa · ' : 'Fuera · '}</span>
-          {match.opponent || 'Rival por definir'}
-        </span>
-        <span className="meta">
-          {matchDate(match.date)}
-          {matchStatus(state, match.id) === 'finished' ? '' : ` · ${relativeDay(match.date)}`}
-          {match.venue ? ` · ${match.venue}` : ''}
-        </span>
-      </span>
-      <span className="trail">
-        {matchStatus(state, match.id) === 'live' ? (
-          <span className="chip live">EN JUEGO</span>
-        ) : (
-          <span className="chip">
-            editar
-            <ChevronIcon size={11} />
-          </span>
-        )}
-      </span>
-    </button>
+    <MatchRow key={match.id} match={match} state={state} onOpen={() => setEditing(match)} />
   )
 
   return (
@@ -523,7 +497,7 @@ function MatchesSection() {
           </div>
         ) : (
           <div className="card flush">
-            <div className="list">{upcoming.map(row)}</div>
+            <div className="list match-list">{upcoming.map(row)}</div>
           </div>
         )}
 
@@ -536,7 +510,7 @@ function MatchesSection() {
           <>
             <SectionTitle aside={<span>{played.length}</span>}>Jugados</SectionTitle>
             <div className="card flush">
-              <div className="list">{played.map(row)}</div>
+              <div className="list match-list">{played.map(row)}</div>
             </div>
           </>
         ) : null}
@@ -550,6 +524,11 @@ function MatchesSection() {
 }
 
 const LEAGUES: League[] = ['femenina', 'mixta']
+
+const OUTCOMES: { key: MatchOutcome; label: string }[] = [
+  { key: 'won', label: 'Ganado' },
+  { key: 'lost', label: 'Perdido' },
+]
 
 /** La liga del último partido creado: lo normal es encadenar varios de la misma. */
 function lastLeague(state: AppState): League {
@@ -575,9 +554,14 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
   const [logoError, setLogoError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
-  // Resetear solo tiene sentido con el partido en juego; reabrir, con el partido terminado.
+  const [confirmReopen, setConfirmReopen] = useState(false)
+  // Resetear solo tiene sentido con el partido en juego; reabrir y cambiar el
+  // resultado, con el partido terminado.
   const status = match ? matchStatus(state, match.id) : null
   const live = status === 'live'
+  const finished = status === 'finished'
+  const savedOutcome = match ? lineupOf(state, match.id)?.outcome : undefined
+  const [outcome, setOutcome] = useState<MatchOutcome | undefined>(savedOutcome)
   const logoFileRef = useRef<HTMLInputElement>(null)
 
   /**
@@ -624,6 +608,7 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
     }
     if (match) updateMatch(match.id, fields)
     else addMatch(fields)
+    if (match && finished && outcome !== savedOutcome) saveLineup(match.id, { outcome })
     onClose()
   }
 
@@ -741,20 +726,56 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
         />
         {logoError ? <div className="banner bad">{logoError}</div> : null}
 
+        {finished ? (
+          <div className="field">
+            <span>Resultado</span>
+            <div className="segmented outcome" role="group" aria-label="Resultado">
+              {OUTCOMES.map((option) => (
+                <button
+                  key={option.key}
+                  type="button"
+                  className={option.key}
+                  onClick={() => setOutcome(option.key)}
+                  aria-pressed={outcome === option.key}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
         <button className="btn block" onClick={save} disabled={!opponent.trim() || !date}>
           {match ? 'Guardar' : 'Crear partido'}
         </button>
 
-        {match && status === 'finished' ? (
-          <button
-            className="btn block ghost"
-            onClick={() => {
-              saveLineup(match.id, { status: 'live' })
-              onClose()
-            }}
-          >
-            Reabrir para seguir anotando
-          </button>
+        {match && finished ? (
+          confirmReopen ? (
+            <div className="stack">
+              <p className="small muted center">
+                El partido vuelve a quedar en juego para seguir anotando saques. No se borra nada: lo
+                anotado y el resultado se conservan.
+              </p>
+              <div className="btn-row">
+                <button className="btn ghost" onClick={() => setConfirmReopen(false)}>
+                  Cancelar
+                </button>
+                <button
+                  className="btn"
+                  onClick={() => {
+                    saveLineup(match.id, { status: 'live' })
+                    onClose()
+                  }}
+                >
+                  Reabrir
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button className="btn block ghost" onClick={() => setConfirmReopen(true)}>
+              Reabrir para seguir anotando
+            </button>
+          )
         ) : null}
 
         {match && live ? (
@@ -809,7 +830,7 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
               </div>
             </div>
           ) : (
-            <button className="btn quiet" onClick={() => setConfirmDelete(true)}>
+            <button className="btn block danger-soft" onClick={() => setConfirmDelete(true)}>
               Borrar partido
             </button>
           )

@@ -47,13 +47,17 @@ export function Matches() {
   )
 }
 
-function MatchRow({ match, state }: { match: Match; state: AppState }) {
+/**
+ * Fila de un partido en el calendario. La comparte la administración, que al
+ * pulsarla abre la edición en vez de la ficha.
+ */
+export function MatchRow({ match, state, onOpen }: { match: Match; state: AppState; onOpen?: () => void }) {
   const status = matchStatus(state, match.id)
   const stats = tally(servesOfMatch(state, match.id))
   const fines = stats.errors * fineAmount(state)
 
   return (
-    <button className="row" onClick={() => navigate(`partido/${match.id}`)}>
+    <button className="row" onClick={onOpen ?? (() => navigate(`partido/${match.id}`))}>
       <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} />
       <span className="grow">
         <span className="row-tags">
