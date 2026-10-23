@@ -599,6 +599,9 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .btn.ghost:hover { background: var(--surface); }
 .btn.quiet { background: transparent; color: var(--muted); min-height: 44px; padding: 0 8px; font-size: 13.5px; font-weight: 600; }
 .btn.danger { background: var(--red); color: var(--on-hero); }
+/* Borrar desde una hoja: rojo pero sin gritar; el rojo pleno queda para confirmarlo. */
+.btn.danger-soft { background: var(--red-soft); color: var(--red); }
+.btn.danger-soft:hover { background: var(--red-soft); filter: brightness(1.15); }
 .btn.warn { background: var(--amber); color: var(--on-accent); }
 .btn.small { min-height: 38px; font-size: 13.5px; padding: 0 12px; }
 
