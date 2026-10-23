@@ -425,6 +425,17 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 /* En el listado de partidos el escudo del rival ocupa el alto de la fila
    (liga, rival y fecha), en vez de quedarse en el tamaño de un avatar. */
 .match-list .row > .crest { width: 56px; height: 56px; font-size: 16px; }
+/* En administración, el lápiz al final de cada partido: se pulsa para editar. */
+.match-list .edit-mark {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--pink-text);
+}
 /* Portada: la liga del próximo partido, al lado de «Próximo partido». */
 .next-kind { display: flex; align-items: center; gap: 8px; }
 

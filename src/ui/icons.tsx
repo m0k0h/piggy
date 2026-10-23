@@ -334,6 +334,16 @@ export function ShareIcon({ size = 24, ...props }: IconProps) {
 }
 
 /** Megáfono: lo que la administradora quiere comentar con el equipo. */
+/** Lápiz: la fila se abre para editar. */
+export function PencilIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M16.5 4.5a2.1 2.1 0 0 1 3 3L8.5 18.5 4 20l1.5-4.5Z" />
+      <path d="m14.5 6.5 3 3" />
+    </svg>
+  )
+}
+
 export function MegaphoneIcon({ size = 24, ...props }: IconProps) {
   return (
     <svg {...stroke(size, props)} aria-hidden="true" focusable="false">

@@ -4,7 +4,7 @@ import { useAppState } from '../lib/store'
 import { fineAmount, finishedMatches, lineupOf, matchStatus, servesOfMatch, tally, upcomingMatches } from '../lib/stats'
 import type { AppState, Match } from '../types'
 import { Empty, LeagueTag, OpponentCrest, OutcomeTag, SectionTitle } from '../ui/bits'
-import { AwayIcon, CalendarIcon, ChevronIcon, HomeIcon } from '../ui/icons'
+import { AwayIcon, CalendarIcon, ChevronIcon, HomeIcon, PencilIcon } from '../ui/icons'
 
 /** El calendario tal como lo ve el equipo: se consulta y se entra a anotar. */
 export function Matches() {
@@ -49,7 +49,8 @@ export function Matches() {
 
 /**
  * Fila de un partido en el calendario. La comparte la administración, que al
- * pulsarla abre la edición en vez de la ficha.
+ * pulsarla abre la edición en vez de la ficha: ahí la fila lleva un lápiz al
+ * final, y el lápiz sustituye a la flecha de los partidos por jugar.
  */
 export function MatchRow({ match, state, onOpen }: { match: Match; state: AppState; onOpen?: () => void }) {
   const status = matchStatus(state, match.id)
@@ -83,12 +84,18 @@ export function MatchRow({ match, state, onOpen }: { match: Match; state: AppSta
             <span className={stats.ratio === null ? 'big' : `big ${serveTone(stats.ratio)}`}>{percent(stats.ratio)}</span>
             <span className="meta">{euros(fines)}</span>
           </>
-        ) : (
+        ) : onOpen ? null : (
           <span className="chip">
             <ChevronIcon size={12} aria-hidden="true" />
           </span>
         )}
       </span>
+      {onOpen ? (
+        <span className="edit-mark">
+          <PencilIcon size={17} />
+          <span className="sr-only">Editar</span>
+        </span>
+      ) : null}
     </button>
   )
 }
