@@ -191,7 +191,7 @@ describe('matchDetails', () => {
     expect(text).not.toContain('Ana')
     expect(text).not.toContain('https://liga.example/cv-norte')
     expect(text).not.toContain('Ficha del rival')
-    expect(text).toContain('#/partido/m1')
+    expect(text.endsWith('\n\nConsulta más datos en la app:\nhttps://m0k0h.github.io/piggy/#/partido/m1')).toBe(true)
   })
 
   it('fuera, con el mapa del pabellón', () => {
