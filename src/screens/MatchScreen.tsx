@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { callTime, euros, matchDateLong, percent, placeFromMapsUrl, plural, relativeDay, serveSummary, serveTone } from '../lib/format'
 import { goBack, navigate } from '../lib/router'
 import { matchDetails, matchSummary, share } from '../lib/summary'
@@ -94,6 +94,56 @@ function groupBySet(serves: Serve[]): { set: number; serves: Serve[] }[] {
   return groups
 }
 
+/**
+ * Cabecera de la ficha de un partido: escudo, rival, liga, fecha y botón de
+ * compartir. La comparten el partido por jugar (con el pabellón y la hora de
+ * convocatoria) y el ya jugado (con el resultado en lugar de la convocatoria).
+ */
+function MatchHead({
+  match,
+  shareLabel,
+  onShare,
+  venue,
+  children,
+}: {
+  match: Match
+  shareLabel: string
+  onShare: () => void
+  venue?: ReactNode
+  /** Lo que va pegado debajo de la fecha. */
+  children?: ReactNode
+}) {
+  return (
+    <div className="card stack match-head">
+      <div className="inline wide">
+        <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} big />
+        <div className="grow">
+          <div className="small muted match-kind">
+            <span>
+              {match.home ? <HomeIcon size={13} className="home-mark" /> : <AwayIcon size={13} className="home-mark" />}
+              {match.home ? 'En casa' : 'Fuera'}
+            </span>
+            <LeagueTag league={match.league} long />
+          </div>
+          <h2>{match.opponent || 'Rival por definir'}</h2>
+          <LeagueLink url={match.leagueUrl} />
+        </div>
+      </div>
+      {venue}
+      <div className="match-when">
+        <span className="match-when-date">
+          <CalendarIcon size={14} />
+          {matchDateLong(match.date)}
+        </span>
+        {children}
+      </div>
+      <button className="icon-btn match-share" onClick={onShare} aria-label={shareLabel}>
+        <ShareIcon size={17} />
+      </button>
+    </div>
+  )
+}
+
 // --------------------------------------------------------------- programado
 
 /**
@@ -137,65 +187,43 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
     <>
       <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={() => goBack('partidos')} />
       <main className="match-detail">
-        <div className="card stack match-head">
-          <div className="inline wide">
-            <OpponentCrest opponent={match.opponent} logo={match.opponentLogo} big />
-            <div className="grow">
-              <div className="small muted match-kind">
-                <span>
-                  {match.home ? (
-                    <HomeIcon size={13} className="home-mark" />
-                  ) : (
-                    <AwayIcon size={13} className="home-mark" />
-                  )}
-                  {match.home ? 'En casa' : 'Fuera'}
+        <MatchHead
+          match={match}
+          shareLabel="Compartir datos del partido"
+          onShare={onShare}
+          venue={
+            mapsUrl ? (
+              <a
+                className="chip date venue"
+                href={mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={place ? `Cómo llegar a ${place}` : undefined}
+              >
+                <MapPinIcon size={14} />
+                {place ? <span>{place}</span> : null}
+                <span className="venue-go">
+                  {place ? 'Mapa' : 'Cómo llegar al pabellón'}
+                  <ChevronIcon size={12} />
                 </span>
-                <LeagueTag league={match.league} long />
-              </div>
-              <h2>{match.opponent || 'Rival por definir'}</h2>
-              <LeagueLink url={match.leagueUrl} />
-            </div>
-          </div>
-          {mapsUrl ? (
-            <a
-              className="chip date venue"
-              href={mapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={place ? `Cómo llegar a ${place}` : undefined}
-            >
-              <MapPinIcon size={14} />
-              {place ? <span>{place}</span> : null}
-              <span className="venue-go">
-                {place ? 'Mapa' : 'Cómo llegar al pabellón'}
-                <ChevronIcon size={12} />
+              </a>
+            ) : match.venue ? (
+              <span className="chip date venue">
+                <MapPinIcon size={14} />
+                {match.venue}
               </span>
-            </a>
-          ) : match.venue ? (
-            <span className="chip date venue">
-              <MapPinIcon size={14} />
-              {match.venue}
+            ) : null
+          }
+        >
+          {call ? (
+            <span className="match-when-call">
+              <WhistleIcon size={14} />
+              <span>
+                Convocadas a las <strong>{call}</strong>
+              </span>
             </span>
           ) : null}
-          {/* Cuándo: la fecha y, pegada debajo, la hora a la que se convoca. */}
-          <div className="match-when">
-            <span className="match-when-date">
-              <CalendarIcon size={14} />
-              {matchDateLong(match.date)}
-            </span>
-            {call ? (
-              <span className="match-when-call">
-                <WhistleIcon size={14} />
-                <span>
-                  Convocadas a las <strong>{call}</strong>
-                </span>
-              </span>
-            ) : null}
-          </div>
-          <button className="icon-btn match-share" onClick={onShare} aria-label="Compartir datos del partido">
-            <ShareIcon size={17} />
-          </button>
-        </div>
+        </MatchHead>
         {toast ? <div className="banner good">{toast}</div> : null}
 
         <SectionTitle aside={attendees.length > 0 ? <span>{attendees.length}</span> : null}>
@@ -712,19 +740,12 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
 
   return (
     <>
-      <ScreenHeader
-        title={titleOf(match)}
-        subtitle={matchDateLong(match.date)}
-        onBack={() => navigate('partidos')}
-      />
+      <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={() => navigate('partidos')} />
       <main className="match-detail">
-        {/* El resultado a la izquierda y el botón de compartir a la derecha, como en la ficha previa al partido. */}
-        <div className="report-head">
+        {/* La misma cabecera que antes de jugarlo; en el hueco de la convocatoria, el resultado. */}
+        <MatchHead match={match} shareLabel="Compartir resumen del partido" onShare={onShare}>
           <OutcomeTag outcome={outcome} long />
-          <button className="icon-btn match-share" onClick={onShare} aria-label="Compartir resumen del partido">
-            <ShareIcon size={17} />
-          </button>
-        </div>
+        </MatchHead>
         {toast ? <div className="banner good">{toast}</div> : null}
         <div className="stat-row">
           <Stat value={total.attempts} label="Saques" />
@@ -766,11 +787,6 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
           </>
         )}
 
-        {match.leagueUrl ? (
-          <div className="card tight">
-            <LeagueLink url={match.leagueUrl} />
-          </div>
-        ) : null}
 
       </main>
     </>
