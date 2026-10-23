@@ -74,6 +74,7 @@ export function matchDetails(state: AppState, match: Match): string {
   if (map) lines.push(map)
 
   lines.push('')
+  lines.push('Consulta más datos en la app:')
   lines.push(`https://m0k0h.github.io/piggy/#/partido/${match.id}`)
   return lines.join('\n')
 }
