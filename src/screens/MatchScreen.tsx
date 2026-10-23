@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { callTime, euros, isToday, matchDateLong, percent, placeFromMapsUrl, plural, relativeDay, serveSummary } from '../lib/format'
+import { callTime, euros, matchDateLong, percent, placeFromMapsUrl, plural, relativeDay, serveSummary, serveTone } from '../lib/format'
 import { goBack, navigate } from '../lib/router'
 import { matchDetails, matchSummary, share } from '../lib/summary'
 import { addServe, removeServe, saveLineup, useAppState } from '../lib/store'
-import { useRole } from '../lib/sync'
 import {
   allPlayers,
   allServes,
@@ -239,12 +238,6 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
     </>
   )
 }
-
-/**
- * Color de los saques de una jugadora: rojo si ha fallado más de los que ha
- * metido, verde si menos y naranja si van empatados (justo el 50%).
- */
-const serveTone = (ratio: number) => (ratio < 0.5 ? 'bad' : ratio > 0.5 ? 'good' : 'even')
 
 /**
  * Los saques de una jugadora en una barra: verde dentro, violeta ace, rojo
@@ -583,7 +576,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
                   ? 'Se cierra el acta sin ningún saque anotado.'
                   : `Se cierra el acta con ${plural(total.attempts, 'saque realizado', 'saques realizados')} y un porcentaje de acierto del ${percent(total.ratio)}.`}
                 <br />
-                Podrás reabrirlo si falta algo.
+                Si falta algo, la administración puede reabrirlo.
               </p>
               <p className="end-money">
                 Dinero recaudado: {euros(fines)}
@@ -703,8 +696,6 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
   const fines = total.errors * fine
   const outcome = lineupOf(state, match.id)?.outcome
   const [toast, setToast] = useState('')
-  // El equipo solo puede reabrir el mismo día del partido; la admin, siempre.
-  const canReopen = useRole() === 'admin' || isToday(match.date)
 
   const rows = participants(state, match.id)
     .map((player) => ({ player, own: tallyByPlayer(serves, player.id) }))
@@ -727,7 +718,14 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
         onBack={() => navigate('partidos')}
       />
       <main className="match-detail">
-        <OutcomeTag outcome={outcome} long />
+        {/* El resultado a la izquierda y el botón de compartir a la derecha, como en la ficha previa al partido. */}
+        <div className="report-head">
+          <OutcomeTag outcome={outcome} long />
+          <button className="icon-btn match-share" onClick={onShare} aria-label="Compartir resumen del partido">
+            <ShareIcon size={17} />
+          </button>
+        </div>
+        {toast ? <div className="banner good">{toast}</div> : null}
         <div className="stat-row">
           <Stat value={total.attempts} label="Saques" />
           <Stat value={percent(total.ratio)} label="Dentro" tone="good" />
@@ -774,16 +772,6 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
           </div>
         ) : null}
 
-        <button className="btn block" onClick={onShare}>
-          Compartir resumen
-        </button>
-        {toast ? <div className="banner good">{toast}</div> : null}
-
-        {canReopen ? (
-          <button className="btn quiet" onClick={() => saveLineup(match.id, { status: 'live' })}>
-            Reabrir para seguir anotando
-          </button>
-        ) : null}
       </main>
     </>
   )

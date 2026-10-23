@@ -140,6 +140,7 @@ reduce igual que el escudo de tu equipo.
 | Calendario de partidos | Crear, editar, borrar | Solo consultar |
 | Convocatoria e inicio del partido | Sí | Sí |
 | Anotar y corregir saques | Sí | Sí |
+| Reabrir un partido terminado | Sí | No |
 | Hucha y estadísticas | Ver y cobrar | Solo ver |
 | Noticia de la portada | Publicar y quitar | Solo ver |
 | Visitas a la app | Ver | Solo se apuntan |
