@@ -27,30 +27,35 @@ export function matchSummary(state: AppState, match: Match): string {
   lines.push(matchDate(match.date))
   const outcome = lineupOf(state, match.id)?.outcome
   if (outcome) lines.push(outcome === 'won' ? '🏆 Ganado' : '😔 Perdido')
+  const fines = total.errors * fine
+  // Sin un solo euro a la hucha, se celebra.
+  lines.push(`🐷 Hucha del partido: ${euros(fines)}${fines === 0 ? ' 🎉' : ''}`)
   lines.push('')
 
   if (total.attempts === 0) {
     lines.push('No se anotó ningún saque.')
-    return lines.join('\n')
-  }
+  } else {
+    lines.push(`Saques: ${total.attempts}`)
+    lines.push(`Metidos: ${total.in + total.aces} (${percent(total.ratio)}) | Fallados: ${total.errors}`)
+    lines.push(`Aces: ${total.aces}`)
 
-  lines.push(
-    `Saques: ${total.attempts} · dentro ${total.in + total.aces} (${percent(total.ratio)}) · aces ${total.aces} · fallos ${total.errors}`,
-  )
-  lines.push(`🐷 Hucha del partido: ${euros(total.errors * fine)}`)
+    const roster = participants(state, match.id)
+      .filter((player) => serves.some((serve) => serve.playerId === player.id))
+      .map((player) => ({ player, own: tallyByPlayer(serves, player.id) }))
+      .sort((a, b) => b.own.errors - a.own.errors || b.own.attempts - a.own.attempts)
 
-  const roster = participants(state, match.id)
-    .filter((player) => serves.some((serve) => serve.playerId === player.id))
-    .map((player) => ({ player, own: tallyByPlayer(serves, player.id) }))
-    .sort((a, b) => b.own.errors - a.own.errors || b.own.attempts - a.own.attempts)
-
-  if (roster.length > 0) {
-    lines.push('')
+    // Cada jugadora en dos líneas y separada de la siguiente, para que no quede apretado.
     for (const { player, own } of roster) {
+      lines.push('')
       // Entre asteriscos, WhatsApp pone el nombre en negrita.
-      lines.push(`• *${tileName(player)}*: ${percent(own.ratio)} de acierto — ${euros(own.errors * fine)}`)
+      lines.push(`*${tileName(player)}*`)
+      lines.push(`${percent(own.ratio)} de acierto - ${euros(own.errors * fine)}`)
     }
   }
+
+  lines.push('')
+  lines.push('Consulta todos los datos en la app:')
+  lines.push('https://m0k0h.github.io/piggy/#/partidos')
   return lines.join('\n')
 }
 

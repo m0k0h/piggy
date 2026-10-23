@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { AppState, Match, Payment, Player, Serve } from '../../types'
 import { euros } from '../format'
-import { matchDetails, potSummary, seasonSummary } from '../summary'
+import { matchDetails, matchSummary, potSummary, seasonSummary } from '../summary'
 
 const stamp = { createdAt: '2025-10-01T10:00', updatedAt: '2025-10-01T10:00', deletedAt: null }
 
@@ -102,6 +102,65 @@ describe('potSummary', () => {
     const ratioIndex = lines.findIndex((line) => line.startsWith('Porcentaje de acierto'))
     expect(ratioIndex).toBeGreaterThan(-1)
     expect(lines[ratioIndex + 1]).toBe('1/3 saques fallados')
+  })
+})
+
+describe('matchSummary', () => {
+  const match: Match = {
+    id: 'm1',
+    opponent: 'CV Norte',
+    date: '2025-10-04T18:30',
+    venue: '',
+    home: true,
+    externalId: null,
+    ...stamp,
+  }
+  const lineup = (outcome?: 'won' | 'lost') => ({
+    m1: { id: 'm1', matchId: 'm1', roster: ['p1', 'p2'], status: 'finished' as const, outcome, ...stamp },
+  })
+
+  it('resultado, hucha, recuento y cada jugadora en dos líneas, con el enlace a partidos al final', () => {
+    const text = matchSummary(
+      state({
+        players: byId([player('p1', 'Ana'), player('p2', 'Bea')]),
+        matches: byId([match]),
+        lineups: lineup('won'),
+        serves: byId([
+          serve('s1', 'p1', 'in'),
+          serve('s2', 'p1', 'ace'),
+          serve('s3', 'p1', 'in'),
+          serve('s4', 'p1', 'error'),
+          serve('s5', 'p2', 'in'),
+        ]),
+      }),
+      match,
+    )
+    const lines = text.split('\n')
+    const won = lines.indexOf('🏆 Ganado')
+    expect(lines.slice(won, won + 6)).toEqual([
+      '🏆 Ganado',
+      `🐷 Hucha del partido: ${euros(1)}`,
+      '',
+      'Saques: 5',
+      'Metidos: 4 (80%) | Fallados: 1',
+      'Aces: 1',
+    ])
+    expect(text).toContain(`\n\n*Ana*\n75% de acierto - ${euros(1)}\n`)
+    expect(text).toContain(`\n\n*Bea*\n100% de acierto - ${euros(0)}\n`)
+    expect(text.endsWith('\n\nConsulta todos los datos en la app:\nhttps://m0k0h.github.io/piggy/#/partidos')).toBe(true)
+  })
+
+  it('con la hucha a cero, confeti al final de la línea', () => {
+    const text = matchSummary(
+      state({
+        players: byId([player('p1', 'Ana')]),
+        matches: byId([match]),
+        lineups: lineup('lost'),
+        serves: byId([serve('s1', 'p1', 'in')]),
+      }),
+      match,
+    )
+    expect(text).toContain(`😔 Perdido\n🐷 Hucha del partido: ${euros(0)} 🎉\n`)
   })
 })
 
