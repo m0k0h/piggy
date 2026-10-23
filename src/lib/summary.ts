@@ -117,17 +117,19 @@ export function seasonSummary(state: AppState): string {
   const played = playedMatches(state).length
   const lines: string[] = []
 
-  lines.push(`📊 ${teamName(state)} · toda la temporada`)
+  // Entre asteriscos, negrita; entre guiones bajos, cursiva (en WhatsApp).
+  lines.push(`*${teamName(state)} Stats*`)
+  lines.push('_Toda la temporada_')
   if (played > 0) lines.push(plural(played, 'partido jugado', 'partidos jugados'))
+  lines.push(`🐷 Hucha: ${euros(total.errors * fine)}`)
   lines.push('')
 
   if (total.attempts === 0) {
     lines.push('Todavía no hay saques anotados.')
   } else {
-    lines.push(
-      `Saques: ${total.attempts} · dentro ${total.in + total.aces} (${percent(total.ratio)}) · aces ${total.aces} · fallos ${total.errors}`,
-    )
-    lines.push(`🐷 Hucha: ${euros(total.errors * fine)}`)
+    lines.push(`Saques: ${total.attempts}`)
+    lines.push(`Metidos: ${total.in + total.aces} (${percent(total.ratio)}) | Fallados: ${total.errors}`)
+    lines.push(`Aces: ${total.aces}`)
 
     const rows = allPlayers(state)
       .map((player) => ({ player, own: tallyByPlayer(serves, player.id) }))

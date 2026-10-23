@@ -237,9 +237,15 @@ describe('seasonSummary', () => {
         ]),
       }),
     )
-    expect(text).toContain('toda la temporada')
-    expect(text).toContain('Saques: 4')
-    expect(text).toContain(`Hucha: ${euros(1)}`)
+    expect(text.split('\n').slice(0, 7)).toEqual([
+      '*Volei Masters Stats*',
+      '_Toda la temporada_',
+      `🐷 Hucha: ${euros(1)}`,
+      '',
+      'Saques: 4',
+      'Metidos: 3 (75%) | Fallados: 1',
+      'Aces: 1',
+    ])
     expect(text.indexOf('*Ana*')).toBeLessThan(text.indexOf('*Bea*'))
     expect(text).toContain('Más aces: *Ana* (1)')
     expect(text.trimEnd().endsWith('Consulta más datos en la app:\nhttps://m0k0h.github.io/piggy/#/stats')).toBe(true)
