@@ -25,6 +25,7 @@ import {
   removePayment,
   removePlayer,
   resetMatch,
+  saveLineup,
   updateMatch,
   updatePlayer,
   updateTeam,
@@ -574,8 +575,9 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
   const [logoError, setLogoError] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
-  // Resetear solo tiene sentido con el partido en juego.
-  const live = match ? matchStatus(state, match.id) === 'live' : false
+  // Resetear solo tiene sentido con el partido en juego; reabrir, con el partido terminado.
+  const status = match ? matchStatus(state, match.id) : null
+  const live = status === 'live'
   const logoFileRef = useRef<HTMLInputElement>(null)
 
   /**
@@ -742,6 +744,18 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
         <button className="btn block" onClick={save} disabled={!opponent.trim() || !date}>
           {match ? 'Guardar' : 'Crear partido'}
         </button>
+
+        {match && status === 'finished' ? (
+          <button
+            className="btn block ghost"
+            onClick={() => {
+              saveLineup(match.id, { status: 'live' })
+              onClose()
+            }}
+          >
+            Reabrir para seguir anotando
+          </button>
+        ) : null}
 
         {match && live ? (
           confirmReset ? (

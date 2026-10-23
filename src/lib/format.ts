@@ -66,6 +66,13 @@ export function relativeDay(value: string): string {
 export const percent = (ratio: number | null): string =>
   ratio === null ? '—' : `${Math.round(ratio * 100)}%`
 
+/**
+ * Color de un porcentaje de acierto: rojo si se han fallado más saques de los
+ * que se han metido, verde si menos y naranja si van empatados (justo el 50%).
+ */
+export const serveTone = (ratio: number): 'bad' | 'good' | 'even' =>
+  ratio < 0.5 ? 'bad' : ratio > 0.5 ? 'good' : 'even'
+
 /** "3/12 saques fallidos · 75% de acierto": el resumen que se repite en cada fila de jugadora. */
 export const serveSummary = (errors: number, attempts: number, ratio: number | null): string =>
   attempts === 0 ? 'Sin datos todavía' : `${errors}/${attempts} saques fallidos · ${percent(ratio)} de acierto`

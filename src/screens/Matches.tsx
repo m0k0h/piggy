@@ -1,4 +1,4 @@
-import { euros, matchDate, percent, relativeDay } from '../lib/format'
+import { euros, matchDate, percent, relativeDay, serveTone } from '../lib/format'
 import { navigate } from '../lib/router'
 import { useAppState } from '../lib/store'
 import { fineAmount, finishedMatches, lineupOf, matchStatus, servesOfMatch, tally, upcomingMatches } from '../lib/stats'
@@ -76,7 +76,7 @@ function MatchRow({ match, state }: { match: Match; state: AppState }) {
           <span className="chip live">EN JUEGO</span>
         ) : status === 'finished' ? (
           <>
-            <span className="big">{percent(stats.ratio)}</span>
+            <span className={stats.ratio === null ? 'big' : `big ${serveTone(stats.ratio)}`}>{percent(stats.ratio)}</span>
             <span className="meta">{euros(fines)}</span>
           </>
         ) : (

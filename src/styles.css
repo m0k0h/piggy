@@ -451,7 +451,9 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .outcome-tag.won { background: var(--green-soft); color: var(--green); }
 .outcome-tag.lost { background: var(--red-soft); color: var(--red); }
 /* En el acta cerrada, más grande y suelta encima de las cifras. */
-.match-detail > .outcome-tag { align-self: flex-start; gap: 6px; padding: 5px 11px; font-size: 12px; }
+.report-head { display: flex; align-items: center; gap: 10px; }
+.report-head .outcome-tag { gap: 6px; padding: 5px 11px; font-size: 12px; }
+.report-head .match-share { width: 36px; height: 36px; margin-left: auto; color: var(--pink-text); cursor: pointer; }
 /* En la ficha, junto a «En casa / Fuera». */
 .match-kind { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 /* Selector de liga en el formulario: cada opción se enciende en su color. */
@@ -467,6 +469,8 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 }
 .row .trail .big.paid { color: var(--muted); text-decoration: line-through; }
 .row .trail .big.good { color: var(--green); }
+.row .trail .big.bad { color: var(--red); }
+.row .trail .big.even { color: var(--amber); }
 
 .avatar {
   display: grid;
