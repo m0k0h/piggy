@@ -1107,8 +1107,8 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
   cursor: pointer;
 }
 
-/* Directo de YouTube en la ficha del partido: la pantalla en 16:9 con su
-   miniatura, la pastilla de directo arriba y el botón de reproducir en el
+/* Retransmisión en el acta del partido: la pantalla en 16:9 con su
+   miniatura, la pastilla de grabación arriba y el botón de reproducir en el
    centro; debajo, el enlace para abrirlo en YouTube. */
 .stream { padding: 0; overflow: hidden; }
 .stream-screen {
@@ -1155,8 +1155,6 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
   font-weight: 700;
   letter-spacing: 0.06em;
 }
-.stream.live .stream-badge { background: var(--hero-bad); }
-.stream.live .stream-badge .live-dot { background: var(--on-hero); }
 .stream-play {
   position: absolute;
   top: 50%;
@@ -1188,7 +1186,7 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .stream-foot .link { flex-shrink: 0; }
 
 /* En el partido en juego: franja fina arriba del todo, una sola línea. */
-.stream.compact {
+.stream-strip {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1201,7 +1199,7 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
   letter-spacing: 0.06em;
   text-decoration: none;
 }
-.stream.compact .grow { flex: 1; }
+.stream-strip .grow { flex: 1; }
 .stream-go {
   display: inline-flex;
   align-items: center;
@@ -1211,7 +1209,7 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
   font-weight: 600;
   letter-spacing: normal;
 }
-.stream.compact:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
+.stream-strip:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
 
 /* --------------------------------------------------------- administración */
 .admin-menu { display: flex; flex-direction: column; }
