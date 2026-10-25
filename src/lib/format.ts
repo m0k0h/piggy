@@ -105,6 +105,29 @@ export function normalizeUrl(value: string): string {
   return `https://${trimmed}`
 }
 
+/**
+ * El identificador del vídeo, si el enlace de YouTube lo trae: `watch?v=`,
+ * `youtu.be/`, `/live/`, `/embed/` o `/shorts/`. El del canal
+ * (`youtube.com/@club/live`) no lo lleva: vacío, y el directo sale sin
+ * miniatura ni reproductor, solo como enlace.
+ */
+export function youtubeId(url: string): string {
+  let parsed: URL
+  try {
+    parsed = new URL(url)
+  } catch {
+    return ''
+  }
+  const host = parsed.hostname.replace(/^(www|m|music)\./, '')
+  const valid = (id: string | null | undefined) => (id && /^[\w-]{11}$/.test(id) ? id : '')
+  if (host === 'youtu.be') return valid(parsed.pathname.split('/')[1])
+  if (host !== 'youtube.com' && host !== 'youtube-nocookie.com') return ''
+  const fromQuery = valid(parsed.searchParams.get('v'))
+  if (fromQuery) return fromQuery
+  const [, kind, id] = parsed.pathname.split('/')
+  return ['live', 'embed', 'shorts'].includes(kind) ? valid(id) : ''
+}
+
 /** Igual, pero admitiendo además una imagen pegada como data URL. */
 export function normalizeImageUrl(value: string): string {
   const trimmed = value.trim()

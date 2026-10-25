@@ -6,7 +6,7 @@ import { useAppState } from '../lib/store'
 import { allPayments, allServes, balances, matchStatus, pot, tally, upcomingMatches } from '../lib/stats'
 import type { Balance } from '../lib/stats'
 import type { AppState, Payment } from '../types'
-import { Avatar, Empty, LeagueTag, PlayerName, SectionTitle } from '../ui/bits'
+import { Avatar, Empty, LeagueTag, LiveDot, PlayerName, SectionTitle } from '../ui/bits'
 import { AwayIcon, CalendarIcon, HomeIcon, PigLineIcon, ShareIcon } from '../ui/icons'
 
 export function Pot() {
@@ -107,7 +107,12 @@ export function Pot() {
         <button className="card row" onClick={() => navigate(`partido/${next.id}`)}>
           <span className="grow">
             <span className="meta next-kind">
-              {matchStatus(state, next.id) === 'live' ? 'Partido en juego' : 'Próximo partido'}
+              {matchStatus(state, next.id) === 'live' && next.streamUrl ? <LiveDot /> : null}
+              {matchStatus(state, next.id) === 'live'
+                ? next.streamUrl
+                  ? 'Partido en directo'
+                  : 'Partido en juego'
+                : 'Próximo partido'}
               <LeagueTag league={next.league} />
             </span>
             <span className="title">

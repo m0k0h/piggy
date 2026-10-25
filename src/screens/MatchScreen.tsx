@@ -1,5 +1,16 @@
 import { useState, type ReactNode } from 'react'
-import { callTime, euros, matchDateLong, percent, placeFromMapsUrl, plural, relativeDay, serveSummary, serveTone } from '../lib/format'
+import {
+  callTime,
+  euros,
+  matchDateLong,
+  percent,
+  placeFromMapsUrl,
+  plural,
+  relativeDay,
+  serveSummary,
+  serveTone,
+  youtubeId,
+} from '../lib/format'
 import { goBack, navigate } from '../lib/router'
 import { matchDetails, matchSummary, share } from '../lib/summary'
 import { addServe, removeServe, saveLineup, useAppState } from '../lib/store'
@@ -19,13 +30,14 @@ import {
   tileName,
   type Tally,
 } from '../lib/stats'
-import { POSITION_LABELS, type AppState, type Match, type MatchOutcome, type Player, type Position, type Serve, type ServeResult } from '../types'
+import { POSITION_LABELS, type AppState, type Match, type MatchOutcome, type MatchStatus, type Player, type Position, type Serve, type ServeResult } from '../types'
 import { Sheet } from '../ui/Sheet'
 import {
   Avatar,
   Empty,
   LeagueLink,
   LeagueTag,
+  LiveDot,
   OpponentCrest,
   OutcomeTag,
   PlayerName,
@@ -41,10 +53,12 @@ import {
   CheckIcon,
   ChevronIcon,
   ClipboardIcon,
+  ExternalLinkIcon,
   HomeIcon,
   MapPinIcon,
   MinusIcon,
   PeopleIcon,
+  PlayIcon,
   PlusIcon,
   PositionIcon,
   ShareIcon,
@@ -144,6 +158,95 @@ function MatchHead({
   )
 }
 
+const STREAM_LABELS: Record<MatchStatus, { badge: string; title: string; meta: string }> = {
+  scheduled: { badge: 'DIRECTO', title: 'Directo en YouTube', meta: 'Empieza con el partido' },
+  live: { badge: 'EN DIRECTO', title: 'Ver el directo', meta: 'En YouTube' },
+  finished: { badge: 'GRABACIÓN', title: 'Ver la retransmisión', meta: 'En YouTube' },
+}
+
+/**
+ * El directo de YouTube del partido. En la ficha va a lo grande: la miniatura
+ * del vídeo con el botón de reproducir, que lo pone ahí mismo sin salir de la
+ * app. Si el enlace es el del canal y no el del vídeo, no hay miniatura que
+ * sacar ni vídeo que incrustar: la pantalla entera abre YouTube.
+ *
+ * `compact` es para el partido en juego, donde manda anotar saques: una fila
+ * pequeña que abre YouTube sin quitarle sitio a las fichas.
+ */
+function StreamCard({ url, status, compact = false }: { url: string; status: MatchStatus; compact?: boolean }) {
+  const id = youtubeId(url)
+  const [playing, setPlaying] = useState(false)
+  const [thumbFailed, setThumbFailed] = useState(false)
+  const labels = STREAM_LABELS[status]
+  const thumb = id && !thumbFailed ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : ''
+
+  const badge = (
+    <span className="stream-badge">
+      {status === 'live' ? <LiveDot /> : null}
+      {labels.badge}
+    </span>
+  )
+  const cover = (
+    <>
+      {thumb ? <img src={thumb} alt="" loading="lazy" onError={() => setThumbFailed(true)} /> : null}
+      {/* En pequeño no cabe: el directo lo dice el texto de al lado. */}
+      {compact ? null : badge}
+      <span className="stream-play">
+        <PlayIcon size={22} />
+      </span>
+    </>
+  )
+
+  if (compact) {
+    return (
+      <a className={`card stream compact ${status}`} href={url} target="_blank" rel="noopener noreferrer">
+        <span className="stream-screen">{cover}</span>
+        <span className="grow">
+          <span className="title">{labels.title}</span>
+          <span className="meta on-air">
+            {status === 'live' ? <LiveDot /> : null}
+            {status === 'live' ? 'En directo en YouTube' : labels.meta}
+          </span>
+        </span>
+        <ExternalLinkIcon size={17} className="stream-out" />
+      </a>
+    )
+  }
+
+  return (
+    <section className={`card stream ${status}`} aria-label={labels.title}>
+      {playing ? (
+        <div className="stream-screen">
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1`}
+            title={labels.title}
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
+          />
+        </div>
+      ) : id ? (
+        <button className="stream-screen" onClick={() => setPlaying(true)} aria-label={labels.title}>
+          {cover}
+        </button>
+      ) : (
+        <a className="stream-screen" href={url} target="_blank" rel="noopener noreferrer" aria-label={labels.title}>
+          {cover}
+        </a>
+      )}
+      <a className="stream-foot" href={url} target="_blank" rel="noopener noreferrer">
+        <span className="grow">
+          <span className="title">{labels.title}</span>
+          <span className="meta">{labels.meta}</span>
+        </span>
+        <span className="link">
+          <ExternalLinkIcon size={15} />
+          Abrir en YouTube
+        </span>
+      </a>
+    </section>
+  )
+}
+
 // --------------------------------------------------------------- programado
 
 /**
@@ -225,6 +328,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
           ) : null}
         </MatchHead>
         {toast ? <div className="banner good">{toast}</div> : null}
+        {match.streamUrl ? <StreamCard url={match.streamUrl} status="scheduled" /> : null}
 
         <SectionTitle aside={attendees.length > 0 ? <span>{attendees.length}</span> : null}>
           Asistentes
@@ -489,6 +593,8 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
           </div>
         </div>
 
+        {match.streamUrl ? <StreamCard url={match.streamUrl} status="live" compact /> : null}
+
         <SectionTitle
           aside={
             <button className="btn quiet small" onClick={() => setEditingRoster(true)}>
@@ -747,6 +853,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
           <OutcomeTag outcome={outcome} long />
         </MatchHead>
         {toast ? <div className="banner good">{toast}</div> : null}
+        {match.streamUrl ? <StreamCard url={match.streamUrl} status="finished" /> : null}
         <div className="stat-row">
           <Stat value={total.attempts} label="Saques" />
           <Stat value={percent(total.ratio)} label="Dentro" tone="good" />

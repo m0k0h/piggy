@@ -519,6 +519,28 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .chip.bad { background: var(--red-soft); color: var(--red); }
 .chip.money { background: var(--pink-soft); color: var(--pink-text); }
 .chip.live { background: var(--red); color: var(--on-hero); }
+/* En juego y con directo: el rojo pasa al punto, que es el aviso. */
+.chip.on-air { gap: 6px; background: var(--red-soft); color: var(--red); }
+
+/* «En directo»: punto rojo con un halo que se expande y se apaga. */
+.live-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hero-bad);
+  flex-shrink: 0;
+}
+.live-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+  animation: on-air 1.6s ease-out infinite;
+}
+@keyframes on-air { to { transform: scale(2.6); opacity: 0; } }
 
 .chip.date {
   background: var(--surface-2);
@@ -689,7 +711,7 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 @keyframes rise { from { transform: translateY(14px); opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .scrim, .sheet, .btn { animation: none; transition: none; }
+  .scrim, .sheet, .btn, .live-dot::after { animation: none; transition: none; }
 }
 
 /* ------------------------------------------------------------ live game */
@@ -1084,6 +1106,103 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
   color: var(--pink-text);
   cursor: pointer;
 }
+
+/* Directo de YouTube en la ficha del partido: la pantalla en 16:9 con su
+   miniatura, la pastilla de directo arriba y el botón de reproducir en el
+   centro; debajo, el enlace para abrirlo en YouTube. */
+.stream { padding: 0; overflow: hidden; }
+.stream-screen {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  border: 0;
+  background: var(--hero);
+  color: var(--on-hero);
+  overflow: hidden;
+  cursor: pointer;
+}
+.stream-screen img,
+.stream-screen iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+}
+/* Oscurece la miniatura para que la pastilla y el botón se lean siempre. */
+.stream-screen:has(img)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 30%);
+}
+.stream-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: var(--radius-pill);
+  background: rgb(0 0 0 / 55%);
+  color: var(--on-hero);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.stream.live .stream-badge { background: var(--hero-bad); }
+.stream.live .stream-badge .live-dot { background: var(--on-hero); }
+.stream-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--pink);
+  color: var(--on-accent);
+  transform: translate(-50%, -50%);
+  box-shadow: var(--shadow);
+}
+.stream-play svg { margin-left: 3px; }
+.stream-screen:focus-visible { outline: 2px solid var(--pink); outline-offset: -2px; }
+.stream-foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: var(--text);
+  text-decoration: none;
+}
+.stream-foot .grow,
+.stream.compact .grow { display: flex; flex: 1; flex-direction: column; gap: 2px; min-width: 0; }
+.stream .title { font-size: 14.5px; font-weight: 600; }
+.stream .meta { font-size: 12px; color: var(--muted); }
+.stream-foot .link { flex-shrink: 0; }
+
+/* En el partido en juego: fila pequeña, miniatura a la izquierda. */
+.stream.compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 10px 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+.stream.compact .stream-screen { width: 96px; flex-shrink: 0; border-radius: var(--radius-sm); }
+.stream.compact .meta.on-air { display: inline-flex; align-items: center; gap: 6px; }
+.stream.compact.live .meta.on-air { color: var(--red); font-weight: 600; }
+.stream.compact .stream-play { width: 30px; height: 30px; }
+.stream.compact .stream-play svg { width: 14px; height: 14px; margin-left: 2px; }
+.stream.compact .stream-out { color: var(--pink-text); flex-shrink: 0; }
 
 /* --------------------------------------------------------- administración */
 .admin-menu { display: flex; flex-direction: column; }

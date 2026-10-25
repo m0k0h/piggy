@@ -218,6 +218,12 @@ describe('matchDetails', () => {
     expect(matchDetails(state({ matches: byId([home]) }), home)).not.toContain('maps.app.goo.gl')
   })
 
+  it('lleva el directo si lo hay', () => {
+    const streamed = { ...match, streamUrl: 'https://youtu.be/dQw4w9WgXcQ' }
+    expect(matchDetails(state({ matches: byId([streamed]) }), streamed)).toContain('📺 Directo: https://youtu.be/dQw4w9WgXcQ\n')
+    expect(matchDetails(state({ matches: byId([match]) }), match)).not.toContain('📺')
+  })
+
   it('sin hora de partido, no hay hora de convocatoria', () => {
     const noTime = { ...match, date: '2025-10-04T00:00' }
     expect(matchDetails(state({ matches: byId([noTime]) }), noTime)).not.toContain('Convocadas')

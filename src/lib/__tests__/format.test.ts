@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isToday, joinNatural } from '../format'
+import { isToday, joinNatural, youtubeId } from '../format'
 
 describe('joinNatural', () => {
   it('une tres o más con comas y una "y" antes del último', () => {
@@ -34,5 +34,20 @@ describe('isToday', () => {
 
   it('con una fecha rota no revienta', () => {
     expect(isToday('no-es-fecha', today)).toBe(false)
+  })
+})
+
+describe('youtubeId', () => {
+  it('saca el vídeo de los enlaces de siempre, los cortos y los de directo', () => {
+    expect(youtubeId('https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=10')).toBe('dQw4w9WgXcQ')
+    expect(youtubeId('https://youtu.be/dQw4w9WgXcQ?si=abc')).toBe('dQw4w9WgXcQ')
+    expect(youtubeId('https://www.youtube.com/live/dQw4w9WgXcQ?feature=share')).toBe('dQw4w9WgXcQ')
+    expect(youtubeId('https://m.youtube.com/watch?v=dQw4w9WgXcQ')).toBe('dQw4w9WgXcQ')
+  })
+
+  it('el del canal no lleva vídeo: vacío', () => {
+    expect(youtubeId('https://www.youtube.com/@club/live')).toBe('')
+    expect(youtubeId('https://example.com/watch?v=dQw4w9WgXcQ')).toBe('')
+    expect(youtubeId('no es un enlace')).toBe('')
   })
 })

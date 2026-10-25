@@ -72,6 +72,11 @@ export interface Match extends Syncable {
   mapsUrl?: string
   /** Liga femenina o mixta. Los partidos de antes de que existiera no la traen. */
   league?: League
+  /**
+   * Directo en YouTube. Es de este partido y de ningún otro: no se recupera
+   * del rival como el escudo o el mapa. Los partidos de antes no lo traen.
+   */
+  streamUrl?: string
 }
 
 /**
