@@ -170,8 +170,8 @@ const STREAM_LABELS: Record<MatchStatus, { badge: string; title: string; meta: s
  * app. Si el enlace es el del canal y no el del vídeo, no hay miniatura que
  * sacar ni vídeo que incrustar: la pantalla entera abre YouTube.
  *
- * `compact` es para el partido en juego, donde manda anotar saques: una fila
- * pequeña que abre YouTube sin quitarle sitio a las fichas.
+ * `compact` es para el partido en juego, donde manda anotar saques: una
+ * franja fina arriba del todo que abre YouTube sin quitarle sitio a las fichas.
  */
 function StreamCard({ url, status, compact = false }: { url: string; status: MatchStatus; compact?: boolean }) {
   const id = youtubeId(url)
@@ -189,8 +189,7 @@ function StreamCard({ url, status, compact = false }: { url: string; status: Mat
   const cover = (
     <>
       {thumb ? <img src={thumb} alt="" loading="lazy" onError={() => setThumbFailed(true)} /> : null}
-      {/* En pequeño no cabe: el directo lo dice el texto de al lado. */}
-      {compact ? null : badge}
+      {badge}
       <span className="stream-play">
         <PlayIcon size={22} />
       </span>
@@ -199,16 +198,13 @@ function StreamCard({ url, status, compact = false }: { url: string; status: Mat
 
   if (compact) {
     return (
-      <a className={`card stream compact ${status}`} href={url} target="_blank" rel="noopener noreferrer">
-        <span className="stream-screen">{cover}</span>
-        <span className="grow">
-          <span className="title">{labels.title}</span>
-          <span className="meta on-air">
-            {status === 'live' ? <LiveDot /> : null}
-            {status === 'live' ? 'En directo en YouTube' : labels.meta}
-          </span>
+      <a className={`stream compact ${status}`} href={url} target="_blank" rel="noopener noreferrer">
+        {status === 'live' ? <LiveDot /> : null}
+        <span className="grow">{labels.badge}</span>
+        <span className="stream-go">
+          {labels.title}
+          <ExternalLinkIcon size={14} />
         </span>
-        <ExternalLinkIcon size={17} className="stream-out" />
       </a>
     )
   }
@@ -559,6 +555,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
         }
       />
       <main className="match-detail">
+        {match.streamUrl ? <StreamCard url={match.streamUrl} status="live" compact /> : null}
         <div className="live-head">
           <div>
             <div className="label">
@@ -592,8 +589,6 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
             </button>
           </div>
         </div>
-
-        {match.streamUrl ? <StreamCard url={match.streamUrl} status="live" compact /> : null}
 
         <SectionTitle
           aside={
