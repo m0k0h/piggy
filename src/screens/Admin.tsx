@@ -547,6 +547,7 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
   const [home, setHome] = useState(match?.home ?? true)
   const [leagueUrl, setLeagueUrl] = useState(match?.leagueUrl ?? '')
   const [mapsUrl, setMapsUrl] = useState(match?.mapsUrl ?? '')
+  const [streamUrl, setStreamUrl] = useState(match?.streamUrl ?? '')
   const [league, setLeague] = useState<League | undefined>(
     match ? match.league : lastLeague(state),
   )
@@ -604,6 +605,7 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
       opponentLogo: normalizeImageUrl(logo),
       // En casa no hace falta mapa: se guarda vacío aunque se hubiera escrito antes.
       mapsUrl: home ? '' : normalizeUrl(mapsUrl),
+      streamUrl: normalizeUrl(streamUrl),
       league,
     }
     if (match) updateMatch(match.id, fields)
@@ -675,6 +677,20 @@ function MatchSheet({ match, onClose }: { match: Match | null; onClose: () => vo
             />
           </Field>
         )}
+
+        <Field
+          label="Directo en YouTube (opcional)"
+          hint="Con el partido en juego, sale marcado como «en directo» y se puede ver desde su ficha."
+        >
+          <input
+            value={streamUrl}
+            onChange={(event) => setStreamUrl(event.target.value)}
+            placeholder="https://youtube.com/live/..."
+            inputMode="url"
+            autoComplete="off"
+            spellCheck={false}
+          />
+        </Field>
 
         <Field
           label="Ficha en la liga (opcional)"

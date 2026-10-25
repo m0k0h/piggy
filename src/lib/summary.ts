@@ -72,6 +72,7 @@ export function matchDetails(state: AppState, match: Match): string {
   // Fuera, el mapa del pabellón del rival; en casa ya se sabe llegar.
   const map = match.home ? '' : match.mapsUrl
   if (map) lines.push(map)
+  if (match.streamUrl) lines.push(`📺 Directo: ${match.streamUrl}`)
 
   lines.push('')
   lines.push('Consulta más datos en la app:')

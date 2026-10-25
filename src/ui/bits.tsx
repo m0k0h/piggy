@@ -220,3 +220,11 @@ export function LeagueLink({ url }: { url?: string }) {
     </a>
   )
 }
+
+/**
+ * El punto rojo de «en directo»: el partido está en juego y tiene directo en
+ * YouTube. Late despacio; con el movimiento reducido se queda quieto.
+ */
+export function LiveDot() {
+  return <span className="live-dot" aria-hidden="true" />
+}

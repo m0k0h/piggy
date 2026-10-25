@@ -3,7 +3,7 @@ import { navigate } from '../lib/router'
 import { useAppState } from '../lib/store'
 import { fineAmount, finishedMatches, lineupOf, matchStatus, servesOfMatch, tally, upcomingMatches } from '../lib/stats'
 import type { AppState, Match } from '../types'
-import { Empty, LeagueTag, OpponentCrest, OutcomeTag, SectionTitle } from '../ui/bits'
+import { Empty, LeagueTag, LiveDot, OpponentCrest, OutcomeTag, SectionTitle } from '../ui/bits'
 import { AwayIcon, CalendarIcon, ChevronIcon, HomeIcon, PencilIcon } from '../ui/icons'
 
 /** El calendario tal como lo ve el equipo: se consulta y se entra a anotar. */
@@ -77,7 +77,12 @@ export function MatchRow({ match, state, onOpen }: { match: Match; state: AppSta
         </span>
       </span>
       <span className="trail">
-        {status === 'live' ? (
+        {status === 'live' && match.streamUrl ? (
+          <span className="chip on-air">
+            <LiveDot />
+            EN DIRECTO
+          </span>
+        ) : status === 'live' ? (
           <span className="chip live">EN JUEGO</span>
         ) : status === 'finished' ? (
           <>

@@ -1,5 +1,16 @@
 import { useState, type ReactNode } from 'react'
-import { callTime, euros, matchDateLong, percent, placeFromMapsUrl, plural, relativeDay, serveSummary, serveTone } from '../lib/format'
+import {
+  callTime,
+  euros,
+  matchDateLong,
+  percent,
+  placeFromMapsUrl,
+  plural,
+  relativeDay,
+  serveSummary,
+  serveTone,
+  youtubeId,
+} from '../lib/format'
 import { goBack, navigate } from '../lib/router'
 import { matchDetails, matchSummary, share } from '../lib/summary'
 import { addServe, removeServe, saveLineup, useAppState } from '../lib/store'
@@ -26,6 +37,7 @@ import {
   Empty,
   LeagueLink,
   LeagueTag,
+  LiveDot,
   OpponentCrest,
   OutcomeTag,
   PlayerName,
@@ -41,10 +53,12 @@ import {
   CheckIcon,
   ChevronIcon,
   ClipboardIcon,
+  ExternalLinkIcon,
   HomeIcon,
   MapPinIcon,
   MinusIcon,
   PeopleIcon,
+  PlayIcon,
   PlusIcon,
   PositionIcon,
   ShareIcon,
@@ -141,6 +155,81 @@ function MatchHead({
         <ShareIcon size={17} />
       </button>
     </div>
+  )
+}
+
+/**
+ * El directo de YouTube con el partido en juego, donde manda anotar saques:
+ * una franja fina arriba del todo que abre YouTube sin quitarle sitio a las
+ * fichas.
+ */
+function LiveStream({ url }: { url: string }) {
+  return (
+    <a className="stream-strip" href={url} target="_blank" rel="noopener noreferrer">
+      <LiveDot />
+      <span className="grow">EN DIRECTO</span>
+      <span className="stream-go">
+        Ver el directo
+        <ExternalLinkIcon size={14} />
+      </span>
+    </a>
+  )
+}
+
+/**
+ * La retransmisión ya grabada, en el acta: la miniatura del vídeo con el
+ * botón de reproducir, que lo pone ahí mismo sin salir de la app. Si el
+ * enlace es el del canal y no el del vídeo, no hay miniatura que sacar ni
+ * vídeo que incrustar: la pantalla entera abre YouTube.
+ */
+function StreamRecording({ url }: { url: string }) {
+  const id = youtubeId(url)
+  const [playing, setPlaying] = useState(false)
+  const [thumbFailed, setThumbFailed] = useState(false)
+  const thumb = id && !thumbFailed ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : ''
+  const title = 'Ver la retransmisión'
+
+  const cover = (
+    <>
+      {thumb ? <img src={thumb} alt="" loading="lazy" onError={() => setThumbFailed(true)} /> : null}
+      <span className="stream-badge">GRABACIÓN</span>
+      <span className="stream-play">
+        <PlayIcon size={22} />
+      </span>
+    </>
+  )
+
+  return (
+    <section className="card stream" aria-label={title}>
+      {playing ? (
+        <div className="stream-screen">
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1`}
+            title={title}
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
+          />
+        </div>
+      ) : id ? (
+        <button className="stream-screen" onClick={() => setPlaying(true)} aria-label={title}>
+          {cover}
+        </button>
+      ) : (
+        <a className="stream-screen" href={url} target="_blank" rel="noopener noreferrer" aria-label={title}>
+          {cover}
+        </a>
+      )}
+      <a className="stream-foot" href={url} target="_blank" rel="noopener noreferrer">
+        <span className="grow">
+          <span className="title">{title}</span>
+          <span className="meta">En YouTube</span>
+        </span>
+        <span className="link">
+          <ExternalLinkIcon size={15} />
+          Abrir en YouTube
+        </span>
+      </a>
+    </section>
   )
 }
 
@@ -455,6 +544,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
         }
       />
       <main className="match-detail">
+        {match.streamUrl ? <LiveStream url={match.streamUrl} /> : null}
         <div className="live-head">
           <div>
             <div className="label">
@@ -747,6 +837,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
           <OutcomeTag outcome={outcome} long />
         </MatchHead>
         {toast ? <div className="banner good">{toast}</div> : null}
+        {match.streamUrl ? <StreamRecording url={match.streamUrl} /> : null}
         <div className="stat-row">
           <Stat value={total.attempts} label="Saques" />
           <Stat value={percent(total.ratio)} label="Dentro" tone="good" />

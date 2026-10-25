@@ -275,6 +275,7 @@ export interface MatchInput {
   opponentLogo?: string
   mapsUrl?: string
   league?: League
+  streamUrl?: string
 }
 
 export function addMatch(input: MatchInput): Match {
@@ -287,6 +288,7 @@ export function addMatch(input: MatchInput): Match {
     leagueUrl: (input.leagueUrl ?? '').trim(),
     opponentLogo: (input.opponentLogo ?? '').trim(),
     mapsUrl: (input.mapsUrl ?? '').trim(),
+    streamUrl: (input.streamUrl ?? '').trim(),
     ...(input.league ? { league: input.league } : {}),
   })
   write('matches', [match])
@@ -295,7 +297,7 @@ export function addMatch(input: MatchInput): Match {
 
 export function updateMatch(
   id: string,
-  patch: Partial<Pick<Match, 'date' | 'opponent' | 'venue' | 'home' | 'leagueUrl' | 'opponentLogo' | 'mapsUrl' | 'league'>>,
+  patch: Partial<Pick<Match, 'date' | 'opponent' | 'venue' | 'home' | 'leagueUrl' | 'opponentLogo' | 'mapsUrl' | 'league' | 'streamUrl'>>,
 ) {
   const current = state.matches[id]
   if (!current) return

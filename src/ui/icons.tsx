@@ -344,6 +344,15 @@ export function PencilIcon({ size = 24, ...props }: IconProps) {
   )
 }
 
+/** Reproducir: el triángulo del directo, con las esquinas redondeadas como el resto. */
+export function PlayIcon({ size = 24, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
+      <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z" />
+    </svg>
+  )
+}
+
 export function MegaphoneIcon({ size = 24, ...props }: IconProps) {
   return (
     <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
