@@ -141,7 +141,7 @@ export function Pot() {
         </button>
       ) : (
         <div className="card">
-          <Empty icon={<CalendarIcon />} title="No hay ningún partido a la vista">
+          <Empty compact icon={<CalendarIcon />} title="No hay ningún partido a la vista">
             Cuando se prepare el próximo, aparecerá aquí.
           </Empty>
         </div>

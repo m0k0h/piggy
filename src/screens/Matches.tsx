@@ -17,7 +17,7 @@ export function Matches() {
       <SectionTitle>Próximos partidos</SectionTitle>
       {upcoming.length === 0 ? (
         <div className="card">
-          <Empty icon={<CalendarIcon />} title="Sin partidos pendientes">
+          <Empty compact icon={<CalendarIcon />} title="Sin partidos pendientes">
             Cuando se prepare el próximo, aparecerá aquí.
           </Empty>
         </div>
