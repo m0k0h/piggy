@@ -32,6 +32,12 @@ export function matchDateLong(value: string): string {
   return hasTime ? `${longFormatter.format(date)} a las ${timeFormatter.format(date)}` : longFormatter.format(date)
 }
 
+/** Hora a la que se anotó un saque ("18:42"), para el historial del partido. */
+export function serveTime(value: string): string {
+  const date = asDate(value)
+  return valid(date) ? timeFormatter.format(date) : ''
+}
+
 /** Minutos antes del partido a los que se cita a las jugadoras. */
 const CALL_MINUTES = 45
 

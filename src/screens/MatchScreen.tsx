@@ -8,6 +8,7 @@ import {
   plural,
   relativeDay,
   serveSummary,
+  serveTime,
   serveTone,
   youtubeId,
 } from '../lib/format'
@@ -96,10 +97,16 @@ export function MatchScreen({ matchId }: { matchId: string }) {
 
 const titleOf = (match: Match) => `${match.home ? 'vs' : '@'} ${match.opponent || 'Rival'}`
 
-/** Agrupa saques consecutivos del mismo set, para no repetir la etiqueta en cada fila. */
+/**
+ * Agrupa los saques por set, para no repetir la etiqueta en cada fila: el set
+ * más alto arriba y, dentro de cada uno, el último saque primero. Se ordena por
+ * set y no solo por hora porque al reabrir un partido se pueden anotar saques
+ * de un set anterior, y sin esto el mismo set salía partido en dos bloques.
+ */
 function groupBySet(serves: Serve[]): { set: number; serves: Serve[] }[] {
+  const sorted = [...serves].sort((a, b) => b.set - a.set || b.createdAt.localeCompare(a.createdAt))
   const groups: { set: number; serves: Serve[] }[] = []
-  for (const serve of serves) {
+  for (const serve of sorted) {
     const last = groups[groups.length - 1]
     if (last && last.set === serve.set) last.serves.push(serve)
     else groups.push({ set: serve.set, serves: [serve] })
@@ -512,7 +519,6 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
 
   const total = tally(serves)
   const fines = total.errors * fineAmount(state)
-  const history = [...serves].reverse()
 
   if (editingRoster) {
     return (
@@ -629,12 +635,12 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
           </div>
         )}
 
-        {history.length > 0 ? (
+        {serves.length > 0 ? (
           <>
             <SectionTitle>Saques del partido</SectionTitle>
             <div className="card tight">
               <div className="log">
-                {groupBySet(history).map((group) => (
+                {groupBySet(serves).map((group) => (
                   <div key={`${group.set}-${group.serves[0].id}`}>
                     <div className="log-set">Set {group.set}</div>
                     {group.serves.map((serve) => {
@@ -646,6 +652,9 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
                           </span>
                           <Avatar name={player?.name ?? 'Jugadora'} number={player?.number} />
                           <span className="grow"><PlayerName player={player} /></span>
+                          <time className="time" dateTime={serve.createdAt}>
+                            {serveTime(serve.createdAt)}
+                          </time>
                           <button
                             className="undo"
                             onClick={() => removeServe(serve.id)}

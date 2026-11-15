@@ -868,7 +868,16 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 /* Confirmación de deshacer un pago: el aviso encima y los dos botones debajo. */
 .log-item.log-confirm { flex-direction: column; align-items: stretch; padding: 12px 4px; }
 .log-confirm .btn-row { width: 100%; }
+/* El nombre nunca salta a dos líneas: se recorta con "…" y la hora y el deshacer se quedan fijos. */
 .log-item .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+
+.log-item .time {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
 
 .log-item .undo {
   display: grid;
@@ -885,6 +894,7 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 /** Cabecera de grupo dentro del log: el set, una vez por tanda de saques. */
 .log-set {
   padding: 8px 4px 2px;
+  white-space: nowrap;
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.1em;
