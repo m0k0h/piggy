@@ -41,7 +41,7 @@ Lo que hay que saber para aplicarlo sin releer todo el documento:
   fondo — reservado para un estado vacío que sea la identidad de su
   pantalla (hoy no lo usa ninguna). El resto de estados vacíos usa el icono
   a secas, sin el círculo, para no repetir ese tratamiento por todas partes.
-  `compact` lo pone en una sola línea (icono a la izquierda, texto al lado):
+  `compact` lo compacta (icono a la altura del título y el texto debajo):
   es el que usan los "Próximos partidos" vacíos de la portada y de la pestaña
   Partidos, para que un hueco secundario no ocupe media pantalla.
 - En la portada (`src/screens/Pot.tsx`) los bloques "Pendiente de pagar" y

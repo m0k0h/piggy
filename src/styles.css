@@ -974,18 +974,21 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .empty p { margin: 6px 0 14px; font-size: 13px; max-width: 250px; margin-inline: auto; }
 .empty-text { display: block; }
 
-/* Estado vacío compacto: una sola línea, icono a la izquierda. */
+/* Estado vacío compacto: icono a la altura del título y el texto debajo,
+   a todo el ancho. */
 .empty.compact {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 12px;
+  column-gap: 10px;
   text-align: left;
   padding: 2px 0;
 }
-.empty.compact .glyph { flex: none; width: 24px; height: 24px; margin: 0; }
-.empty.compact .glyph svg { width: 24px; height: 24px; }
+.empty.compact .empty-text { display: contents; }
+.empty.compact .glyph { width: 22px; height: 22px; margin: 0; }
+.empty.compact .glyph svg { width: 22px; height: 22px; }
 .empty.compact strong { font-size: 15px; }
-.empty.compact p { margin: 2px 0 0; max-width: none; }
+.empty.compact p { grid-column: 1 / -1; margin: 6px 0 0; max-width: none; }
 
 /* Estado vacío destacado: la cerdita a color sobre un círculo rosa tenue.
    Reservado para el hueco de la hucha, que es la identidad de la pantalla. */
