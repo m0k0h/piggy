@@ -13,7 +13,7 @@ import {
   youtubeId,
 } from '../lib/format'
 import { goBack, navigate } from '../lib/router'
-import { matchDetails, matchSummary, share } from '../lib/summary'
+import { liveSummary, matchDetails, matchSummary, share } from '../lib/summary'
 import { addServe, removeServe, saveLineup, useAppState } from '../lib/store'
 import {
   allPlayers,
@@ -535,9 +535,17 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
   const [editingRoster, setEditingRoster] = useState(false)
   const [confirmEnd, setConfirmEnd] = useState(false)
   const [outcome, setOutcome] = useState<MatchOutcome | undefined>(lineupOf(state, match.id)?.outcome)
+  const [toast, setToast] = useState('')
 
   const total = tally(serves)
   const fines = total.errors * fineAmount(state)
+
+  const onShare = async () => {
+    const result = await share(liveSummary(state, match))
+    if (result === 'copied') setToast('Cómo vamos, copiado')
+    else if (result === 'failed') setToast('No se ha podido compartir')
+    setTimeout(() => setToast(''), 2500)
+  }
 
   if (editingRoster) {
     return (
@@ -561,12 +569,18 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
         subtitle="En juego"
         onBack={() => navigate('partidos')}
         actions={
-          <button className="btn small danger" onClick={() => setConfirmEnd(true)}>
-            Finalizar
-          </button>
+          <>
+            <button className="icon-btn" onClick={onShare} aria-label="Compartir cómo vamos">
+              <ShareIcon size={17} />
+            </button>
+            <button className="btn small danger" onClick={() => setConfirmEnd(true)}>
+              Finalizar
+            </button>
+          </>
         }
       />
       <main className="match-detail">
+        {toast ? <div className="banner good">{toast}</div> : null}
         {match.streamUrl ? <LiveStream url={match.streamUrl} /> : null}
         <div className="live-head">
           <div>
