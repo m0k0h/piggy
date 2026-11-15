@@ -57,6 +57,7 @@ export function Empty({
   icon,
   title,
   highlight = false,
+  compact = false,
   children,
 }: {
   icon: ReactNode
@@ -64,15 +65,21 @@ export function Empty({
   /** El hueco de la hucha: círculo rosa tenue detrás del icono. Es la
    * identidad de esa pantalla, no un estado vacío más. */
   highlight?: boolean
+  /** Versión en una línea (icono a la izquierda, texto al lado) para huecos
+   * secundarios que no deben ocupar media pantalla. */
+  compact?: boolean
   children?: ReactNode
 }) {
+  const className = ['empty', highlight && 'highlight', compact && 'compact'].filter(Boolean).join(' ')
   return (
-    <div className={highlight ? 'empty highlight' : 'empty'}>
+    <div className={className}>
       <span className="glyph" aria-hidden="true">
         {icon}
       </span>
-      <strong>{title}</strong>
-      {children ? <p>{children}</p> : null}
+      <span className="empty-text">
+        <strong>{title}</strong>
+        {children ? <p>{children}</p> : null}
+      </span>
     </div>
   )
 }
