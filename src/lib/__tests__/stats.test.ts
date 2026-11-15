@@ -60,9 +60,9 @@ const state = (rows: Partial<AppState>, fine = 1): AppState => ({
 })
 
 describe('tally', () => {
-  it('cuenta el ace como acierto', () => {
-    const result = tally([serve('1', 'p1', 'in'), serve('2', 'p1', 'ace'), serve('3', 'p1', 'error')])
-    expect(result).toEqual({ attempts: 3, errors: 1, in: 1, aces: 1, ratio: 2 / 3 })
+  it('cuenta dentro y fallos', () => {
+    const result = tally([serve('1', 'p1', 'in'), serve('2', 'p1', 'in'), serve('3', 'p1', 'error')])
+    expect(result).toEqual({ attempts: 3, errors: 1, in: 2, ratio: 2 / 3 })
   })
 
   it('deja el ratio en null si no hubo saques', () => {
@@ -128,7 +128,7 @@ describe('pot', () => {
     const result = pot(
       state({
         players: byId([player('p1', 'Anna')]),
-        serves: byId([serve('s1', 'p1', 'error'), serve('s2', 'p1', 'error'), serve('s3', 'p1', 'ace')]),
+        serves: byId([serve('s1', 'p1', 'error'), serve('s2', 'p1', 'error'), serve('s3', 'p1', 'in')]),
         payments: byId([payment('pay1', 'p1', 1)]),
       }),
     )

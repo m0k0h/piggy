@@ -127,3 +127,12 @@ exception
   when duplicate_object then null;
 end
 $$;
+
+-- Migración: fuera los aces. Los saques que se anotaron como «ace» cuentan
+-- como metidos. Se puede volver a ejecutar sin miedo: si ya no queda ninguno,
+-- no toca nada. No cambia `updated_at`: es el mismo saque, no una corrección.
+-- (La app ya los convierte al leerlos, así que esto solo deja limpia la tabla.)
+update public.piggy_rows
+   set payload = jsonb_set(payload, '{result}', '"in"')
+ where collection = 'serves'
+   and payload->>'result' = 'ace';

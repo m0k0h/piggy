@@ -197,14 +197,6 @@ export function XIcon({ size = 24, ...props }: IconProps) {
   )
 }
 
-export function StarIcon({ size = 24, ...props }: IconProps) {
-  return (
-    <svg {...stroke(size, props)} aria-hidden="true" focusable="false">
-      <path d="M12 3.5 14.6 9l6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9Z" />
-    </svg>
-  )
-}
-
 /** Celebración: "todas al día", "nadie debe nada". */
 export function PartyIcon({ size = 24, ...props }: IconProps) {
   return (

@@ -30,9 +30,6 @@
   --red-soft: #3a1c1c;
   --amber: #f0b03c;
   --amber-soft: rgba(240, 176, 60, 0.18);
-  /* El ace: fuera de la escala rojo-ámbar-verde para que no se lea como "regular". */
-  --violet: #b48cff;
-  --violet-soft: rgba(180, 140, 255, 0.18);
 
   /* Estado pagado (fondo claro deliberado: destaca como una etiqueta "hecho") */
   --ok-bg: #dff3e6;
@@ -372,6 +369,7 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 
 /* ---------------------------------------------------------------- stats */
 .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stat-row.pair { grid-template-columns: repeat(2, 1fr); }
 
 .stat {
   background: var(--surface);
@@ -386,7 +384,6 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .stat.good .v { color: var(--green); }
 .stat.bad .v { color: var(--red); }
 .stat.money .v { color: var(--pink-text); }
-.stat.ace .v { color: var(--violet); }
 
 /* ----------------------------------------------------------------- list */
 .list { display: flex; flex-direction: column; }
@@ -813,7 +810,6 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 }
 .serve-bar > span { height: 100%; transition: width 0.25s ease; }
 .serve-bar .in { background: var(--green); }
-.serve-bar .ace { background: var(--violet); }
 .serve-bar .error { background: var(--red); }
 
 /* Cabecera de la hoja de resultado: avatar con el dorsal, acierto y últimos saques. */
@@ -836,7 +832,6 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 }
 .serve-dot.error { background: var(--red-soft); color: var(--red); }
 .serve-dot.in { background: var(--green-soft); color: var(--green); }
-.serve-dot.ace { background: var(--violet-soft); color: var(--violet); }
 
 .result-buttons { display: grid; gap: 10px; }
 
@@ -858,7 +853,6 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 .result-buttons .note { margin-left: auto; font-size: 13px; font-weight: 600; opacity: 0.75; }
 .result-buttons button.err { background: var(--red-soft); color: var(--red); border-color: transparent; }
 .result-buttons button.ok { background: var(--green-soft); color: var(--green); border-color: transparent; }
-.result-buttons button.ace { background: var(--violet-soft); color: var(--violet); border-color: transparent; }
 
 .log { display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
 
@@ -902,7 +896,6 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 /* ----------------------------------------------------------------- bars */
 .bar { display: flex; height: 6px; border-radius: var(--radius-pill); background: var(--red); overflow: hidden; }
 .bar > i { display: block; flex-shrink: 0; height: 100%; background: var(--green); }
-.bar > i.ace { background: var(--violet); }
 /* Proporción sin bueno ni malo (visitas por pantalla): rosa sobre neutro. */
 .bar.share { margin-top: 6px; background: var(--surface-2); }
 .bar.share > i { background: var(--pink); }

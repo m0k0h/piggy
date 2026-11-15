@@ -90,7 +90,32 @@ export function migrate(raw: string): AppState {
   }
 }
 
-/** Queda a true si este arranque vino del formato antiguo. */
+/**
+ * Los aces se quitaron de la app: un saque anotado como `ace` pasa a contar
+ * como metido (`in`). Puede llegar así de la copia local, del servidor o de un
+ * móvil que aún tenga la versión antigua, así que se convierte en cada entrada.
+ *
+ * Se deja `updatedAt` como estaba: es el mismo saque, no una corrección, y
+ * así no gana a nada que se haya tocado después en otro móvil. Al subirlo
+ * todo al conectar, el servidor recibe la fila ya convertida.
+ */
+export function withoutAce<T extends Syncable>(row: T): T {
+  const result = (row as Partial<Serve>).result as string | undefined
+  return result === 'ace' ? { ...row, result: 'in' } : row
+}
+
+/** Los saques de un estado sin aces. Si no había ninguno, devuelve el mismo estado. */
+export function withoutAces(s: AppState): AppState {
+  let changed = false
+  const serves: Record<string, Serve> = {}
+  for (const [id, serve] of Object.entries(s.serves)) {
+    serves[id] = withoutAce(serve)
+    if (serves[id] !== serve) changed = true
+  }
+  return changed ? { ...s, serves } : s
+}
+
+/** Queda a true si este arranque tuvo que convertir algo: formato antiguo o aces. */
 let migratedOnLoad = false
 
 function load(): AppState {
@@ -98,16 +123,19 @@ function load(): AppState {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<AppState>
-      return {
+      const loaded = {
         ...empty(),
         ...parsed,
         team: { ...defaultTeam(), ...(parsed.team ?? {}) },
       }
+      const clean = withoutAces(loaded)
+      if (clean !== loaded) migratedOnLoad = true
+      return clean
     }
     const legacy = localStorage.getItem(LEGACY_KEY)
     if (legacy) {
       migratedOnLoad = true
-      return migrate(legacy)
+      return withoutAces(migrate(legacy))
     }
   } catch {
     // Un estado corrupto no debe dejar la app en blanco a mitad de partido.
@@ -391,7 +419,8 @@ export function applyRemote(collection: Collection, rows: Syncable[]) {
     return
   }
   const bucket = state[collection] as Record<string, Syncable>
-  const fresh = rows.filter((row) => {
+  const incoming = collection === 'serves' ? rows.map(withoutAce) : rows
+  const fresh = incoming.filter((row) => {
     if (wiped(collection, row, resetOf(state.team))) return false
     const mine = bucket[row.id]
     return !mine || row.updatedAt > mine.updatedAt
