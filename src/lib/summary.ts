@@ -36,8 +36,7 @@ export function matchSummary(state: AppState, match: Match): string {
     lines.push('No se anotó ningún saque.')
   } else {
     lines.push(`Saques: ${total.attempts}`)
-    lines.push(`Metidos: ${total.in + total.aces} (${percent(total.ratio)}) | Fallados: ${total.errors}`)
-    lines.push(`Aces: ${total.aces}`)
+    lines.push(`Metidos: ${total.in} (${percent(total.ratio)}) | Fallados: ${total.errors}`)
 
     const roster = participants(state, match.id)
       .filter((player) => serves.some((serve) => serve.playerId === player.id))
@@ -131,8 +130,7 @@ export function seasonSummary(state: AppState): string {
     lines.push('Todavía no hay saques anotados.')
   } else {
     lines.push(`Saques: ${total.attempts}`)
-    lines.push(`Metidos: ${total.in + total.aces} (${percent(total.ratio)}) | Fallados: ${total.errors}`)
-    lines.push(`Aces: ${total.aces}`)
+    lines.push(`Metidos: ${total.in} (${percent(total.ratio)}) | Fallados: ${total.errors}`)
 
     const rows = allPlayers(state)
       .map((player) => ({ player, own: tallyByPlayer(serves, player.id) }))
@@ -149,8 +147,6 @@ export function seasonSummary(state: AppState): string {
         lines.push(`• *${tileName(player)}*: ${percent(own.ratio)} (${plural(own.attempts, 'saque', 'saques')})`)
       }
     }
-    const aces = rows.filter((row) => row.own.aces > 0).sort((a, b) => b.own.aces - a.own.aces)[0]
-    if (aces) lines.push(`⚡ Más aces: *${tileName(aces.player)}* (${aces.own.aces})`)
   }
 
   lines.push('')

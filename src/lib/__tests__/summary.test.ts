@@ -95,7 +95,7 @@ describe('potSummary', () => {
     const text = potSummary(
       state({
         players: byId([player('p1', 'Anna')]),
-        serves: byId([serve('s1', 'p1', 'error'), serve('s2', 'p1', 'in'), serve('s3', 'p1', 'ace')]),
+        serves: byId([serve('s1', 'p1', 'error'), serve('s2', 'p1', 'in'), serve('s3', 'p1', 'in')]),
       }),
     )
     const lines = text.split('\n')
@@ -132,7 +132,7 @@ describe('matchSummary', () => {
         lineups: lineup('won'),
         serves: byId([
           serve('s1', 'p1', 'in'),
-          serve('s2', 'p1', 'ace'),
+          serve('s2', 'p1', 'in'),
           serve('s3', 'p1', 'in'),
           serve('s4', 'p1', 'error'),
           serve('s5', 'p2', 'in'),
@@ -142,13 +142,12 @@ describe('matchSummary', () => {
     )
     const lines = text.split('\n')
     const won = lines.indexOf('🏆 Ganado')
-    expect(lines.slice(won, won + 6)).toEqual([
+    expect(lines.slice(won, won + 5)).toEqual([
       '🏆 Ganado',
       `🐷 Hucha del partido: ${euros(1)}`,
       '',
       'Saques: 5',
       'Metidos: 4 (80%) | Fallados: 1',
-      'Aces: 1',
     ])
     expect(text).toContain(`\n\n*Ana*\n75% de acierto - ${euros(1)}\n`)
     expect(text).toContain(`\n\n*Bea*\n100% de acierto - ${euros(0)}\n`)
@@ -242,23 +241,22 @@ describe('seasonSummary', () => {
         players: byId([player('a', 'Ana'), player('b', 'Bea')]),
         serves: byId([
           serve('s1', 'a', 'in'),
-          serve('s2', 'a', 'ace'),
+          serve('s2', 'a', 'in'),
           serve('s3', 'b', 'error'),
           serve('s4', 'b', 'in'),
         ]),
       }),
     )
-    expect(text.split('\n').slice(0, 7)).toEqual([
+    expect(text.split('\n').slice(0, 6)).toEqual([
       '*Volei Masters Stats*',
       '_Toda la temporada_',
       `🐷 Hucha: ${euros(1)}`,
       '',
       'Saques: 4',
       'Metidos: 3 (75%) | Fallados: 1',
-      'Aces: 1',
     ])
     expect(text.indexOf('*Ana*')).toBeLessThan(text.indexOf('*Bea*'))
-    expect(text).toContain('Más aces: *Ana* (1)')
+    expect(text).not.toMatch(/\baces?\b/i)
     expect(text.trimEnd().endsWith('Consulta más datos en la app:\nhttps://m0k0h.github.io/piggy/#/stats')).toBe(true)
   })
 

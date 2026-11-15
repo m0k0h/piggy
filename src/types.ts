@@ -1,5 +1,8 @@
-/** Resultado de un saque. `ace` cuenta como acierto, y además como punto directo. */
-export type ServeResult = 'error' | 'in' | 'ace'
+/**
+ * Resultado de un saque. Hubo un tercero, `ace`, que se quitó: los que ya
+ * estaban anotados cuentan como `in` (ver `withoutAces` en `lib/store.ts`).
+ */
+export type ServeResult = 'error' | 'in'
 
 export type MatchStatus = 'scheduled' | 'live' | 'finished'
 /** Cómo acabó el partido. Se marca al finalizarlo; los de antes no lo traen. */

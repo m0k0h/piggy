@@ -113,27 +113,20 @@ export interface Tally {
   attempts: number
   errors: number
   in: number
-  aces: number
-  /** Saques que entraron (dentro + aces) sobre el total. `null` si no sacó nunca. */
+  /** Saques que entraron sobre el total. `null` si no sacó nunca. */
   ratio: number | null
 }
 
 export function tally(serves: Serve[]): Tally {
   let errors = 0
-  let inside = 0
-  let aces = 0
-  for (const serve of serves) {
-    if (serve.result === 'error') errors++
-    else if (serve.result === 'ace') aces++
-    else inside++
-  }
+  for (const serve of serves) if (serve.result === 'error') errors++
   const attempts = serves.length
+  const inside = attempts - errors
   return {
     attempts,
     errors,
     in: inside,
-    aces,
-    ratio: attempts === 0 ? null : (inside + aces) / attempts,
+    ratio: attempts === 0 ? null : inside / attempts,
   }
 }
 

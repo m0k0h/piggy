@@ -63,7 +63,6 @@ import {
   PositionIcon,
   ShareIcon,
   ShrugIcon,
-  StarIcon,
   UndoIcon,
   WhistleIcon,
   XIcon,
@@ -357,9 +356,9 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
 }
 
 /**
- * Los saques de una jugadora en una barra: verde dentro, violeta ace, rojo
- * fallo, en proporción. Vacía mientras no haya sacado. Es solo para el ojo:
- * las cifras ya van escritas encima.
+ * Los saques de una jugadora en una barra: verde dentro, rojo fallo, en
+ * proporción. Vacía mientras no haya sacado. Es solo para el ojo: las cifras
+ * ya van escritas encima.
  */
 function ServeBar({ tally: own }: { tally: Tally }) {
   const share = (n: number) => `${(n / own.attempts) * 100}%`
@@ -368,7 +367,6 @@ function ServeBar({ tally: own }: { tally: Tally }) {
       {own.attempts > 0 ? (
         <>
           <span className="in" style={{ width: share(own.in) }} />
-          <span className="ace" style={{ width: share(own.aces) }} />
           <span className="error" style={{ width: share(own.errors) }} />
         </>
       ) : null}
@@ -644,13 +642,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
                       return (
                         <div key={serve.id} className="log-item">
                           <span className={`serve-dot ${serve.result}`} aria-hidden="true">
-                            {serve.result === 'error' ? (
-                              <XIcon size={11} />
-                            ) : serve.result === 'ace' ? (
-                              <StarIcon size={11} />
-                            ) : (
-                              <CheckIcon size={11} />
-                            )}
+                            {serve.result === 'error' ? <XIcon size={11} /> : <CheckIcon size={11} />}
                           </span>
                           <Avatar name={player?.name ?? 'Jugadora'} number={player?.number} />
                           <span className="grow"><PlayerName player={player} /></span>
@@ -767,13 +759,7 @@ function ResultSheet({
           <div className="last-serves" aria-hidden="true">
             {lastFive.map((serve) => (
               <span key={serve.id} className={`serve-dot ${serve.result}`}>
-                {serve.result === 'error' ? (
-                  <XIcon size={11} />
-                ) : serve.result === 'ace' ? (
-                  <StarIcon size={11} />
-                ) : (
-                  <CheckIcon size={11} />
-                )}
+                {serve.result === 'error' ? <XIcon size={11} /> : <CheckIcon size={11} />}
               </span>
             ))}
           </div>
@@ -792,13 +778,6 @@ function ResultSheet({
             <CheckIcon size={20} />
           </span>
           Dentro
-        </button>
-        <button className="ace" onClick={() => onPick('ace')}>
-          <span className="glyph" aria-hidden="true">
-            <StarIcon size={20} />
-          </span>
-          Ace
-          <span className="note">punto directo</span>
         </button>
       </div>
     </Sheet>
@@ -860,8 +839,7 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
                     <span className="grow">
                       <span className="title"><PlayerName player={player} /></span>
                       <span className="meta">
-                        {plural(own.attempts, 'saque', 'saques')} · {plural(own.aces, 'ace', 'aces')} ·{' '}
-                        {percent(own.ratio)} dentro
+                        {plural(own.attempts, 'saque', 'saques')} · {percent(own.ratio)} dentro
                       </span>
                     </span>
                     <span className="trail">

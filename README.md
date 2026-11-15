@@ -24,8 +24,8 @@ cualquiera del equipo.
    el partido todavía no ha empezado.
 4. Cuando estéis, **Iniciar partido**. Hasta que no hay al menos una asistente
    el botón está apagado, porque no habría a quién anotarle el saque.
-5. Cada vez que saquemos: toca a la jugadora y marca **Fallado**, **Dentro** o
-   **Ace**. El contador de fallos y los euros van subiendo arriba. Cualquier
+5. Cada vez que saquemos: toca a la jugadora y marca **Fallado** o **Dentro**.
+   El contador de fallos y los euros van subiendo arriba. Cualquier
    saque mal anotado se deshace desde la lista, y el botón **Asistentes** sirve
    para colar a alguien que llegue tarde.
 6. El selector de **Set** sirve para separar las estadísticas por set.

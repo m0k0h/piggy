@@ -103,8 +103,7 @@ export function Stats() {
         <Stat value={percent(total.ratio)} label="Dentro" tone="good" />
         <Stat value={total.errors} label="Fallos" tone="bad" />
       </div>
-      <div className="stat-row">
-        <Stat value={total.aces} label="Aces" tone="ace" />
+      <div className="stat-row pair">
         <Stat value={total.in} label="Aciertos" />
         <Stat value={euros(total.errors * fine)} label="Hucha" tone="money" />
       </div>
@@ -131,8 +130,7 @@ export function Stats() {
               <span className="grow">
                 <span className="title"><PlayerName player={player} /></span>
                 <span className="meta">
-                  {plural(own.attempts, 'saque', 'saques')} · {plural(own.errors, 'fallo', 'fallos')} ·{' '}
-                  {plural(own.aces, 'ace', 'aces')}
+                  {plural(own.attempts, 'saque', 'saques')} · {plural(own.errors, 'fallo', 'fallos')}
                 </span>
                 <RatioBar tally={own} />
               </span>

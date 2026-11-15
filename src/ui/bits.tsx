@@ -43,7 +43,7 @@ export function Stat({
 }: {
   value: ReactNode
   label: string
-  tone?: 'good' | 'bad' | 'money' | 'ace'
+  tone?: 'good' | 'bad' | 'money'
 }) {
   return (
     <div className={tone ? `stat ${tone}` : 'stat'}>
@@ -104,15 +104,12 @@ export function SectionTitle({ children, aside }: { children: ReactNode; aside?:
   )
 }
 
-/** Barra verde/roja con la proporción de saques que entraron. */
-/** Barra de saques: dentro en verde, aces en violeta y, de fondo, fallos en rojo. */
-export function RatioBar({ tally }: { tally: Pick<Tally, 'attempts' | 'in' | 'aces'> }) {
+/** Barra de saques: dentro en verde y, de fondo, fallos en rojo. */
+export function RatioBar({ tally }: { tally: Pick<Tally, 'attempts' | 'in'> }) {
   if (tally.attempts === 0) return null
-  const width = (count: number) => `${(count / tally.attempts) * 100}%`
   return (
     <div className="bar" aria-hidden="true">
-      <i style={{ width: width(tally.in) }} />
-      <i className="ace" style={{ width: width(tally.aces) }} />
+      <i style={{ width: `${(tally.in / tally.attempts) * 100}%` }} />
     </div>
   )
 }
