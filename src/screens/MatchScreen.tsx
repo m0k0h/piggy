@@ -777,14 +777,14 @@ function ResultSheet({
       <div className="result-buttons">
         <button className="err" onClick={() => onPick('error')}>
           <span className="glyph" aria-hidden="true">
-            <XIcon size={20} />
+            <XIcon size={26} />
           </span>
           Fallado
           <span className="note">{euros(fine)}</span>
         </button>
         <button className="ok" onClick={() => onPick('in')}>
           <span className="glyph" aria-hidden="true">
-            <CheckIcon size={20} />
+            <CheckIcon size={26} />
           </span>
           Dentro
         </button>

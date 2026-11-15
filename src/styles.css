@@ -835,22 +835,23 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
 
 .result-buttons { display: grid; gap: 10px; }
 
+/* Grandes a propósito: se pulsan con prisa, entre saque y saque. */
 .result-buttons button {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 52px;
-  padding: 0 16px;
+  gap: 12px;
+  min-height: 76px;
+  padding: 0 20px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-2);
   color: var(--text);
-  font-size: 14.5px;
+  font-size: 18px;
   font-weight: 700;
 }
 
 .result-buttons .glyph { display: grid; place-items: center; }
-.result-buttons .note { margin-left: auto; font-size: 13px; font-weight: 600; opacity: 0.75; }
+.result-buttons .note { margin-left: auto; font-size: 15px; font-weight: 600; opacity: 0.75; }
 .result-buttons button.err { background: var(--red-soft); color: var(--red); border-color: transparent; }
 .result-buttons button.ok { background: var(--green-soft); color: var(--green); border-color: transparent; }
 
