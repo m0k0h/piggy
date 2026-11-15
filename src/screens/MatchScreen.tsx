@@ -183,6 +183,24 @@ function LiveStream({ url }: { url: string }) {
 }
 
 /**
+ * El partido aún no ha empezado pero ya tiene enlace de YouTube: la misma
+ * franja que el directo, sin el punto rojo ni el "EN DIRECTO", para que se
+ * pueda dejar abierta o compartir antes del pitido inicial.
+ */
+function UpcomingStream({ url }: { url: string }) {
+  return (
+    <a className="stream-strip upcoming" href={url} target="_blank" rel="noopener noreferrer">
+      <PlayIcon size={14} />
+      <span className="grow">RETRANSMISIÓN</span>
+      <span className="stream-go">
+        Abrir en YouTube
+        <ExternalLinkIcon size={14} />
+      </span>
+    </a>
+  )
+}
+
+/**
  * La retransmisión ya grabada, en el acta: la miniatura del vídeo con el
  * botón de reproducir, que lo pone ahí mismo sin salir de la app. Si el
  * enlace es el del canal y no el del vídeo, no hay miniatura que sacar ni
@@ -320,6 +338,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
           ) : null}
         </MatchHead>
         {toast ? <div className="banner good">{toast}</div> : null}
+        {match.streamUrl ? <UpcomingStream url={match.streamUrl} /> : null}
 
         <SectionTitle aside={attendees.length > 0 ? <span>{attendees.length}</span> : null}>
           Asistentes

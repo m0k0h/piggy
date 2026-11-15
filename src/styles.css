@@ -1220,6 +1220,8 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
   text-decoration: none;
 }
 .stream-strip .grow { flex: 1; }
+/* Antes del pitido inicial: la misma franja, en rosa y sin punto de directo. */
+.stream-strip.upcoming { background: var(--pink-soft); color: var(--pink-text); }
 .stream-go {
   display: inline-flex;
   align-items: center;
