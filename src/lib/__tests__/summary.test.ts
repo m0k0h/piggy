@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { AppState, Match, Payment, Player, Serve } from '../../types'
 import { euros } from '../format'
-import { matchDetails, matchSummary, potSummary, seasonSummary } from '../summary'
+import { liveSummary, matchDetails, matchSummary, potSummary, seasonSummary } from '../summary'
 
 const stamp = { createdAt: '2025-10-01T10:00', updatedAt: '2025-10-01T10:00', deletedAt: null }
 
@@ -264,5 +264,42 @@ describe('seasonSummary', () => {
     const text = seasonSummary(state({}))
     expect(text).toContain('Todavía no hay saques anotados.')
     expect(text).toContain('Consulta más datos en la app:')
+  })
+})
+
+describe('liveSummary', () => {
+  const match: Match = {
+    id: 'm1',
+    opponent: 'CV Norte',
+    date: '2025-10-04T18:30',
+    venue: '',
+    home: false,
+    externalId: null,
+    ...stamp,
+  }
+  const live = { m1: { id: 'm1', matchId: 'm1', roster: ['p1'], status: 'live' as const, ...stamp } }
+
+  it('avisa de que estamos jugando, con cómo vamos y el enlace al partido', () => {
+    const text = liveSummary(
+      state({
+        players: byId([player('p1', 'Ana')]),
+        matches: byId([match]),
+        lineups: live,
+        serves: byId([serve('s1', 'p1', 'in'), serve('s2', 'p1', 'error')]),
+      }),
+      match,
+    )
+    expect(text.startsWith('🔴 ¡Estamos jugando!\n🏐 Volei Masters @ CV Norte\n')).toBe(true)
+    expect(text).toContain('Saques: 2\nMetidos: 1 (50%) | Fallados: 1\n')
+    expect(text).toContain(`🐷 Hucha del partido: ${euros(1)}`)
+    expect(text.endsWith('\n\nSíguelo en la app:\nhttps://m0k0h.github.io/piggy/#/partido/m1')).toBe(true)
+  })
+
+  it('recién empezado, sin cifras; con directo, el enlace', () => {
+    const streamed = { ...match, streamUrl: 'https://youtu.be/dQw4w9WgXcQ' }
+    const text = liveSummary(state({ matches: byId([streamed]), lineups: live }), streamed)
+    expect(text).toContain('📺 Directo: https://youtu.be/dQw4w9WgXcQ\n')
+    expect(text).toContain('todavía sin saques anotados')
+    expect(text).not.toContain('Saques:')
   })
 })

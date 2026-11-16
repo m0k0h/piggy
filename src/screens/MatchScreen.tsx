@@ -13,7 +13,7 @@ import {
   youtubeId,
 } from '../lib/format'
 import { goBack, navigate } from '../lib/router'
-import { matchDetails, matchSummary, share } from '../lib/summary'
+import { liveSummary, matchDetails, matchSummary, share } from '../lib/summary'
 import { addServe, removeServe, saveLineup, useAppState } from '../lib/store'
 import {
   allPlayers,
@@ -121,14 +121,10 @@ function groupBySet(serves: Serve[]): { set: number; serves: Serve[] }[] {
  */
 function MatchHead({
   match,
-  shareLabel,
-  onShare,
   venue,
   children,
 }: {
   match: Match
-  shareLabel: string
-  onShare: () => void
   venue?: ReactNode
   /** Lo que va pegado debajo de la fecha. */
   children?: ReactNode
@@ -153,14 +149,20 @@ function MatchHead({
       <div className="match-when">
         <span className="match-when-date">
           <CalendarIcon size={14} />
-          {matchDateLong(match.date)}
+          {matchDateLong(match.date, ' · ')}
         </span>
         {children}
       </div>
-      <button className="icon-btn match-share" onClick={onShare} aria-label={shareLabel}>
-        <ShareIcon size={17} />
-      </button>
     </div>
+  )
+}
+
+/** Compartir, arriba en la cabecera de la pantalla: igual antes, durante y después del partido. */
+function ShareButton({ label, onShare }: { label: string; onShare: () => void }) {
+  return (
+    <button className="icon-btn share-btn" onClick={onShare} aria-label={label}>
+      <ShareIcon size={17} />
+    </button>
   )
 }
 
@@ -176,6 +178,24 @@ function LiveStream({ url }: { url: string }) {
       <span className="grow">EN DIRECTO</span>
       <span className="stream-go">
         Ver el directo
+        <ExternalLinkIcon size={14} />
+      </span>
+    </a>
+  )
+}
+
+/**
+ * El partido aún no ha empezado pero ya tiene enlace de YouTube: la misma
+ * franja que el directo, sin el punto rojo ni el "EN DIRECTO", para que se
+ * pueda dejar abierta o compartir antes del pitido inicial.
+ */
+function UpcomingStream({ url }: { url: string }) {
+  return (
+    <a className="stream-strip upcoming" href={url} target="_blank" rel="noopener noreferrer">
+      <PlayIcon size={14} />
+      <span className="grow">RETRANSMISIÓN</span>
+      <span className="stream-go">
+        Abrir en YouTube
         <ExternalLinkIcon size={14} />
       </span>
     </a>
@@ -280,12 +300,15 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
 
   return (
     <>
-      <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={() => goBack('partidos')} />
+      <ScreenHeader
+        title={titleOf(match)}
+        subtitle={relativeDay(match.date)}
+        onBack={() => goBack('partidos')}
+        actions={<ShareButton label="Compartir datos del partido" onShare={onShare} />}
+      />
       <main className="match-detail">
         <MatchHead
           match={match}
-          shareLabel="Compartir datos del partido"
-          onShare={onShare}
           venue={
             mapsUrl ? (
               <a
@@ -320,6 +343,7 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
           ) : null}
         </MatchHead>
         {toast ? <div className="banner good">{toast}</div> : null}
+        {match.streamUrl ? <UpcomingStream url={match.streamUrl} /> : null}
 
         <SectionTitle aside={attendees.length > 0 ? <span>{attendees.length}</span> : null}>
           Asistentes
@@ -516,9 +540,17 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
   const [editingRoster, setEditingRoster] = useState(false)
   const [confirmEnd, setConfirmEnd] = useState(false)
   const [outcome, setOutcome] = useState<MatchOutcome | undefined>(lineupOf(state, match.id)?.outcome)
+  const [toast, setToast] = useState('')
 
   const total = tally(serves)
   const fines = total.errors * fineAmount(state)
+
+  const onShare = async () => {
+    const result = await share(liveSummary(state, match))
+    if (result === 'copied') setToast('Cómo vamos, copiado')
+    else if (result === 'failed') setToast('No se ha podido compartir')
+    setTimeout(() => setToast(''), 2500)
+  }
 
   if (editingRoster) {
     return (
@@ -542,12 +574,16 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
         subtitle="En juego"
         onBack={() => navigate('partidos')}
         actions={
-          <button className="btn small danger" onClick={() => setConfirmEnd(true)}>
-            Finalizar
-          </button>
+          <>
+            <ShareButton label="Compartir cómo vamos" onShare={onShare} />
+            <button className="btn small danger" onClick={() => setConfirmEnd(true)}>
+              Finalizar
+            </button>
+          </>
         }
       />
       <main className="match-detail">
+        {toast ? <div className="banner good">{toast}</div> : null}
         {match.streamUrl ? <LiveStream url={match.streamUrl} /> : null}
         <div className="live-head">
           <div>
@@ -818,10 +854,15 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
 
   return (
     <>
-      <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={() => navigate('partidos')} />
+      <ScreenHeader
+        title={titleOf(match)}
+        subtitle={relativeDay(match.date)}
+        onBack={() => navigate('partidos')}
+        actions={<ShareButton label="Compartir resumen del partido" onShare={onShare} />}
+      />
       <main className="match-detail">
         {/* La misma cabecera que antes de jugarlo; en el hueco de la convocatoria, el resultado. */}
-        <MatchHead match={match} shareLabel="Compartir resumen del partido" onShare={onShare}>
+        <MatchHead match={match}>
           <OutcomeTag outcome={outcome} long />
         </MatchHead>
         {toast ? <div className="banner good">{toast}</div> : null}

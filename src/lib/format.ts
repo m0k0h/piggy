@@ -25,11 +25,16 @@ export function matchDate(value: string): string {
   return hasTime ? `${day} · ${timeFormatter.format(date)}` : day
 }
 
-export function matchDateLong(value: string): string {
+/**
+ * Fecha larga con la hora. `joiner` es lo que va entre las dos: «a las» en
+ * los textos que se comparten; en la ficha del partido, « · », que es más
+ * corto y deja la fecha en una línea en casi todos los móviles.
+ */
+export function matchDateLong(value: string, joiner = ' a las '): string {
   const date = asDate(value)
   if (!valid(date)) return value
   const hasTime = date.getHours() !== 0 || date.getMinutes() !== 0
-  return hasTime ? `${longFormatter.format(date)} a las ${timeFormatter.format(date)}` : longFormatter.format(date)
+  return hasTime ? `${longFormatter.format(date)}${joiner}${timeFormatter.format(date)}` : longFormatter.format(date)
 }
 
 /** Hora a la que se anotó un saque ("18:42"), para el historial del partido. */

@@ -3,6 +3,7 @@ import {
   allPlayers,
   allServes,
   balances,
+  currentSet,
   fineAmount,
   lineupOf,
   participants,
@@ -75,6 +76,37 @@ export function matchDetails(state: AppState, match: Match): string {
 
   lines.push('')
   lines.push('Consulta más datos en la app:')
+  lines.push(`https://m0k0h.github.io/piggy/#/partido/${match.id}`)
+  return lines.join('\n')
+}
+
+/**
+ * Con el partido en marcha: aviso de que estamos jugando y cómo vamos de
+ * saques, para quien no ha podido venir. El directo, si lo hay, va arriba
+ * porque es lo primero que va a querer abrir.
+ */
+export function liveSummary(state: AppState, match: Match): string {
+  const serves = servesOfMatch(state, match.id)
+  const total = tally(serves)
+  const lines: string[] = []
+
+  lines.push('🔴 ¡Estamos jugando!')
+  lines.push(`🏐 ${teamName(state)} ${match.home ? 'vs' : '@'} ${match.opponent || 'Rival por definir'}`)
+  if (match.league) lines.push(`🏆 ${leagueName(match.league, true)}`)
+  if (match.streamUrl) lines.push(`📺 Directo: ${match.streamUrl}`)
+  lines.push('')
+
+  if (total.attempts === 0) {
+    lines.push('Acabamos de empezar, todavía sin saques anotados.')
+  } else {
+    lines.push(`Vamos por el set ${currentSet(serves)}`)
+    lines.push(`Saques: ${total.attempts}`)
+    lines.push(`Metidos: ${total.in} (${percent(total.ratio)}) | Fallados: ${total.errors}`)
+    lines.push(`🐷 Hucha del partido: ${euros(total.errors * fineAmount(state))}`)
+  }
+
+  lines.push('')
+  lines.push('Síguelo en la app:')
   lines.push(`https://m0k0h.github.io/piggy/#/partido/${match.id}`)
   return lines.join('\n')
 }
