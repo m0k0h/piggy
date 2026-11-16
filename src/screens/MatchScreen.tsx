@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import {
   callTime,
   euros,
-  matchWhen,
+  matchDateLong,
   percent,
   placeFromMapsUrl,
   plural,
@@ -129,7 +129,6 @@ function MatchHead({
   /** Lo que va pegado debajo de la fecha. */
   children?: ReactNode
 }) {
-  const when = matchWhen(match.date)
   return (
     <div className="card stack match-head">
       <div className="inline wide">
@@ -150,8 +149,7 @@ function MatchHead({
       <div className="match-when">
         <span className="match-when-date">
           <CalendarIcon size={14} />
-          <span>{when.day}</span>
-          {when.time ? <strong>{when.time}</strong> : null}
+          {matchDateLong(match.date, ' · ')}
         </span>
         {children}
       </div>

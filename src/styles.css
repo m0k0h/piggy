@@ -1111,8 +1111,6 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
   gap: 6px;
 }
 .match-when-date { flex-wrap: wrap; color: var(--text); font-size: 14px; font-weight: 600; }
-/* La hora, al final de la línea y en negrita: es lo que se busca de un vistazo. */
-.match-when-date strong { margin-left: auto; padding-left: 8px; font-weight: 700; font-variant-numeric: tabular-nums; }
 /* En los Android de 360 px, el día más largo («miércoles, 30 de septiembre»)
    se pasa por poco: un punto menos de letra y cabe entero en una línea. */
 @media (max-width: 370px) {
