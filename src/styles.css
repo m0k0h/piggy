@@ -1072,12 +1072,11 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
    no se mezclen cuadrados redondeados con escudos circulares. */
 .crest.round, .crest.round img { border-radius: 50%; }
 
-/* Cabecera del partido programado: compartir abajo a la derecha del bloque,
-   con la fecha dejándole su hueco para no montarse encima. */
-.match-head { position: relative; }
+/* Compartir el partido: en la cabecera de la pantalla, en rosa, para que
+   la ficha quede libre y la fecha quepa en una línea. */
+.share-btn { color: var(--pink-text); cursor: pointer; }
 /* En la ficha del partido la fecha es lo principal: algo más grande. */
 .match-head .chip.date { font-size: 14px; padding: 6px 12px; }
-.match-head .chip.date { margin-right: 48px; }
 /* Pabellón: misma pastilla que la fecha, debajo de la convocatoria. Fuera de
    casa la pastilla entera abre el mapa y lo dice en rosa al final; si no
    hay nombre (solo el enlace de Maps), dice «Cómo llegar al pabellón». */
@@ -1101,8 +1100,6 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
   display: flex;
   flex-direction: column;
   gap: 4px;
-  align-self: flex-start;
-  margin-right: 48px;
   padding: 8px 14px 8px 12px;
   border-radius: var(--radius-sm);
   background: var(--surface-2);
@@ -1113,19 +1110,17 @@ main.match-detail { padding-bottom: calc(15px + var(--safe-b)); }
   align-items: center;
   gap: 6px;
 }
-.match-when-date { color: var(--text); font-size: 14px; font-weight: 600; }
+.match-when-date { flex-wrap: wrap; color: var(--text); font-size: 14px; font-weight: 600; }
+/* La hora, al final de la línea y en negrita: es lo que se busca de un vistazo. */
+.match-when-date strong { margin-left: auto; padding-left: 8px; font-weight: 700; font-variant-numeric: tabular-nums; }
+/* En los Android de 360 px, el día más largo («miércoles, 30 de septiembre»)
+   se pasa por poco: un punto menos de letra y cabe entero en una línea. */
+@media (max-width: 370px) {
+  .match-when-date { font-size: 13px; }
+}
 .match-when-call { color: var(--pink-text); font-size: 12.5px; font-weight: 600; }
 .match-when svg { flex-shrink: 0; }
 .match-when-call strong { font-weight: 700; font-variant-numeric: tabular-nums; }
-.match-head .match-share {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  width: 36px;
-  height: 36px;
-  color: var(--pink-text);
-  cursor: pointer;
-}
 
 /* Retransmisión en el acta del partido: la pantalla en 16:9 con su
    miniatura, la pastilla de grabación arriba y el botón de reproducir en el

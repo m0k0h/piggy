@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import {
   callTime,
   euros,
-  matchDateLong,
+  matchWhen,
   percent,
   placeFromMapsUrl,
   plural,
@@ -121,18 +121,15 @@ function groupBySet(serves: Serve[]): { set: number; serves: Serve[] }[] {
  */
 function MatchHead({
   match,
-  shareLabel,
-  onShare,
   venue,
   children,
 }: {
   match: Match
-  shareLabel: string
-  onShare: () => void
   venue?: ReactNode
   /** Lo que va pegado debajo de la fecha. */
   children?: ReactNode
 }) {
+  const when = matchWhen(match.date)
   return (
     <div className="card stack match-head">
       <div className="inline wide">
@@ -153,14 +150,21 @@ function MatchHead({
       <div className="match-when">
         <span className="match-when-date">
           <CalendarIcon size={14} />
-          {matchDateLong(match.date)}
+          <span>{when.day}</span>
+          {when.time ? <strong>{when.time}</strong> : null}
         </span>
         {children}
       </div>
-      <button className="icon-btn match-share" onClick={onShare} aria-label={shareLabel}>
-        <ShareIcon size={17} />
-      </button>
     </div>
+  )
+}
+
+/** Compartir, arriba en la cabecera de la pantalla: igual antes, durante y después del partido. */
+function ShareButton({ label, onShare }: { label: string; onShare: () => void }) {
+  return (
+    <button className="icon-btn share-btn" onClick={onShare} aria-label={label}>
+      <ShareIcon size={17} />
+    </button>
   )
 }
 
@@ -298,12 +302,15 @@ function MatchPreview({ match, state }: { match: Match; state: AppState }) {
 
   return (
     <>
-      <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={() => goBack('partidos')} />
+      <ScreenHeader
+        title={titleOf(match)}
+        subtitle={relativeDay(match.date)}
+        onBack={() => goBack('partidos')}
+        actions={<ShareButton label="Compartir datos del partido" onShare={onShare} />}
+      />
       <main className="match-detail">
         <MatchHead
           match={match}
-          shareLabel="Compartir datos del partido"
-          onShare={onShare}
           venue={
             mapsUrl ? (
               <a
@@ -570,9 +577,7 @@ function LiveMatch({ match, state }: { match: Match; state: AppState }) {
         onBack={() => navigate('partidos')}
         actions={
           <>
-            <button className="icon-btn" onClick={onShare} aria-label="Compartir cómo vamos">
-              <ShareIcon size={17} />
-            </button>
+            <ShareButton label="Compartir cómo vamos" onShare={onShare} />
             <button className="btn small danger" onClick={() => setConfirmEnd(true)}>
               Finalizar
             </button>
@@ -851,10 +856,15 @@ function MatchReport({ match, state }: { match: Match; state: AppState }) {
 
   return (
     <>
-      <ScreenHeader title={titleOf(match)} subtitle={relativeDay(match.date)} onBack={() => navigate('partidos')} />
+      <ScreenHeader
+        title={titleOf(match)}
+        subtitle={relativeDay(match.date)}
+        onBack={() => navigate('partidos')}
+        actions={<ShareButton label="Compartir resumen del partido" onShare={onShare} />}
+      />
       <main className="match-detail">
         {/* La misma cabecera que antes de jugarlo; en el hueco de la convocatoria, el resultado. */}
-        <MatchHead match={match} shareLabel="Compartir resumen del partido" onShare={onShare}>
+        <MatchHead match={match}>
           <OutcomeTag outcome={outcome} long />
         </MatchHead>
         {toast ? <div className="banner good">{toast}</div> : null}

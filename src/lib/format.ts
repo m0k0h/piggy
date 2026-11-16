@@ -32,6 +32,18 @@ export function matchDateLong(value: string): string {
   return hasTime ? `${longFormatter.format(date)} a las ${timeFormatter.format(date)}` : longFormatter.format(date)
 }
 
+/**
+ * La fecha larga partida en día y hora, para la ficha del partido: así la
+ * hora va aparte (en negrita, cifras fijas) y el conjunto cabe en una línea.
+ * Sin hora (medianoche), `time` vacío.
+ */
+export function matchWhen(value: string): { day: string; time: string } {
+  const date = asDate(value)
+  if (!valid(date)) return { day: value, time: '' }
+  const hasTime = date.getHours() !== 0 || date.getMinutes() !== 0
+  return { day: longFormatter.format(date), time: hasTime ? timeFormatter.format(date) : '' }
+}
+
 /** Hora a la que se anotó un saque ("18:42"), para el historial del partido. */
 export function serveTime(value: string): string {
   const date = asDate(value)
